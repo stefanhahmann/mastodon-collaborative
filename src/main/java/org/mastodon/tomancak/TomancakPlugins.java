@@ -4,14 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.swing.UIManager;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.project.MamutProject;
-import org.mastodon.project.WriteZip;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.Mastodon;
@@ -186,17 +189,36 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 
 
 	static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd__HH:mm:ss__");
+	final static Predicate<String> lineageFilePattern =
+		Pattern.compile("[2-9][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]__[012][0-9]:[0-5][0-9]:[0-5][0-9]__.*\\.mstdn").asPredicate();
 
 	static String lineageFile(final String parentFolder, final String userName)
 	{
 		return (parentFolder + File.separator + dateFormatter.format(new Date()) + userName + ".mstdn");
 	}
 
+	static Stream<Path> listLineageFiles(final String parentFolder) throws IOException
+	{
+		return Files
+		         .walk(Paths.get(parentFolder),1)
+		         .filter( p -> lineageFilePattern.test(p.getFileName().toString()) );
+	}
+
+	static String dateOfLineageFile(final String filename)
+	{
+		return filename.substring(0,20);
+	}
+
+	static String authorOfLineageFile(final String filename)
+	{
+		return filename.substring(22, filename.length()-6);
+	}
+
 
 	/*
 	 * Start Mastodon ...
 	 */
-	public static void main( final String[] args ) throws Exception
+	public static void maYn( final String[] args ) throws Exception
 	{
 		Locale.setDefault( Locale.US );
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
@@ -208,5 +230,13 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		mastodon.openProject( new MamutProject(
 			new File( "/Users/ulman/data/p_Johannes/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.mastodon" ),
 			new File( "/Users/ulman/data/p_Johannes/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.xml" ) ) );
+	}
+
+	public static void main( final String[] args ) throws Exception
+	{
+		listLineageFiles("/temp").forEach(p -> {
+			String f = p.getFileName().toString();
+			System.out.println( ">>" + authorOfLineageFile(f)+"<< @ >>"+dateOfLineageFile(f) +"<<");
+		});
 	}
 }
