@@ -8,6 +8,7 @@ import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.project.MamutProject;
+import org.mastodon.project.WriteZip;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.Mastodon;
@@ -131,6 +132,9 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 			System.out.println("Some error writing the model: ");
 			e.printStackTrace();
 		}
+
+		System.out.println("Saved model with "+ model.getSpaceUnits() + " and " + model.getTimeUnits());
+		System.out.println("Model has "+model.getGraph().vertices().size() + " vertices and " + model.getGraph().edges().size() +" edges");
 	}
 
 	private void loadModelSnapshot()
@@ -138,6 +142,25 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		if ( pluginAppModel == null ) return;
 
 		System.out.println("loadModelSnapshot()");
+
+		//create new Model of the same params:
+        final Model refModel = pluginAppModel.getAppModel().getModel();
+		final Model newModel = new Model(refModel.getSpaceUnits(),refModel.getTimeUnits());
+
+		System.out.println("Empty model with "+ newModel.getSpaceUnits() + " and " + newModel.getTimeUnits());
+		System.out.println("Model has "+newModel.getGraph().vertices().size() + " vertices and " + newModel.getGraph().edges().size() +" edges");
+
+		try {
+			final ZippedModelReader reader = new ZippedModelReader("/temp/test.dat");
+			newModel.loadRaw( reader );
+			reader.close();
+		} catch (IOException e) {
+			System.out.println("Some error writing the model: ");
+			e.printStackTrace();
+		}
+
+		System.out.println("Loaded model with "+ newModel.getSpaceUnits() + " and " + newModel.getTimeUnits());
+		System.out.println("Model has "+newModel.getGraph().vertices().size() + " vertices and " + newModel.getGraph().edges().size() +" edges");
 	}
 
 
