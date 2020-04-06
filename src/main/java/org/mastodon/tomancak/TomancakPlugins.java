@@ -137,6 +137,7 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		System.out.println("Model has "+model.getGraph().vertices().size() + " vertices and " + model.getGraph().edges().size() +" edges");
 	}
 
+
 	private void loadModelSnapshot()
 	{
 		if ( pluginAppModel == null ) return;
@@ -144,7 +145,7 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		System.out.println("loadModelSnapshot()");
 
 		//create new Model of the same params:
-        final Model refModel = pluginAppModel.getAppModel().getModel();
+		final Model refModel = pluginAppModel.getAppModel().getModel();
 		final Model newModel = new Model(refModel.getSpaceUnits(),refModel.getTimeUnits());
 
 		System.out.println("Empty model with "+ newModel.getSpaceUnits() + " and " + newModel.getTimeUnits());

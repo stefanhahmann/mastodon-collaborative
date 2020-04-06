@@ -32,7 +32,7 @@ public class ZippedModelReader implements MamutProject.ProjectReader
 	@Override
 	public void close() throws IOException
 	{
-	    zip.close();
+		zip.close();
 	}
 
 

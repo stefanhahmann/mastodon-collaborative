@@ -31,7 +31,7 @@ public class ZippedModelWriter implements MamutProject.ProjectWriter
 	@Override
 	public void close() throws IOException
 	{
-	    zip.close();
+		zip.close();
 	}
 
 
