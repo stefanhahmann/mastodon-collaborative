@@ -2,6 +2,9 @@ package org.mastodon.tomancak;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.swing.UIManager;
 import org.mastodon.app.ui.ViewMenuBuilder;
@@ -117,15 +120,32 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 
 		System.out.println("saveModelSnapshot()");
 
-		final MamutProject mp = pluginAppModel.getWindowManager().getProjectManager().getProject();
-		final File pRoot = mp.getProjectRoot();
-		System.out.println("root: "+pRoot.getAbsolutePath()); //TODO: if file, to dirname(), else keep -> must be folder!
-		System.out.println("parent: "+pRoot.getParent());
-		System.out.println(("date: "+new Date().toString())); //TODO: format without spaces, fixed width!
+		//user input
+		final String userName = "VladoDaTracker";
+
+		//project auto-input
+		final File pRoot = pluginAppModel.getWindowManager().getProjectManager().getProject().getProjectRoot();
+		final String pFolder = pRoot.isDirectory()? pRoot.getAbsolutePath() : pRoot.getParentFile().getAbsolutePath();
+
+		//setup the lineage filename
+		final String filename = lineageFile(pFolder,userName);
+
+		System.out.println("(debug) pRoot : "+pRoot.getAbsolutePath());
+		System.out.println("(debug) parent: "+pRoot.getParentFile().getAbsolutePath());
+		System.out.println("(final) file  : "+filename);
 
 		final Model model = pluginAppModel.getAppModel().getModel();
 		try {
-			final ZippedModelWriter writer = new ZippedModelWriter("/temp/test.dat");
+			//test if such file can be created at all (main worry is about the content of the 'userName' part
+			new File(filename).createNewFile();
+		} catch (IOException e) {
+			System.out.println("cannot create the given file!");
+			return;
+		}
+
+		try {
+			//hmm, feels like we can write it, just do it...
+			final ZippedModelWriter writer = new ZippedModelWriter(filename);
 			model.saveRaw( writer );
 			writer.close();
 		} catch (IOException e) {
@@ -162,6 +182,14 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 
 		System.out.println("Loaded model with "+ newModel.getSpaceUnits() + " and " + newModel.getTimeUnits());
 		System.out.println("Model has "+newModel.getGraph().vertices().size() + " vertices and " + newModel.getGraph().edges().size() +" edges");
+	}
+
+
+	static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd__HH:mm:ss__");
+
+	static String lineageFile(final String parentFolder, final String userName)
+	{
+		return (parentFolder + File.separator + dateFormatter.format(new Date()) + userName + ".mstdn");
 	}
 
 
