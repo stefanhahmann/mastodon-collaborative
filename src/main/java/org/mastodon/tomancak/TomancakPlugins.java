@@ -1,13 +1,13 @@
 package org.mastodon.tomancak;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import javax.swing.UIManager;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.project.MamutProject;
-import org.mastodon.project.MamutProjectIO;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.Mastodon;
@@ -115,6 +115,22 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		if ( pluginAppModel == null ) return;
 
 		System.out.println("saveModelSnapshot()");
+
+		final MamutProject mp = pluginAppModel.getWindowManager().getProjectManager().getProject();
+		final File pRoot = mp.getProjectRoot();
+		System.out.println("root: "+pRoot.getAbsolutePath()); //TODO: if file, to dirname(), else keep -> must be folder!
+		System.out.println("parent: "+pRoot.getParent());
+		System.out.println(("date: "+new Date().toString())); //TODO: format without spaces, fixed width!
+
+		final Model model = pluginAppModel.getAppModel().getModel();
+		try {
+			final ZippedModelWriter writer = new ZippedModelWriter("/temp/test.dat");
+			model.saveRaw( writer );
+			writer.close();
+		} catch (IOException e) {
+			System.out.println("Some error writing the model: ");
+			e.printStackTrace();
+		}
 	}
 
 	private void loadModelSnapshot()
