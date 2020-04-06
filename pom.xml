@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>28.0.0</version>
+		<relativePath />
+	</parent>
+
+	<groupId>org.mastodon</groupId>
+	<artifactId>mastodon-collaborative</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
+
+	<name>Tomancak Lab Mastodon Plugins</name>
+	<description>Mastodon plugins to foster collaborative annotations in Tomancak lab projects</description>
+	<url>https://github.com/xulman/mastodon-collaborative</url>
+	<inceptionYear>2020</inceptionYear>
+	<organization>
+		<name>Mastodon Science</name>
+		<url>http://github.com/mastodon-sc</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon</artifactId>
+			<version>1.0.0-beta-16-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>http://forum.imagej.net/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<!-- TODO, to be edited later -->
+	<scm>
+		<connection>scm:git:git:github.com/mastodon-sc/mastodon-tomancak</connection>
+		<developerConnection>scm:git:git@github.com:mastodon-sc/mastodon-tomancak</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/mastodon-sc/mastodon-tomancak</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/mastodon-sc/mastodon-tomancak/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Travis CI</system>
+		<url>https://travis-ci.com/mastodon-sc/mastodon-tomancak</url>
+	</ciManagement>
+
+	<properties>
+		<package-name>org.mastodon</package-name>
+
+		<enforcer.skip>true</enforcer.skip>
+
+		<license.licenseName>not licensed yet</license.licenseName>
+		<license.projectName>mastodon-collaborative</license.projectName>
+		<license.organizationName>Mastodon authors</license.organizationName>
+		<license.copyrightOwners>Tobias Pietzsch</license.copyrightOwners>
+		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
+
+		<bigdataviewer-core.version>9.0.1</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-20</bigdataviewer-vistools.version>
+		<spim_data.version>2.2.4</spim_data.version>
+		<ui-behaviour.version>2.0.1</ui-behaviour.version>
+
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>deploy-to-scijava</releaseProfiles>
+
+		<enforcer.skip>true</enforcer.skip>
+	</properties>
+
+	<developers>
+		<developer>
+			<id>xulman</id>
+			<name>Vladimir Ulman</name>
+			<email>ulman@fi.muni.cz</email>
+			<url>http://imagej.net/User:Ulman</url>
+			<organization>IT4Innovation TUO-VSB</organization>
+			<organizationUrl>http://www.it4i.cz/</organizationUrl>
+			<!--
+			<organization>CBIA @ FI MUNI</organization>
+			<organizationUrl>http://www.fi.muni.cz/</organizationUrl>
+			<organization>MPI-CBG</organization>
+			<organizationUrl>http://www.mpi-cbg.de/</organizationUrl>
+			-->
+			<roles>
+				<role>lead</role>
+				<role>developer</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<contributors><contributor><name>none</name></contributor></contributors>
+
+	<repositories>
+		<repository>
+			<id>scijava.public</id>
+			<url>https://maven.scijava.org/content/groups/public</url>
+		</repository>
+	</repositories>
+</project>
