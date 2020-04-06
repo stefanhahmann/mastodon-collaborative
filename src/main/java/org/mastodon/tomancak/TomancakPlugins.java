@@ -18,6 +18,7 @@ import org.mastodon.project.MamutProject;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.Mastodon;
+import org.mastodon.revised.model.AbstractModelImporter;
 import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
@@ -116,6 +117,16 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		loadModelSnapshotAction.setEnabled( appModel != null );
 	}
 
+	String projectRootFolder()
+	{
+		final File pRoot = pluginAppModel.getWindowManager().getProjectManager().getProject().getProjectRoot();
+		final String pFolder = pRoot.isDirectory()? pRoot.getAbsolutePath() : pRoot.getParentFile().getAbsolutePath();
+
+		//System.out.println("(debug) pRoot : "+pRoot.getAbsolutePath());
+		//System.out.println("(debug) parent: "+pRoot.getParentFile().getAbsolutePath());
+
+		return pFolder;
+	}
 
 	private void saveModelSnapshot()
 	{
@@ -126,15 +137,9 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		//user input
 		final String userName = "VladoDaTracker";
 
-		//project auto-input
-		final File pRoot = pluginAppModel.getWindowManager().getProjectManager().getProject().getProjectRoot();
-		final String pFolder = pRoot.isDirectory()? pRoot.getAbsolutePath() : pRoot.getParentFile().getAbsolutePath();
-
 		//setup the lineage filename
-		final String filename = lineageFile(pFolder,userName);
+		final String filename = lineageFile(projectRootFolder(),userName);
 
-		System.out.println("(debug) pRoot : "+pRoot.getAbsolutePath());
-		System.out.println("(debug) parent: "+pRoot.getParentFile().getAbsolutePath());
 		System.out.println("(final) file  : "+filename);
 
 		final Model model = pluginAppModel.getAppModel().getModel();
@@ -175,16 +180,28 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		System.out.println("Model has "+newModel.getGraph().vertices().size() + " vertices and " + newModel.getGraph().edges().size() +" edges");
 
 		try {
-			final ZippedModelReader reader = new ZippedModelReader("/temp/test.dat");
-			newModel.loadRaw( reader );
-			reader.close();
+			//load into an extra GraphModel
+			//loadLineageFileIntoModel("/temp/test.dat",newModel);
+
+			//load into the current GraphModel
+			new AbstractModelImporter< Model >( refModel ){{ startImport(); }};
+			loadLineageFileIntoModel("/temp/test.dat",refModel);
+			new AbstractModelImporter< Model >( refModel ){{ finishImport(); }};
 		} catch (IOException e) {
-			System.out.println("Some error writing the model: ");
+			System.out.println("Some error reading the model: ");
 			e.printStackTrace();
 		}
 
 		System.out.println("Loaded model with "+ newModel.getSpaceUnits() + " and " + newModel.getTimeUnits());
 		System.out.println("Model has "+newModel.getGraph().vertices().size() + " vertices and " + newModel.getGraph().edges().size() +" edges");
+	}
+
+
+	void loadLineageFileIntoModel(final String filename, final Model model) throws IOException
+	{
+		final ZippedModelReader reader = new ZippedModelReader(filename);
+		model.loadRaw( reader );
+		reader.close();
 	}
 
 
@@ -218,7 +235,7 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 	/*
 	 * Start Mastodon ...
 	 */
-	public static void maYn( final String[] args ) throws Exception
+	public static void main( final String[] args ) throws Exception
 	{
 		Locale.setDefault( Locale.US );
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
@@ -232,7 +249,7 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 			new File( "/Users/ulman/data/p_Johannes/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.xml" ) ) );
 	}
 
-	public static void main( final String[] args ) throws Exception
+	public static void demoListingFiles( final String[] args ) throws Exception
 	{
 		listLineageFiles("/temp").forEach(p -> {
 			String f = p.getFileName().toString();
