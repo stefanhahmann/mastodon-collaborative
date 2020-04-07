@@ -1,4 +1,4 @@
-package org.mastodon.tomancak;
+package org.mastodon.tomancak.util;
 
 import org.mastodon.project.MamutProject;
 import org.mastodon.project.WriteZip;

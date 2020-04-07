@@ -11,6 +11,8 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.swing.UIManager;
+
+import net.imagej.ImageJ;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
@@ -22,8 +24,11 @@ import org.mastodon.revised.model.AbstractModelImporter;
 import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
+import org.mastodon.tomancak.util.LineageFiles;
 import org.scijava.AbstractContextual;
 import org.scijava.Context;
+import org.scijava.command.CommandService;
+import org.scijava.log.LogService;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
@@ -48,9 +53,7 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		menuTexts.put( LOAD_MODEL_SNAPSHOT, "Load External Lineage" );
 	}
 
-	/*
-	 * Command descriptions for all provided commands
-	 */
+	/** Command descriptions for all provided commands */
 	@Plugin( type = CommandDescriptionProvider.class )
 	public static class Descriptions extends CommandDescriptionProvider
 	{
@@ -117,52 +120,14 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		loadModelSnapshotAction.setEnabled( appModel != null );
 	}
 
-	String projectRootFolder()
-	{
-		final File pRoot = pluginAppModel.getWindowManager().getProjectManager().getProject().getProjectRoot();
-		final String pFolder = pRoot.isDirectory()? pRoot.getAbsolutePath() : pRoot.getParentFile().getAbsolutePath();
-
-		//System.out.println("(debug) pRoot : "+pRoot.getAbsolutePath());
-		//System.out.println("(debug) parent: "+pRoot.getParentFile().getAbsolutePath());
-
-		return pFolder;
-	}
 
 	private void saveModelSnapshot()
 	{
-		if ( pluginAppModel == null ) return;
-
-		System.out.println("saveModelSnapshot()");
-
-		//user input
-		final String userName = "VladoDaTracker";
-
-		//setup the lineage filename
-		final String filename = lineageFile(projectRootFolder(),userName);
-
-		System.out.println("(final) file  : "+filename);
-
-		final Model model = pluginAppModel.getAppModel().getModel();
-		try {
-			//test if such file can be created at all (main worry is about the content of the 'userName' part
-			new File(filename).createNewFile();
-		} catch (IOException e) {
-			System.out.println("cannot create the given file!");
-			return;
-		}
-
-		try {
-			//hmm, feels like we can write it, just do it...
-			final ZippedModelWriter writer = new ZippedModelWriter(filename);
-			model.saveRaw( writer );
-			writer.close();
-		} catch (IOException e) {
-			System.out.println("Some error writing the model: ");
-			e.printStackTrace();
-		}
-
-		System.out.println("Saved model with "+ model.getSpaceUnits() + " and " + model.getTimeUnits());
-		System.out.println("Model has "+model.getGraph().vertices().size() + " vertices and " + model.getGraph().edges().size() +" edges");
+		this.getContext().getService(CommandService.class).run(
+			ReportProgress.class, true,
+			"logService", this.getContext().getService(LogService.class),
+			"appModel", pluginAppModel
+		);
 	}
 
 
@@ -174,19 +139,19 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 
 		//create new Model of the same params:
 		final Model refModel = pluginAppModel.getAppModel().getModel();
-		final Model newModel = new Model(refModel.getSpaceUnits(),refModel.getTimeUnits());
+		final Model newModel = LineageFiles.createEmptyModelWithUnitsOf(refModel);
 
 		System.out.println("Empty model with "+ newModel.getSpaceUnits() + " and " + newModel.getTimeUnits());
 		System.out.println("Model has "+newModel.getGraph().vertices().size() + " vertices and " + newModel.getGraph().edges().size() +" edges");
 
 		try {
 			//load into an extra GraphModel
-			//loadLineageFileIntoModel("/temp/test.dat",newModel);
+			LineageFiles.loadLineageFileIntoModel("/temp/test.dat",newModel);
 
 			//load into the current GraphModel
-			new AbstractModelImporter< Model >( refModel ){{ startImport(); }};
-			loadLineageFileIntoModel("/temp/test.dat",refModel);
-			new AbstractModelImporter< Model >( refModel ){{ finishImport(); }};
+			LineageFiles.startImportingModel(refModel);
+			LineageFiles.loadLineageFileIntoModel("/temp/test.dat",refModel);
+			LineageFiles.finishImportingModel(refModel);
 		} catch (IOException e) {
 			System.out.println("Some error reading the model: ");
 			e.printStackTrace();
@@ -197,39 +162,8 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 	}
 
 
-	void loadLineageFileIntoModel(final String filename, final Model model) throws IOException
-	{
-		final ZippedModelReader reader = new ZippedModelReader(filename);
-		model.loadRaw( reader );
-		reader.close();
-	}
 
 
-	static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd__HH:mm:ss__");
-	final static Predicate<String> lineageFilePattern =
-		Pattern.compile("[2-9][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]__[012][0-9]:[0-5][0-9]:[0-5][0-9]__.*\\.mstdn").asPredicate();
-
-	static String lineageFile(final String parentFolder, final String userName)
-	{
-		return (parentFolder + File.separator + dateFormatter.format(new Date()) + userName + ".mstdn");
-	}
-
-	static Stream<Path> listLineageFiles(final String parentFolder) throws IOException
-	{
-		return Files
-		         .walk(Paths.get(parentFolder),1)
-		         .filter( p -> lineageFilePattern.test(p.getFileName().toString()) );
-	}
-
-	static String dateOfLineageFile(final String filename)
-	{
-		return filename.substring(0,20);
-	}
-
-	static String authorOfLineageFile(final String filename)
-	{
-		return filename.substring(22, filename.length()-6);
-	}
 
 
 	/*
@@ -240,9 +174,11 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		Locale.setDefault( Locale.US );
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 
-		final Mastodon mastodon = new Mastodon();
-		new Context().inject( mastodon );
-		mastodon.run();
+		//start up our own Fiji/Imagej2
+		final ImageJ ij = new ImageJ();
+		ij.ui().showUI();
+
+		final Mastodon mastodon = (Mastodon)ij.command().run(Mastodon.class, true).get().getCommand();
 		mastodon.setExitOnClose();
 		mastodon.openProject( new MamutProject(
 			new File( "/Users/ulman/data/p_Johannes/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.mastodon" ),
@@ -251,9 +187,9 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 
 	public static void demoListingFiles( final String[] args ) throws Exception
 	{
-		listLineageFiles("/temp").forEach(p -> {
+		LineageFiles.listLineageFiles("/temp").forEach(p -> {
 			String f = p.getFileName().toString();
-			System.out.println( ">>" + authorOfLineageFile(f)+"<< @ >>"+dateOfLineageFile(f) +"<<");
+			System.out.println( ">>" + LineageFiles.authorOfLineageFile(f)+"<< @ >>"+LineageFiles.dateOfLineageFile(f) +"<<");
 		});
 	}
 }
