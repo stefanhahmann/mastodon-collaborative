@@ -10,12 +10,12 @@ import java.nio.file.Paths;
 
 public class FileTransfer
 {
-	static final String remoteURL = "http://localhost:7070";
+	static final String remoteURL = "http://localhost:"+FileServer.port;
 
 	static public
 	void getParticularFile(final String filename)
 	{
-		final String localRootFolder = "/temp";
+		final String localRootFolder = "/temp/get";
 
 		try {
 			Files.copy(
@@ -36,6 +36,6 @@ public class FileTransfer
 
 	public static void main(String[] args)
 	{
-		getParticularFile("google.txt");
+		getParticularFile("displaySettings.txt");
 	}
 }
