@@ -1,18 +1,9 @@
 package org.mastodon.tomancak;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import javax.swing.UIManager;
 
-import net.imagej.ImageJ;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
@@ -20,13 +11,12 @@ import org.mastodon.project.MamutProject;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.Mastodon;
-import org.mastodon.revised.model.AbstractModelImporter;
-import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
 import org.mastodon.tomancak.util.LineageFiles;
+
+import net.imagej.ImageJ;
 import org.scijava.AbstractContextual;
-import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Plugin;
@@ -133,37 +123,12 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 
 	private void loadModelSnapshot()
 	{
-		if ( pluginAppModel == null ) return;
-
-		System.out.println("loadModelSnapshot()");
-
-		//create new Model of the same params:
-		final Model refModel = pluginAppModel.getAppModel().getModel();
-		final Model newModel = LineageFiles.createEmptyModelWithUnitsOf(refModel);
-
-		System.out.println("Empty model with "+ newModel.getSpaceUnits() + " and " + newModel.getTimeUnits());
-		System.out.println("Model has "+newModel.getGraph().vertices().size() + " vertices and " + newModel.getGraph().edges().size() +" edges");
-
-		try {
-			//load into an extra GraphModel
-			LineageFiles.loadLineageFileIntoModel("/temp/test.dat",newModel);
-
-			//load into the current GraphModel
-			LineageFiles.startImportingModel(refModel);
-			LineageFiles.loadLineageFileIntoModel("/temp/test.dat",refModel);
-			LineageFiles.finishImportingModel(refModel);
-		} catch (IOException e) {
-			System.out.println("Some error reading the model: ");
-			e.printStackTrace();
-		}
-
-		System.out.println("Loaded model with "+ newModel.getSpaceUnits() + " and " + newModel.getTimeUnits());
-		System.out.println("Model has "+newModel.getGraph().vertices().size() + " vertices and " + newModel.getGraph().edges().size() +" edges");
+		this.getContext().getService(CommandService.class).run(
+			LoadEarlierProgress.class, true,
+			"logService", this.getContext().getService(LogService.class),
+			"appModel", pluginAppModel
+		);
 	}
-
-
-
-
 
 
 	/*
@@ -183,13 +148,5 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		mastodon.openProject( new MamutProject(
 			new File( "/Users/ulman/data/p_Johannes/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.mastodon" ),
 			new File( "/Users/ulman/data/p_Johannes/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.xml" ) ) );
-	}
-
-	public static void demoListingFiles( final String[] args ) throws Exception
-	{
-		LineageFiles.listLineageFiles("/temp").forEach(p -> {
-			String f = p.getFileName().toString();
-			System.out.println( ">>" + LineageFiles.authorOfLineageFile(f)+"<< @ >>"+LineageFiles.dateOfLineageFile(f) +"<<");
-		});
 	}
 }
