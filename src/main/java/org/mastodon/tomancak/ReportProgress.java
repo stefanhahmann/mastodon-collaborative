@@ -28,7 +28,7 @@ extends DynamicCommand
 	@Parameter(label = "Identify yourself as:",
 		description = "Please, choose your nickname using only common characters -- this will be part of an output filename.",
 		initializer = "initLineageFile", callback = "updateLineageFile")
-	private String userName = "some_body";
+	private String userName = System.getProperty("user.name");
 
 	@Parameter(label = "Going to write file:",
 		visibility = ItemVisibility.MESSAGE, required = false, persist = false)

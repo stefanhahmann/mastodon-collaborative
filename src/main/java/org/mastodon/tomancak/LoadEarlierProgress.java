@@ -60,9 +60,9 @@ extends DynamicCommand
 	@Override
 	public void run()
 	{
-		//bail out if we are started incorrectly...
+		//bail out if we are started incorrectly, or on wrong input file...
 		if (appModel == null) return;
-		if (!lineageFilename.endsWith("mstdn")) return;
+		if (!LineageFiles.lineageFilePattern.test(lineageFilename)) return;
 
 		/*
 		//create new Model with the same params:
