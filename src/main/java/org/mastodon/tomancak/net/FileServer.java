@@ -112,6 +112,7 @@ public class FileServer
 				} );
 
 				fos.close();
+				System.out.println("Just stored: " + nameValue + " (" + noOfSpots + "," + noOfLinks + ")");
 			}
 		};
 	}

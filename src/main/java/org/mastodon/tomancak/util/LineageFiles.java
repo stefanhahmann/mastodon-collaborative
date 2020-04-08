@@ -47,7 +47,13 @@ public class LineageFiles
 	static public
 	String lineageFilename(final String parentFolder, final String userName)
 	{
-		return (parentFolder + File.separator + dateFormatter.format(new Date()) + userName + ".mstdn");
+		return (parentFolder + File.separator + lineageFilename(userName));
+	}
+
+	static public
+	String lineageFilename(final String userName)
+	{
+		return (dateFormatter.format(new Date()) + userName + ".mstdn");
 	}
 
 	static public

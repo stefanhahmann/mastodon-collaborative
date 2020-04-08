@@ -14,9 +14,22 @@ import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.mastodon.revised.model.mamut.Model;
 
 public class FileTransfer
 {
+	/** Makes sure the URL is with http:// started. Returns ref on the input
+	    (no new String) if the input does not need to be fixed up. */
+	public static
+	String fixupURL(final String remoteURL)
+	{
+		if (remoteURL.startsWith("http://"))
+			return remoteURL;
+		else
+			return "http://"+remoteURL;
+	}
+
+
 	public static
 	Collection<String> listAvailableFiles(final String remoteURL)
 	throws IOException
@@ -41,6 +54,19 @@ public class FileTransfer
 		);
 	}
 
+
+	public static
+	void postParticularFile(final String remoteURL, final Model theModelItself,
+	                        final String filenameWithTheModel,
+	                        final String fromThisLocalFolder)
+	throws IOException
+	{
+		postParticularFile(remoteURL,
+		                   filenameWithTheModel,
+		                   theModelItself.getGraph().vertices().size(),
+		                   theModelItself.getGraph().edges().size(),
+		                   fromThisLocalFolder);
+	}
 
 	public static
 	void postParticularFile(final String remoteURL, final String filename,
