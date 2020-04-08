@@ -67,11 +67,11 @@ extends DynamicCommand
 
 	// ----------------- network options -----------------
 	@Parameter(label = "Report also to a remote monitor:",
-		description = "Select if the current progress shall be saved also on a remote host.")
+		description = "Request that the current progress shall be saved also on a remote host.")
 	private boolean sendAlsoToRemoteMonitor = false;
 
 	@Parameter(label = "URL address of the remote monitor:",
-		description = "This entry is ignored if the above is note checked.")
+		description = "This entry is ignored if the above is not checked.")
 	private String remoteMonitorURL = "setHereServerAddress:"+ FileServer.defaultPort;
 
 
@@ -105,9 +105,9 @@ extends DynamicCommand
 				FileTransfer.postParticularFile(remoteMonitorURL, model, lineageFilename, projectRootFoldername);
 			}
 		} catch (MalformedURLException e) {
-			System.err.println("URL is probably wrong:"); e.printStackTrace();
+			logService.error("URL is probably wrong:"); e.printStackTrace();
 		} catch (ConnectException e) {
-			System.err.println("Some connection error:"); e.printStackTrace();
+			logService.error("Some connection error:"); e.printStackTrace();
 		} catch (IOException e) {
 			logService.error("Failed saving the lineage file!");
 			e.printStackTrace();
