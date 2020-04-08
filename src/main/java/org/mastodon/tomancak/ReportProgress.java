@@ -7,11 +7,17 @@ import org.scijava.command.Command;
 import org.scijava.command.DynamicCommand;
 import org.scijava.log.LogService;
 import org.scijava.prefs.PrefService;
+
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.tomancak.util.LineageFiles;
+import org.mastodon.tomancak.net.FileTransfer;
+import org.mastodon.tomancak.net.FileServer;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.MalformedURLException;
 
 @Plugin( type = Command.class, name = "Mastodon ReportProgress plugin" )
 public class ReportProgress
@@ -32,10 +38,11 @@ extends DynamicCommand
 
 	@Parameter(label = "Going to write file:",
 		visibility = ItemVisibility.MESSAGE, required = false, persist = false)
-	private String lineageFilename;
+	private String lineageFullFilename;
 
 	//cannot be initialized when the object is created because the 'appModel' would not be yet available
 	private String projectRootFoldername;
+	private String lineageFilename;
 
 	private
 	void initLineageFile()
@@ -54,7 +61,8 @@ extends DynamicCommand
 	private
 	void updateLineageFile()
 	{
-		lineageFilename = LineageFiles.lineageFilename(projectRootFoldername,userName);
+		lineageFilename = LineageFiles.lineageFilename(userName);
+		lineageFullFilename = projectRootFoldername + File.separator + lineageFilename;
 	}
 
 	// ----------------- network options -----------------
@@ -64,7 +72,7 @@ extends DynamicCommand
 
 	@Parameter(label = "URL address of the remote monitor:",
 		description = "This entry is ignored if the above is note checked.")
-	private String remoteMonitorURL = "";
+	private String remoteMonitorURL = "setHereServerAddress:"+ FileServer.defaultPort;
 
 
 	// ----------------- implementation -----------------
@@ -77,9 +85,9 @@ extends DynamicCommand
 		//test if the file can be created at all -- main worry is about
 		//the content of the 'userName' part
 		try {
-			new File(lineageFilename).createNewFile();
+			new File(lineageFullFilename).createNewFile();
 		} catch (IOException e) {
-			logService.error("Cannot create lineage file: "+lineageFilename);
+			logService.error("Cannot create lineage file: "+ lineageFullFilename);
 			e.printStackTrace();
 			return;
 		}
@@ -87,12 +95,19 @@ extends DynamicCommand
 		//ok, create-able, let's export data then
 		final Model model = appModel.getAppModel().getModel();
 		try {
-			LineageFiles.saveModelIntoLineageFile(model,lineageFilename);
+			LineageFiles.saveModelIntoLineageFile(model, lineageFullFilename);
+			logService.info("Saved: "+lineageFullFilename);
 
 			if (sendAlsoToRemoteMonitor)
 			{
-				logService.info("saving also to remote URL: "+remoteMonitorURL);
+				remoteMonitorURL = FileTransfer.fixupURL(remoteMonitorURL);
+				logService.info("Saving also to remote URL: "+remoteMonitorURL);
+				FileTransfer.postParticularFile(remoteMonitorURL, model, lineageFilename, projectRootFoldername);
 			}
+		} catch (MalformedURLException e) {
+			System.err.println("URL is probably wrong:"); e.printStackTrace();
+		} catch (ConnectException e) {
+			System.err.println("Some connection error:"); e.printStackTrace();
 		} catch (IOException e) {
 			logService.error("Failed saving the lineage file!");
 			e.printStackTrace();
