@@ -11,6 +11,7 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.resource.PathResourceManager;
+import org.mastodon.tomancak.util.LineageFiles;
 
 public class FileServer
 {
@@ -22,8 +23,10 @@ public class FileServer
 	public static void main(final String[] args)
 	{
 		final HttpHandler h = Handlers.path()
-				.addPrefixPath("/files", fileListingHandler())
-				.addPrefixPath("/put", fileUploadHandler());
+				.addPrefixPath("/put",   fileUploadHandler())
+				.addPrefixPath("/list",  fileSkinnyListingHandler())
+				.addPrefixPath("/files", filePrettyListingHandler())
+				.addPrefixPath("/",      filePrettyListingHandler());
 
 		Undertow server = Undertow.builder()
 		  .addHttpListener(port, "localhost")
@@ -33,10 +36,27 @@ public class FileServer
 	}
 
 	public static
-	HttpHandler fileListingHandler()
+	HttpHandler filePrettyListingHandler()
 	{
 		return Handlers.resource(new PathResourceManager(Paths.get(filesRootFolder), transferMinSize))
 		         .setDirectoryListingEnabled(true);
+	}
+
+	public static
+	HttpHandler fileSkinnyListingHandler()
+	{
+		return new HttpHandler() {
+			@Override
+			public void handleRequest(HttpServerExchange exchange) throws Exception
+			{
+				final StringBuilder sb = new StringBuilder();
+				LineageFiles.listLineageFiles(filesRootFolder).forEach(p -> {
+					sb.append(p.getFileName().toString());
+					sb.append('\n');
+				});
+				exchange.getResponseSender().send( sb.toString() );
+			}
+		};
 	}
 
 	public static

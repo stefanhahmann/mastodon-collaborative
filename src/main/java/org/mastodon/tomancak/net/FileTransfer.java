@@ -1,6 +1,5 @@
 package org.mastodon.tomancak.net;
 
-import java.io.OutputStream;
 import java.net.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
