@@ -1,69 +1,86 @@
 package org.mastodon.tomancak.net;
 
-import java.net.*;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.File;
-import java.nio.file.Files;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.net.HttpURLConnection;
+
 import java.nio.file.Paths;
+import java.nio.file.Files;
+import java.io.File;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 public class FileTransfer
 {
-	static final String remoteURL = "http://localhost:"+FileServer.port;
-
-	static final String filesRootFolder = "/temp/get";
-
-	static public
-	void getParticularFile(final String filename)
+	public static
+	Collection<String> listAvailableFiles(final String remoteURL)
+	throws IOException
 	{
-		try {
-			Files.copy(
-				new URL(remoteURL + "/files/" + filename).openStream(),
-				Paths.get(filesRootFolder + File.separator + filename)
-			);
-		} catch (FileNotFoundException e) {
-			System.err.println("Server cannot serve this request:");
-			e.printStackTrace();
-		} catch (MalformedURLException e) {
-			System.err.println("Cannot connect to the server:");
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println("Cannot write the output file:");
-			e.printStackTrace();
-		}
+		//we intentionally copy the incoming streamed content (not to keep a ref on it -> to allow it to close the connection)
+		List<String> list = new LinkedList<>();
+		new BufferedReader( new InputStreamReader( new URL(remoteURL + "/list/").openStream() ))
+		      .lines()
+		      .forEach(list::add);
+		return list;
 	}
 
-	static public
-	void postParticularFile(final String filename, final int spotsCnt, final int linksCnt)
+
+	public static
+	void getParticularFile(final String remoteURL, final String filename,
+	                       final String toThisLocalFolder)
+	throws IOException
 	{
-		try {
-			final URL url = new URL(remoteURL
-			  + "/put"
-			  + FileServer.fileUploadQueryStringCreate(URLEncoder.encode(filename,"UTF-8"),spotsCnt,linksCnt));
-			//System.out.println("talking to: "+url);
-
-			final HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-			conn.setRequestMethod("POST");
-			conn.setDoOutput(true);
-			Files.copy(
-				Paths.get(filesRootFolder + File.separator + filename),
-				conn.getOutputStream()
-			);
-
-			//this actually makes the whole thing spinning (does not send out a byte without this command)
-			conn.getInputStream();
-		} catch (MalformedURLException e) {
-			System.err.println("Cannot connect to the server:");
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println("Cannot write the output file:");
-			e.printStackTrace();
-		}
+		Files.copy(
+			new URL(remoteURL + "/files/" + filename).openStream(),
+			Paths.get(toThisLocalFolder + File.separator + filename)
+		);
 	}
 
+
+	public static
+	void postParticularFile(final String remoteURL, final String filename,
+	                        final int spotsCnt, final int linksCnt,
+	                        final String fromThisLocalFolder)
+	throws IOException
+	{
+		final URL url = new URL(remoteURL
+		  + "/put"
+		  + FileServer.fileUploadQueryStringCreate(URLEncoder.encode(filename,"UTF-8"),spotsCnt,linksCnt));
+		//System.out.println("talking to: "+url);
+
+		final HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+		conn.setRequestMethod("POST");
+		conn.setDoOutput(true);
+		Files.copy(
+			Paths.get(fromThisLocalFolder + File.separator + filename),
+			conn.getOutputStream()
+		);
+
+		//this actually makes the whole thing spinning (does not send out a byte without this command)
+		conn.getInputStream();
+	}
+
+
+	/* to demo some of the methods
 	public static void main(String[] args)
 	{
-		//getParticularFile("displaySettings.txt");
-		postParticularFile("FR.txt",10,20);
+		try {
+
+			getParticularFile("http://localhost:7070","2020-04-06__23:43:15__VladoDaTracker.mstdn","/temp");
+			for (String file : listAvailableFiles("http://localhost:7070")) System.out.println(">>"+file+"<<");
+
+		} catch (MalformedURLException e) {
+			System.err.println("URL is probably wrong:"); e.printStackTrace();
+		} catch (ConnectException e) {
+			System.err.println("Some connection error:"); e.printStackTrace();
+		} catch (IOException e) {
+			System.err.println("Some IO error:"); e.printStackTrace();
+		}
 	}
+	*/
 }

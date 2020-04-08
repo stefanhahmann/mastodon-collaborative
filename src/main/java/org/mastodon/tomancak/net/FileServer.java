@@ -15,34 +15,39 @@ import org.mastodon.tomancak.util.LineageFiles;
 
 public class FileServer
 {
-	static final int port = 7070;
-	static final long transferMinSize = 100;
-
-	static final String filesRootFolder = "/temp/put";
-
-	public static void main(final String[] args)
+	public FileServer(final String filesRootFolder, final String hostname, final int port)
 	{
-		final HttpHandler h = Handlers.path()
-				.addPrefixPath("/put",   fileUploadHandler())
-				.addPrefixPath("/list",  fileSkinnyListingHandler())
-				.addPrefixPath("/files", filePrettyListingHandler())
-				.addPrefixPath("/",      filePrettyListingHandler());
+		this.filesRootFolder = filesRootFolder;
+
+		HttpHandler h = Handlers.path()
+		  .addPrefixPath("/put",   fileUploadHandler())
+		  .addPrefixPath("/list",  fileSkinnyListingHandler())
+		  .addPrefixPath("/files", filePrettyListingHandler())
+		  .addPrefixPath("/",      filePrettyListingHandler());
 
 		Undertow server = Undertow.builder()
-		  .addHttpListener(port, "localhost")
+		  .addHttpListener(port, hostname)
 		  .setHandler(h)
 		  .build();
+
+		System.out.println("Starting server "+hostname+":"+port+" over "+filesRootFolder);
 		server.start();
 	}
 
-	public static
+	public FileServer(final String filesRootFolder)
+	{
+		this(filesRootFolder,"localhost",defaultPort);
+	}
+
+
+	final String filesRootFolder;
+
 	HttpHandler filePrettyListingHandler()
 	{
-		return Handlers.resource(new PathResourceManager(Paths.get(filesRootFolder), transferMinSize))
+		return Handlers.resource(new PathResourceManager(Paths.get(filesRootFolder)))
 		         .setDirectoryListingEnabled(true);
 	}
 
-	public static
 	HttpHandler fileSkinnyListingHandler()
 	{
 		return new HttpHandler() {
@@ -59,7 +64,6 @@ public class FileServer
 		};
 	}
 
-	public static
 	HttpHandler fileUploadHandler()
 	{
 		return new HttpHandler() {
@@ -112,9 +116,34 @@ public class FileServer
 		};
 	}
 
+
+	/** the default port if none is provided to start a server */
+	public static final int defaultPort = 7070;
+
+	/**
+	 * requires/collects and formats the mandatory data into
+	 * a proper query that this server can understand
+	 */
 	public static
 	String fileUploadQueryStringCreate(final String name, final int spotsCnt, final int linksCnt)
 	{
 		return String.format("?name=%s&spots=%d&links=%d",name,spotsCnt,linksCnt);
+	}
+
+
+	public static void main(final String[] args)
+	{
+		if (args.length < 1 || args.length > 3)
+		{
+			System.out.println("I need these arguments: filesRootFolder [hostname [port]]");
+			return;
+		}
+
+		if (args.length == 1)
+			new FileServer(args[0]);
+		else if (args.length == 2)
+			new FileServer(args[0], args[1], defaultPort);
+		else
+			new FileServer(args[0], args[1], Integer.parseInt(args[2]));
 	}
 }
