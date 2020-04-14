@@ -52,7 +52,11 @@ extends DynamicCommand
 		//try to retrieve the 'lineageFilename' from the preferences
 		final PrefService ps = logService.getContext().getService(PrefService.class);
 		if (ps != null)
-			userName = ps.get(ReportProgress.class,"userName");
+		{
+			//but read it only if there is actually some name already stored!
+			final String newUserName = ps.get(ReportProgress.class,"userName");
+			if (newUserName != null) userName = newUserName;
+		}
 
 		//finally, set up the 'lineageFilename'
 		updateLineageFile();

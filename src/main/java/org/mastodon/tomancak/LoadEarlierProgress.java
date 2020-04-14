@@ -39,6 +39,14 @@ extends DynamicCommand
 	//NB: cannot be initialized when the object is created because the 'appModel' would not be yet available
 
 	private
+	boolean isCheckBoxSavedInPreferences(final String attribName, final PrefService ps)
+	{
+		boolean returnedDefault = ps.getBoolean(LoadEarlierProgress.class, attribName, false) == false;
+		returnedDefault &= ps.getBoolean(LoadEarlierProgress.class, attribName, true) == true;
+		return !returnedDefault;
+	}
+
+	private
 	void initialSetupHelper()
 	{
 		//this one cannot be setup at object creation time (appModel was null back then)
@@ -52,8 +60,12 @@ extends DynamicCommand
 		final PrefService ps = logService.getContext().getService(PrefService.class);
 		if (ps != null)
 		{
-			readAlsoFromRemoteMonitor = ps.getBoolean(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",false);
-			remoteMonitorURL = ps.get(LoadEarlierProgress.class,"remoteMonitorURL");
+			//but read it only if there is actually some name already stored!
+			final String newRemoteURL = ps.get(LoadEarlierProgress.class,"remoteMonitorURL");
+			if (newRemoteURL != null) remoteMonitorURL = newRemoteURL;
+
+			if (isCheckBoxSavedInPreferences("readAlsoFromRemoteMonitor", ps))
+				readAlsoFromRemoteMonitor = ps.getBoolean(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",false);
 		}
 
 		discoverInputFiles();
