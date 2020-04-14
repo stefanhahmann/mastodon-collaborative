@@ -187,7 +187,7 @@ extends DynamicCommand
 			final String lineageFullFilename = projectRootFoldername + File.separator + lineageFilename;
 			logService.info("Loading: " + lineageFullFilename);
 			LineageFiles.loadLineageFileIntoModel(lineageFullFilename, model);
-		} catch (MalformedURLException e) {
+		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();
 		} catch (ConnectException e) {
 			logService.error("Some connection error:"); e.printStackTrace();
