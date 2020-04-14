@@ -7,9 +7,12 @@ import org.scijava.command.Command;
 import org.scijava.command.DynamicCommand;
 import org.scijava.log.LogService;
 import org.scijava.prefs.PrefService;
+import org.scijava.command.CommandService;
+import java.util.concurrent.ExecutionException;
 
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.model.mamut.Model;
+import org.mastodon.tomancak.util.MergeModelDialog;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
 import org.mastodon.tomancak.net.FileServer;
@@ -212,9 +215,19 @@ extends DynamicCommand
 		else
 		{
 			//merge... but first: need to mine some params!
-			final double distCutoff = 1000;
-			final double mahalanobisDistCutoff = 1;
-			final double ratioThreshold = 2;
+			MergeModelDialog mergeParams = null;
+			try {
+				mergeParams = (MergeModelDialog)context().getService(CommandService.class).run(MergeModelDialog.class,true).get().getCommand();
+			} catch (InterruptedException | ExecutionException e) {
+				logService.error("Couldn't create or read merging parameters:");
+				e.printStackTrace();
+				return;
+			}
+			if (mergeParams == null || !mergeParams.wasExecuted)
+			{
+				logService.info("User canceled dialog");
+				return;
+			}
 
 			//create an extra copy (duplicate) of the current lineage,
 			//the current lineage 'refModel' will be filled with the merged data
@@ -232,7 +245,8 @@ extends DynamicCommand
 			}
 
 			final MergeDatasets.OutputDataSet output = new MergeDatasets.OutputDataSet( refModel );
-			MergeModels.merge( copyModel, newModel, output, distCutoff, mahalanobisDistCutoff, ratioThreshold );
+			MergeModels.merge( copyModel, newModel, output,
+				mergeParams.distCutoff, mergeParams.mahalanobisDistCutoff, mergeParams.ratioThreshold );
 
 			logService.info("Merged the current lineage (A) with "+copyModel.getGraph().vertices().size()
 					+ " vertices and " + copyModel.getGraph().edges().size() +" edges together");
