@@ -76,11 +76,11 @@ extends DynamicCommand
 	// ----------------- network options -----------------
 	@Parameter(label = "Report also to a remote monitor:",
 		description = "Request that the current progress shall be saved also on a remote host.")
-	private boolean sendAlsoToRemoteMonitor = false;
+	private boolean sendAlsoToRemoteMonitor = true;
 
 	@Parameter(label = "URL address of the remote monitor:",
 		description = "This entry is ignored if the above is not checked.")
-	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
+	private String remoteMonitorURL = "http://helenos.fi.muni.cz:7070";
 
 	@Parameter(label = "Project name on the remote monitor:",
 			description = "This entry is ignored if the above is not checked.")
