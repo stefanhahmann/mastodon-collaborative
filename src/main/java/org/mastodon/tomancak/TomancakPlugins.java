@@ -3,19 +3,22 @@ package org.mastodon.tomancak;
 import java.io.File;
 import java.util.*;
 import javax.swing.UIManager;
+
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.project.MamutProject;
-import org.mastodon.project.MamutProjectIO;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.Mastodon;
-import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
+import org.mastodon.tomancak.util.LineageFiles;
+
+import net.imagej.ImageJ;
 import org.scijava.AbstractContextual;
-import org.scijava.Context;
+import org.scijava.command.CommandService;
+import org.scijava.log.LogService;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
@@ -40,9 +43,7 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		menuTexts.put( LOAD_MODEL_SNAPSHOT, "Load External Lineage" );
 	}
 
-	/*
-	 * Command descriptions for all provided commands
-	 */
+	/** Command descriptions for all provided commands */
 	@Plugin( type = CommandDescriptionProvider.class )
 	public static class Descriptions extends CommandDescriptionProvider
 	{
@@ -112,16 +113,21 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 
 	private void saveModelSnapshot()
 	{
-		if ( pluginAppModel == null ) return;
-
-		System.out.println("saveModelSnapshot()");
+		this.getContext().getService(CommandService.class).run(
+			ReportProgress.class, true,
+			"logService", this.getContext().getService(LogService.class),
+			"appModel", pluginAppModel
+		);
 	}
+
 
 	private void loadModelSnapshot()
 	{
-		if ( pluginAppModel == null ) return;
-
-		System.out.println("loadModelSnapshot()");
+		this.getContext().getService(CommandService.class).run(
+			LoadEarlierProgress.class, true,
+			"logService", this.getContext().getService(LogService.class),
+			"appModel", pluginAppModel
+		);
 	}
 
 
@@ -133,9 +139,11 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 		Locale.setDefault( Locale.US );
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 
-		final Mastodon mastodon = new Mastodon();
-		new Context().inject( mastodon );
-		mastodon.run();
+		//start up our own Fiji/Imagej2
+		final ImageJ ij = new ImageJ();
+		ij.ui().showUI();
+
+		final Mastodon mastodon = (Mastodon)ij.command().run(Mastodon.class, true).get().getCommand();
 		mastodon.setExitOnClose();
 		mastodon.openProject( new MamutProject(
 			new File( "/Users/ulman/data/p_Johannes/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.mastodon" ),
