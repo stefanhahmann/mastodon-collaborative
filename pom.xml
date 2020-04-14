@@ -37,6 +37,11 @@
 			<version>1.0.0-beta-17-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon-tomancak</artifactId>
+			<version>0.1.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>io.undertow</groupId>
 			<artifactId>undertow-core</artifactId>
 			<version>2.0.29.Final</version>

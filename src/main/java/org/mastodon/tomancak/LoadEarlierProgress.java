@@ -13,6 +13,8 @@ import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
 import org.mastodon.tomancak.net.FileServer;
+import org.mastodon.tomancak.merging.MergeDatasets;
+import org.mastodon.tomancak.merging.MergeModels;
 
 import java.io.File;
 import java.io.IOException;
@@ -153,6 +155,10 @@ extends DynamicCommand
 		}
 	}
 
+	@Parameter(label = "What to do with the loaded file:",
+		choices = {"Replace the current lineage", "Merge with the current lineage"})
+	private String actionWithNewFile;
+
 
 	// ----------------- implementation -----------------
 	@Override
@@ -167,15 +173,14 @@ extends DynamicCommand
 		lineageFilename = lineageFilename.substring(13);
 		if (!LineageFiles.lineageFilePattern.test(lineageFilename)) return;
 
-		/*
-		//create new Model with the same params:
+		//reference on an existing/old and a new model that shall be filled from the file
 		final Model refModel = appModel.getAppModel().getModel();
-		final Model newModel = LineageFiles.createEmptyModelWithUnitsOf(refModel);
-		*/
+		final Model newModel
+			= actionWithNewFile.startsWith("Replace") ? refModel  //fill directly into the actual lineage
+			: LineageFiles.createEmptyModelWithUnitsOf(refModel); //create an extra lineage
 
-		//let's replace the main graph
-		final Model model = appModel.getAppModel().getModel();
-		LineageFiles.startImportingModel(model);
+		//let's read the new graph
+		LineageFiles.startImportingModel(newModel);
 		//
 		try {
 			if (doRemoteRead) {
@@ -186,7 +191,7 @@ extends DynamicCommand
 
 			final String lineageFullFilename = projectRootFoldername + File.separator + lineageFilename;
 			logService.info("Loading: " + lineageFullFilename);
-			LineageFiles.loadLineageFileIntoModel(lineageFullFilename, model);
+			LineageFiles.loadLineageFileIntoModel(lineageFullFilename, newModel);
 		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();
 		} catch (ConnectException e) {
@@ -195,10 +200,46 @@ extends DynamicCommand
 			logService.error("Failed loading the lineage file!");
 			e.printStackTrace();
 		}
-		//
-		LineageFiles.finishImportingModel(model);
 
-		logService.info("Replaced with lineage with "+model.getGraph().vertices().size()
-			+ " vertices and " + model.getGraph().edges().size() +" edges");
+		if (actionWithNewFile.startsWith("Replace"))
+		{
+			//replace... just report of what's been done
+			logService.info("Replaced with lineage with "+newModel.getGraph().vertices().size()
+				+ " vertices and " + newModel.getGraph().edges().size() +" edges.");
+		}
+		else
+		{
+			//merge... but first: need to mine some params!
+			final double distCutoff = 1000;
+			final double mahalanobisDistCutoff = 1;
+			final double ratioThreshold = 2;
+
+			//create an extra copy (duplicate) of the current lineage,
+			//the current lineage 'refModel' will be filled with the merged data
+			//
+			//duplicate by exporting & importing -- which we sell as backup before the merge...
+			final Model copyModel = LineageFiles.createEmptyModelWithUnitsOf(refModel);
+			try {
+				final String auxBackupFile = projectRootFoldername + File.separator + "backupCurrentLineageBeforeMerge.mstdn";
+				LineageFiles.saveModelIntoLineageFile(refModel, auxBackupFile);
+				LineageFiles.loadLineageFileIntoModel(auxBackupFile, copyModel);
+			} catch (IOException e) {
+				logService.error("Failed backing up the lineage file!");
+				e.printStackTrace();
+				return;
+			}
+
+			final MergeDatasets.OutputDataSet output = new MergeDatasets.OutputDataSet( refModel );
+			MergeModels.merge( copyModel, newModel, output, distCutoff, mahalanobisDistCutoff, ratioThreshold );
+
+			logService.info("Merged the current lineage (A) with "+copyModel.getGraph().vertices().size()
+					+ " vertices and " + copyModel.getGraph().edges().size() +" edges together");
+			logService.info("  with the loaded lineage (B) with "+newModel.getGraph().vertices().size()
+					+ " vertices and " + newModel.getGraph().edges().size() +" edges");
+			logService.info("  to create a new lineage with "+refModel.getGraph().vertices().size()
+					+ " vertices and " + refModel.getGraph().edges().size() +" edges.");
+		}
+		//
+		LineageFiles.finishImportingModel(newModel);
 	}
 }
