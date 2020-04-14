@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 
 @Plugin( type = Command.class, name = "Mastodon ReportProgress plugin" )
 public class ReportProgress
@@ -26,6 +27,9 @@ extends DynamicCommand
 	// ----------------- necessary internal references -----------------
 	@Parameter
 	private LogService logService;
+
+	@Parameter
+	private PrefService prefService;
 
 	@Parameter(persist = false)
 	private MastodonPluginAppModel appModel;
@@ -50,13 +54,9 @@ extends DynamicCommand
 		projectRootFoldername = LineageFiles.getProjectRootFoldername(appModel);
 
 		//try to retrieve the 'lineageFilename' from the preferences
-		final PrefService ps = logService.getContext().getService(PrefService.class);
-		if (ps != null)
-		{
-			//but read it only if there is actually some name already stored!
-			final String newUserName = ps.get(ReportProgress.class,"userName");
-			if (newUserName != null) userName = newUserName;
-		}
+		//but only if there is actually some name already stored!
+		final String newUserName = prefService.get(ReportProgress.class,"userName");
+		if (newUserName != null) userName = newUserName;
 
 		//finally, set up the 'lineageFilename'
 		updateLineageFile();
@@ -108,7 +108,7 @@ extends DynamicCommand
 				logService.info("Saving also to remote URL: "+remoteMonitorURL);
 				FileTransfer.postParticularFile(remoteMonitorURL, model, lineageFilename, projectRootFoldername);
 			}
-		} catch (MalformedURLException e) {
+		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();
 		} catch (ConnectException e) {
 			logService.error("Some connection error:"); e.printStackTrace();

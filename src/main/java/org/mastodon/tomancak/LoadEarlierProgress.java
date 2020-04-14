@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -30,6 +31,9 @@ extends DynamicCommand
 	@Parameter
 	private LogService logService;
 
+	@Parameter
+	private PrefService prefService;
+
 	@Parameter(persist = false)
 	private MastodonPluginAppModel appModel;
 
@@ -41,10 +45,10 @@ extends DynamicCommand
 	//NB: cannot be initialized when the object is created because the 'appModel' would not be yet available
 
 	private
-	boolean isCheckBoxSavedInPreferences(final String attribName, final PrefService ps)
+	boolean isCheckBoxSavedInPreferences(final String attribName)
 	{
-		boolean returnedDefault = ps.getBoolean(LoadEarlierProgress.class, attribName, false) == false;
-		returnedDefault &= ps.getBoolean(LoadEarlierProgress.class, attribName, true) == true;
+		boolean returnedDefault = prefService.getBoolean(LoadEarlierProgress.class, attribName, false) == false;
+		returnedDefault &= prefService.getBoolean(LoadEarlierProgress.class, attribName, true) == true;
 		return !returnedDefault;
 	}
 
@@ -55,20 +59,16 @@ extends DynamicCommand
 		projectRootFoldername = LineageFiles.getProjectRootFoldername(appModel);
 
 		//PrefService is activated only after all initializers are over (because only
-		//then the CommandService sees what's left to be initialized), but we need this value
-		//already during the discoverInputFiles() initializer...
+		//then the CommandService sees what's left to be initialized), but we need some
+		//values already during the discoverInputFiles() initializer...
 		//
 		//try to retrieve the 'readAlsoFromRemoteMonitor' from the preferences
-		final PrefService ps = logService.getContext().getService(PrefService.class);
-		if (ps != null)
-		{
-			//but read it only if there is actually some name already stored!
-			final String newRemoteURL = ps.get(LoadEarlierProgress.class,"remoteMonitorURL");
-			if (newRemoteURL != null) remoteMonitorURL = newRemoteURL;
+		//but only if there is actually some URL already stored!
+		if (isCheckBoxSavedInPreferences("readAlsoFromRemoteMonitor"))
+			readAlsoFromRemoteMonitor = prefService.getBoolean(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",false);
 
-			if (isCheckBoxSavedInPreferences("readAlsoFromRemoteMonitor", ps))
-				readAlsoFromRemoteMonitor = ps.getBoolean(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",false);
-		}
+		final String newRemoteURL = prefService.get(LoadEarlierProgress.class,"remoteMonitorURL");
+		if (newRemoteURL != null) remoteMonitorURL = newRemoteURL;
 
 		discoverInputFiles();
 	}
@@ -112,6 +112,11 @@ extends DynamicCommand
 	{
 		//read choices
 		try {
+			//first, make sure every button toggle is remembered
+			prefService.put(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",readAlsoFromRemoteMonitor);
+			prefService.put(LoadEarlierProgress.class,"remoteMonitorURL",remoteMonitorURL);
+
+			//second, start populating the list of discovered input files
 			final List<String> localOnlyFiles  = new LinkedList<>();
 			final List<String> syncedFiles     = new LinkedList<>();
 			final List<String> remoteOnlyFiles = new LinkedList<>();
@@ -137,13 +142,8 @@ extends DynamicCommand
 			remoteOnlyFiles.forEach( f -> choices.add("Remote only: "+f));
 			//choices.forEach(s -> System.out.println(">>"+s+"<<"));
 
-			//make sure every button toggle is remembered
-			final PrefService ps = logService.getContext().getService(PrefService.class);
-			if (ps != null)
-				ps.put(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",readAlsoFromRemoteMonitor);
-
 			getInfo().getMutableInput("lineageFilename", String.class).setChoices( choices );
-		} catch (MalformedURLException e) {
+		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();
 		} catch (ConnectException e) {
 			logService.error("Some connection error:"); e.printStackTrace();
