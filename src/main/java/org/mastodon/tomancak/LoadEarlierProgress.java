@@ -16,9 +16,11 @@ import org.mastodon.tomancak.net.FileServer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 @Plugin( type = Command.class, name = "Mastodon LoadEarlierProgress plugin" )
 public class LoadEarlierProgress
@@ -39,6 +41,14 @@ extends DynamicCommand
 	//NB: cannot be initialized when the object is created because the 'appModel' would not be yet available
 
 	private
+	boolean isCheckBoxSavedInPreferences(final String attribName, final PrefService ps)
+	{
+		boolean returnedDefault = ps.getBoolean(LoadEarlierProgress.class, attribName, false) == false;
+		returnedDefault &= ps.getBoolean(LoadEarlierProgress.class, attribName, true) == true;
+		return !returnedDefault;
+	}
+
+	private
 	void initialSetupHelper()
 	{
 		//this one cannot be setup at object creation time (appModel was null back then)
@@ -52,8 +62,12 @@ extends DynamicCommand
 		final PrefService ps = logService.getContext().getService(PrefService.class);
 		if (ps != null)
 		{
-			readAlsoFromRemoteMonitor = ps.getBoolean(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",false);
-			remoteMonitorURL = ps.get(LoadEarlierProgress.class,"remoteMonitorURL");
+			//but read it only if there is actually some name already stored!
+			final String newRemoteURL = ps.get(LoadEarlierProgress.class,"remoteMonitorURL");
+			if (newRemoteURL != null) remoteMonitorURL = newRemoteURL;
+
+			if (isCheckBoxSavedInPreferences("readAlsoFromRemoteMonitor", ps))
+				readAlsoFromRemoteMonitor = ps.getBoolean(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",false);
 		}
 
 		discoverInputFiles();
@@ -75,16 +89,37 @@ extends DynamicCommand
 	private String lineageFilename = "none available yet";
 
 	private
+	void enlistNewInputFile(final List<String> localOnlyFiles,
+	                        final List<String> syncedFiles,
+	                        final List<String> remoteOnlyFiles,
+	                        final String newRemoteFile)
+	{
+		if (localOnlyFiles.contains(newRemoteFile))
+		{
+			//_move_ the already known file (from localOnly to Synced)
+			localOnlyFiles.remove(newRemoteFile);
+			syncedFiles.add(newRemoteFile);
+		}
+		else
+		{
+			//_create_ a new known file (in remoteOnly)
+			remoteOnlyFiles.add(newRemoteFile);
+		}
+	}
+
+	private
 	void discoverInputFiles()
 	{
 		//read choices
 		try {
-			final ArrayList<String> choices = new ArrayList<>(50);
+			final List<String> localOnlyFiles  = new LinkedList<>();
+			final List<String> syncedFiles     = new LinkedList<>();
+			final List<String> remoteOnlyFiles = new LinkedList<>();
 
 			//local files
 			logService.info("Reading from "+projectRootFoldername);
 			LineageFiles.listLineageFiles(projectRootFoldername)
-			  .forEach(p -> { choices.add("Local: " + p.getFileName().toString()); });
+			  .forEach(p -> { localOnlyFiles.add(p.getFileName().toString()); });
 
 			//remote files
 			if (readAlsoFromRemoteMonitor)
@@ -92,9 +127,14 @@ extends DynamicCommand
 				remoteMonitorURL = FileTransfer.fixupURL(remoteMonitorURL);
 				logService.info("Reading from "+remoteMonitorURL);
 				FileTransfer.listAvailableFiles(remoteMonitorURL)
-				  .forEach(p -> { choices.add("Remote: " + p); });
+				  .forEach(p -> { enlistNewInputFile(localOnlyFiles,syncedFiles,remoteOnlyFiles,p); });
 			}
 
+			//merge (and prefix) the known input files into a single list
+			final List<String> choices = new ArrayList<>(localOnlyFiles.size()+syncedFiles.size()+remoteOnlyFiles.size());
+			localOnlyFiles.forEach(  f -> choices.add("Local only : "+f));
+			syncedFiles.forEach(     f -> choices.add("Synced     : "+f));
+			remoteOnlyFiles.forEach( f -> choices.add("Remote only: "+f));
 			//choices.forEach(s -> System.out.println(">>"+s+"<<"));
 
 			//make sure every button toggle is remembered
@@ -121,15 +161,10 @@ extends DynamicCommand
 		//bail out if we are started incorrectly, or on wrong input file...
 		if (appModel == null) return;
 
+		final boolean doRemoteRead = lineageFilename.startsWith("Remote");
+
 		//fixup the filename and test it for validity
-		boolean doRemoteRead = false;
-		if (lineageFilename.startsWith("Local:"))
-			lineageFilename = lineageFilename.substring(7);
-		else if (lineageFilename.startsWith("Remote:"))
-		{
-			lineageFilename = lineageFilename.substring(8);
-			doRemoteRead = true;
-		}
+		lineageFilename = lineageFilename.substring(13);
 		if (!LineageFiles.lineageFilePattern.test(lineageFilename)) return;
 
 		/*

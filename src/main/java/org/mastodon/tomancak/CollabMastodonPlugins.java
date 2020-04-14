@@ -28,13 +28,13 @@ import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;
 
 @Plugin( type = MastodonPlugin.class )
-public class TomancakPlugins extends AbstractContextual implements MastodonPlugin
+public class CollabMastodonPlugins extends AbstractContextual implements MastodonPlugin
 {
 	private static final String SAVE_MODEL_SNAPSHOT = "[tomancak] save current lineage";
 	private static final String LOAD_MODEL_SNAPSHOT = "[tomancak] load external lineage";
 
-	private static final String[] SAVE_MODEL_SNAPSHOT_KEYS = { "ctrl S" };
-	private static final String[] LOAD_MODEL_SNAPSHOT_KEYS = { "ctrl L" };
+	private static final String[] SAVE_MODEL_SNAPSHOT_KEYS = { "not mapped" };
+	private static final String[] LOAD_MODEL_SNAPSHOT_KEYS = { "not mapped" };
 
 	private static Map< String, String > menuTexts = new HashMap<>();
 	static
@@ -64,7 +64,7 @@ public class TomancakPlugins extends AbstractContextual implements MastodonPlugi
 	private final AbstractNamedAction saveModelSnapshotAction;
 	private final AbstractNamedAction loadModelSnapshotAction;
 
-	public TomancakPlugins()
+	public CollabMastodonPlugins()
 	{
 		saveModelSnapshotAction = new RunnableAction( SAVE_MODEL_SNAPSHOT, this::saveModelSnapshot );
 		loadModelSnapshotAction = new RunnableAction( LOAD_MODEL_SNAPSHOT, this::loadModelSnapshot );
