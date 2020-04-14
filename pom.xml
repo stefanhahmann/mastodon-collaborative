@@ -11,16 +11,18 @@
 
 	<groupId>org.mastodon</groupId>
 	<artifactId>mastodon-collaborative</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.8.0-SNAPSHOT</version>
 
 	<name>Tomancak Lab Mastodon Plugins</name>
-	<description>Mastodon plugins to foster collaborative annotations in Tomancak lab projects</description>
+	<description>Mastodon plugins to foster collaborative annotations</description>
+	<!-- TODO: Needs to be updated -->
 	<url>https://github.com/xulman/mastodon-collaborative</url>
 	<inceptionYear>2020</inceptionYear>
 	<organization>
 		<name>Mastodon Science</name>
 		<url>http://github.com/mastodon-sc</url>
 	</organization>
+	<!-- TODO: Needs to be updated -->
 	<licenses>
 		<license>
 			<name>Simplified BSD License</name>
@@ -52,27 +54,27 @@
 		</mailingList>
 	</mailingLists>
 
-	<!-- TODO, to be edited later -->
+	<!-- TODO: Needs to be updated -->
 	<scm>
-		<connection>scm:git:git:github.com/mastodon-sc/mastodon-tomancak</connection>
-		<developerConnection>scm:git:git@github.com:mastodon-sc/mastodon-tomancak</developerConnection>
+		<connection>scm:git:git:github.com/xulman/mastodon-collaborative</connection>
+		<developerConnection>scm:git:git@github.com:xulman/mastodon-collaborative</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/mastodon-sc/mastodon-tomancak</url>
+		<url>https://github.com/xulman/mastodon-collaborative</url>
 	</scm>
+	<!-- TODO: Needs to be updated -->
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/mastodon-sc/mastodon-tomancak/issues</url>
+		<url>https://github.com/xulman/mastodon-collaborative/issues</url>
 	</issueManagement>
+	<!-- TODO: Needs to be updated -->
 	<ciManagement>
-		<system>Travis CI</system>
-		<url>https://travis-ci.com/mastodon-sc/mastodon-tomancak</url>
+		<system>None</system>
 	</ciManagement>
 
 	<properties>
 		<package-name>org.mastodon</package-name>
 
-		<enforcer.skip>true</enforcer.skip>
-
+		<!-- TODO: Needs to be updated -->
 		<license.licenseName>not licensed yet</license.licenseName>
 		<license.projectName>mastodon-collaborative</license.projectName>
 		<license.organizationName>Mastodon authors</license.organizationName>
@@ -85,6 +87,7 @@
 		<ui-behaviour.version>2.0.1</ui-behaviour.version>
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<!-- TODO: Needs to be updated -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
 		<enforcer.skip>true</enforcer.skip>
@@ -92,20 +95,25 @@
 
 	<developers>
 		<developer>
+			<id>tpietzsch</id>
+			<name>Tobias Pietzsch</name>
+			<email>pietzsch@mpi-cbg.de</email>
+			<url>http://imagej.net/User:Pietzsch</url>
+			<organization>MPI-CBG</organization>
+			<organizationUrl>http://www.mpi-cbg.de/</organizationUrl>
+			<roles>
+				<role>lead</role>
+				<role>developer</role>
+			</roles>
+		</developer>
+		<developer>
 			<id>xulman</id>
 			<name>Vladimir Ulman</name>
 			<email>ulman@fi.muni.cz</email>
 			<url>http://imagej.net/User:Ulman</url>
 			<organization>IT4Innovation TUO-VSB</organization>
 			<organizationUrl>http://www.it4i.cz/</organizationUrl>
-			<!--
-			<organization>CBIA @ FI MUNI</organization>
-			<organizationUrl>http://www.fi.muni.cz/</organizationUrl>
-			<organization>MPI-CBG</organization>
-			<organizationUrl>http://www.mpi-cbg.de/</organizationUrl>
-			-->
 			<roles>
-				<role>lead</role>
 				<role>developer</role>
 			</roles>
 		</developer>
