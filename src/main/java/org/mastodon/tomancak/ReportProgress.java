@@ -28,6 +28,9 @@ extends DynamicCommand
 	@Parameter
 	private LogService logService;
 
+	@Parameter
+	private PrefService prefService;
+
 	@Parameter(persist = false)
 	private MastodonPluginAppModel appModel;
 
@@ -51,13 +54,9 @@ extends DynamicCommand
 		projectRootFoldername = LineageFiles.getProjectRootFoldername(appModel);
 
 		//try to retrieve the 'lineageFilename' from the preferences
-		final PrefService ps = logService.getContext().getService(PrefService.class);
-		if (ps != null)
-		{
-			//but read it only if there is actually some name already stored!
-			final String newUserName = ps.get(ReportProgress.class,"userName");
-			if (newUserName != null) userName = newUserName;
-		}
+		//but only if there is actually some name already stored!
+		final String newUserName = prefService.get(ReportProgress.class,"userName");
+		if (newUserName != null) userName = newUserName;
 
 		//finally, set up the 'lineageFilename'
 		updateLineageFile();

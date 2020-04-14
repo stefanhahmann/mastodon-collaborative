@@ -19,6 +19,7 @@ import net.imagej.ImageJ;
 import org.scijava.AbstractContextual;
 import org.scijava.command.CommandService;
 import org.scijava.log.LogService;
+import org.scijava.prefs.PrefService;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
@@ -115,7 +116,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 	{
 		this.getContext().getService(CommandService.class).run(
 			ReportProgress.class, true,
-			"logService", this.getContext().getService(LogService.class),
+			"logService",  this.getContext().getService(LogService.class),
+			"prefService", this.getContext().getService(PrefService.class),
 			"appModel", pluginAppModel
 		);
 	}
@@ -125,7 +127,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 	{
 		this.getContext().getService(CommandService.class).run(
 			LoadEarlierProgress.class, true,
-			"logService", this.getContext().getService(LogService.class),
+			"logService",  this.getContext().getService(LogService.class),
+			"prefService", this.getContext().getService(PrefService.class),
 			"appModel", pluginAppModel
 		);
 	}
