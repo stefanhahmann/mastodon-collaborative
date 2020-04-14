@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 
 @Plugin( type = Command.class, name = "Mastodon ReportProgress plugin" )
 public class ReportProgress
@@ -108,7 +109,7 @@ extends DynamicCommand
 				logService.info("Saving also to remote URL: "+remoteMonitorURL);
 				FileTransfer.postParticularFile(remoteMonitorURL, model, lineageFilename, projectRootFoldername);
 			}
-		} catch (MalformedURLException e) {
+		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();
 		} catch (ConnectException e) {
 			logService.error("Some connection error:"); e.printStackTrace();

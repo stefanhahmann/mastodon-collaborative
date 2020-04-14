@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -112,6 +113,12 @@ extends DynamicCommand
 	{
 		//read choices
 		try {
+			//first, make sure every button toggle is remembered
+			final PrefService ps = logService.getContext().getService(PrefService.class);
+			if (ps != null)
+				ps.put(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",readAlsoFromRemoteMonitor);
+
+			//second, start populating the list of discovered input files
 			final List<String> localOnlyFiles  = new LinkedList<>();
 			final List<String> syncedFiles     = new LinkedList<>();
 			final List<String> remoteOnlyFiles = new LinkedList<>();
@@ -137,13 +144,8 @@ extends DynamicCommand
 			remoteOnlyFiles.forEach( f -> choices.add("Remote only: "+f));
 			//choices.forEach(s -> System.out.println(">>"+s+"<<"));
 
-			//make sure every button toggle is remembered
-			final PrefService ps = logService.getContext().getService(PrefService.class);
-			if (ps != null)
-				ps.put(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",readAlsoFromRemoteMonitor);
-
 			getInfo().getMutableInput("lineageFilename", String.class).setChoices( choices );
-		} catch (MalformedURLException e) {
+		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();
 		} catch (ConnectException e) {
 			logService.error("Some connection error:"); e.printStackTrace();
