@@ -148,8 +148,5 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 
 		final Mastodon mastodon = (Mastodon)ij.command().run(Mastodon.class, true).get().getCommand();
 		mastodon.setExitOnClose();
-		mastodon.openProject( new MamutProject(
-			new File( "/Users/ulman/data/p_Johannes/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.mastodon" ),
-			new File( "/Users/ulman/data/p_Johannes/Polyclad/2019-09-06_EcNr2_NLSH2B-GFP_T-OpenSPIM_singleTP.xml" ) ) );
 	}
 }
