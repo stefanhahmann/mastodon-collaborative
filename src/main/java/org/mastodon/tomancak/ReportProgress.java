@@ -110,11 +110,13 @@ extends DynamicCommand
 			}
 		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();
+			return;
 		} catch (ConnectException e) {
 			logService.error("Some connection error:"); e.printStackTrace();
+			return;
 		} catch (IOException e) {
-			logService.error("Failed saving the lineage file!");
-			e.printStackTrace();
+			logService.error("Failed saving the lineage file!"); e.printStackTrace();
+			return;
 		}
 
 		logService.info("Saved lineage with "+model.getGraph().vertices().size()

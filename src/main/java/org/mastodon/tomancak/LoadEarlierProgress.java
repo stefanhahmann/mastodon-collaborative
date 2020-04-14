@@ -194,11 +194,13 @@ extends DynamicCommand
 			LineageFiles.loadLineageFileIntoModel(lineageFullFilename, newModel);
 		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();
+			return;
 		} catch (ConnectException e) {
 			logService.error("Some connection error:"); e.printStackTrace();
+			return;
 		} catch (IOException e) {
-			logService.error("Failed loading the lineage file!");
-			e.printStackTrace();
+			logService.error("Failed loading the lineage file!"); e.printStackTrace();
+			return;
 		}
 
 		if (actionWithNewFile.startsWith("Replace"))
