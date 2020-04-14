@@ -114,6 +114,7 @@ extends DynamicCommand
 		try {
 			//first, make sure every button toggle is remembered
 			prefService.put(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",readAlsoFromRemoteMonitor);
+			prefService.put(LoadEarlierProgress.class,"remoteMonitorURL",remoteMonitorURL);
 
 			//second, start populating the list of discovered input files
 			final List<String> localOnlyFiles  = new LinkedList<>();
