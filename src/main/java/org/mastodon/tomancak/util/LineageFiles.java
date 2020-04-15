@@ -7,6 +7,7 @@ import org.mastodon.revised.model.mamut.Model;
 
 import java.io.IOException;
 import java.io.File;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,7 +61,7 @@ public class LineageFiles
 	Stream<Path> listLineageFiles(final String parentFolder) throws IOException
 	{
 		return Files
-			.walk(Paths.get(parentFolder),1)
+			.walk(Paths.get(parentFolder),1,FileVisitOption.FOLLOW_LINKS)
 			.filter( p -> lineageFilePattern.test(p.getFileName().toString()) );
 	}
 
