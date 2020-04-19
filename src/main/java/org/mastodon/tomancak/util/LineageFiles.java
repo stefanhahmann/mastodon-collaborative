@@ -2,8 +2,8 @@ package org.mastodon.tomancak.util;
 
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.project.MamutProject;
-import org.mastodon.revised.model.AbstractModelImporter;
 import org.mastodon.revised.model.mamut.Model;
+import org.mastodon.revised.model.mamut.ModelImporter;
 
 import java.io.IOException;
 import java.io.File;
@@ -76,13 +76,13 @@ public class LineageFiles
 	static public
 	void startImportingModel(final Model model)
 	{
-		new AbstractModelImporter<Model>( model ){{ startImport(); }};
+		new ModelImporter( model ){{ startImport(); }};
 	}
 
 	static public
 	void finishImportingModel(final Model model)
 	{
-		new AbstractModelImporter< Model >( model ){{ finishImport(); }};
+		new ModelImporter( model ){{ finishImport(); }};
 	}
 
 	static public

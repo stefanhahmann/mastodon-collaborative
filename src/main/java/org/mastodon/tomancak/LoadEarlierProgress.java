@@ -261,6 +261,7 @@ extends DynamicCommand
 					+ " vertices and " + refModel.getGraph().edges().size() +" edges.");
 		}
 		//
+		refModel.getGraph().notifyGraphChanged();
 		LineageFiles.finishImportingModel(newModel);
 	}
 }
