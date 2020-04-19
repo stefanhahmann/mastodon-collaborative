@@ -12,10 +12,9 @@ import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
-import org.mastodon.tomancak.net.FileServer;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -42,10 +41,13 @@ extends DynamicCommand
 
 	@Parameter(label = "Going to write file:",
 		visibility = ItemVisibility.MESSAGE, required = false, persist = false)
-	private String lineageFullFilename;
+	private String lineageFullFilenameStr; //printed representation of the Path just below
+	private  Path  lineageFullFilename;
 
 	//cannot be initialized when the object is created because the 'appModel' would not be yet available
-	private String projectRootFoldername;
+	private  Path  projectRootFoldername;
+
+	//a file name (without the path) as a derivative of the current 'userName'
 	private String lineageFilename;
 
 	private
@@ -66,7 +68,8 @@ extends DynamicCommand
 	void updateLineageFile()
 	{
 		lineageFilename = LineageFiles.lineageFilename(userName);
-		lineageFullFilename = projectRootFoldername + File.separator + lineageFilename;
+		lineageFullFilename = projectRootFoldername.resolve(lineageFilename);
+		lineageFullFilenameStr = lineageFullFilename.toString();
 	}
 
 	// ----------------- network options -----------------
@@ -89,7 +92,7 @@ extends DynamicCommand
 		//test if the file can be created at all -- main worry is about
 		//the content of the 'userName' part
 		try {
-			new File(lineageFullFilename).createNewFile();
+			lineageFullFilename.toFile().createNewFile();
 		} catch (IOException e) {
 			logService.error("Cannot create lineage file: "+ lineageFullFilename);
 			e.printStackTrace();

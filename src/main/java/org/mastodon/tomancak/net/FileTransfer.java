@@ -4,12 +4,11 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.net.HttpURLConnection;
 
-import java.nio.file.Paths;
-import java.nio.file.Files;
-import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Files;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -45,12 +44,12 @@ public class FileTransfer
 
 	public static
 	void getParticularFile(final String remoteURL, final String filename,
-	                       final String toThisLocalFolder)
+	                       final Path toThisLocalFolder)
 	throws IOException
 	{
 		Files.copy(
 			new URL(remoteURL + "/files/" + filename).openStream(),
-			Paths.get(toThisLocalFolder + File.separator + filename)
+			toThisLocalFolder.resolve(filename)
 		);
 	}
 
@@ -58,7 +57,7 @@ public class FileTransfer
 	public static
 	void postParticularFile(final String remoteURL, final Model theModelItself,
 	                        final String filenameWithTheModel,
-	                        final String fromThisLocalFolder)
+	                        final Path fromThisLocalFolder)
 	throws IOException
 	{
 		postParticularFile(remoteURL,
@@ -71,7 +70,7 @@ public class FileTransfer
 	public static
 	void postParticularFile(final String remoteURL, final String filename,
 	                        final int spotsCnt, final int linksCnt,
-	                        final String fromThisLocalFolder)
+	                        final Path fromThisLocalFolder)
 	throws IOException
 	{
 		final URL url = new URL(remoteURL
@@ -83,7 +82,7 @@ public class FileTransfer
 		conn.setRequestMethod("POST");
 		conn.setDoOutput(true);
 		Files.copy(
-			Paths.get(fromThisLocalFolder + File.separator + filename),
+			fromThisLocalFolder.resolve(filename),
 			conn.getOutputStream()
 		);
 

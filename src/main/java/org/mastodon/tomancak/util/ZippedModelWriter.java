@@ -5,15 +5,16 @@ import org.mastodon.project.WriteZip;
 
 import java.io.OutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class ZippedModelWriter implements MamutProject.ProjectWriter
 {
 	/** the main output source */
 	private WriteZip zip;
 
-	public ZippedModelWriter(final String filename) throws IOException
+	public ZippedModelWriter(final Path filename) throws IOException
 	{
-		zip = new WriteZip(filename);
+		zip = new WriteZip(filename.toFile());
 	}
 
 	@Override

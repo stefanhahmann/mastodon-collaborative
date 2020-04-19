@@ -8,22 +8,22 @@ import org.scijava.command.DynamicCommand;
 import org.scijava.log.LogService;
 import org.scijava.prefs.PrefService;
 import org.scijava.command.CommandService;
-import java.util.concurrent.ExecutionException;
+
+import java.nio.file.Path;
 
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.tomancak.util.MergeModelDialog;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
-import org.mastodon.tomancak.net.FileServer;
 import org.mastodon.tomancak.merging.MergeDatasets;
 import org.mastodon.tomancak.merging.MergeModels;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutionException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -46,7 +46,8 @@ extends DynamicCommand
 	@Parameter(label = "Searching in this folder:",
 		visibility = ItemVisibility.MESSAGE, required = false, persist = false,
 		initializer = "initialSetupHelper")
-	private String projectRootFoldername;
+	private String projectRootFoldernameStr; //printed representation of the Path just below
+	private  Path  projectRootFoldername;
 	//NB: cannot be initialized when the object is created because the 'appModel' would not be yet available
 
 	private
@@ -62,6 +63,7 @@ extends DynamicCommand
 	{
 		//this one cannot be setup at object creation time (appModel was null back then)
 		projectRootFoldername = LineageFiles.getProjectRootFoldername(appModel);
+		projectRootFoldernameStr = projectRootFoldername.toString();
 
 		//PrefService is activated only after all initializers are over (because only
 		//then the CommandService sees what's left to be initialized), but we need some
@@ -91,7 +93,7 @@ extends DynamicCommand
 
 	// ----------------- available file names -----------------
 	@Parameter(label = "Choose from the detected files:", persist = false, choices = {})
-	private String lineageFilename = "none available yet";
+	private String lineageFilenameStr = "none available yet";
 
 	private
 	void enlistNewInputFile(final List<String> localOnlyFiles,
@@ -129,7 +131,7 @@ extends DynamicCommand
 			//local files
 			logService.info("Reading from "+projectRootFoldername);
 			LineageFiles.listLineageFiles(projectRootFoldername)
-			  .forEach(p -> { localOnlyFiles.add(p.getFileName().toString()); });
+			  .forEach( p -> localOnlyFiles.add(p.getFileName().toString()) );
 
 			//remote files
 			if (readAlsoFromRemoteMonitor)
@@ -137,7 +139,7 @@ extends DynamicCommand
 				remoteMonitorURL = FileTransfer.fixupURL(remoteMonitorURL);
 				logService.info("Reading from "+remoteMonitorURL);
 				FileTransfer.listAvailableFiles(remoteMonitorURL)
-				  .forEach(p -> { enlistNewInputFile(localOnlyFiles,syncedFiles,remoteOnlyFiles,p); });
+				  .forEach( p -> enlistNewInputFile(localOnlyFiles,syncedFiles,remoteOnlyFiles,p) );
 			}
 
 			//merge (and prefix) the known input files into a single list
@@ -147,7 +149,7 @@ extends DynamicCommand
 			remoteOnlyFiles.forEach( f -> choices.add("Remote only: "+f));
 			//choices.forEach(s -> System.out.println(">>"+s+"<<"));
 
-			getInfo().getMutableInput("lineageFilename", String.class).setChoices( choices );
+			getInfo().getMutableInput("lineageFilenameStr", String.class).setChoices( choices );
 		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();
 		} catch (ConnectException e) {
@@ -170,11 +172,11 @@ extends DynamicCommand
 		//bail out if we are started incorrectly, or on wrong input file...
 		if (appModel == null) return;
 
-		final boolean doRemoteRead = lineageFilename.startsWith("Remote");
+		final boolean doRemoteRead = lineageFilenameStr.startsWith("Remote");
 
 		//fixup the filename and test it for validity
-		lineageFilename = lineageFilename.substring(13);
-		if (!LineageFiles.lineageFilePattern.test(lineageFilename)) return;
+		lineageFilenameStr = lineageFilenameStr.substring(13);
+		if (!LineageFiles.lineageFilePattern.test(lineageFilenameStr)) return;
 
 		//reference on an existing/old and a new model that shall be filled from the file
 		final Model refModel = appModel.getAppModel().getModel();
@@ -188,11 +190,11 @@ extends DynamicCommand
 		try {
 			if (doRemoteRead) {
 				logService.info("Loading from remote URL: " + remoteMonitorURL);
-				FileTransfer.getParticularFile(remoteMonitorURL, lineageFilename, projectRootFoldername);
+				FileTransfer.getParticularFile(remoteMonitorURL, lineageFilenameStr, projectRootFoldername);
 				//files arrives to the local folder....
 			}
 
-			final String lineageFullFilename = projectRootFoldername + File.separator + lineageFilename;
+			final Path lineageFullFilename = projectRootFoldername.resolve(lineageFilenameStr);
 			logService.info("Loading: " + lineageFullFilename);
 			LineageFiles.loadLineageFileIntoModel(lineageFullFilename, newModel);
 		} catch (MalformedURLException | UnknownHostException e) {
@@ -217,7 +219,10 @@ extends DynamicCommand
 			//merge... but first: need to mine some params!
 			MergeModelDialog mergeParams = null;
 			try {
-				mergeParams = (MergeModelDialog)context().getService(CommandService.class).run(MergeModelDialog.class,true).get().getCommand();
+				mergeParams = (MergeModelDialog)context()
+						.getService(CommandService.class)
+						.run(MergeModelDialog.class,true)
+						.get().getCommand();
 			} catch (InterruptedException | ExecutionException e) {
 				logService.error("Couldn't create or read merging parameters:");
 				e.printStackTrace();
@@ -235,7 +240,7 @@ extends DynamicCommand
 			//duplicate by exporting & importing -- which we sell as backup before the merge...
 			final Model copyModel = LineageFiles.createEmptyModelWithUnitsOf(refModel);
 			try {
-				final String auxBackupFile = projectRootFoldername + File.separator + "backupCurrentLineageBeforeMerge.mstdn";
+				final Path auxBackupFile = projectRootFoldername.resolve("backupCurrentLineageBeforeMerge.mstdn");
 				LineageFiles.saveModelIntoLineageFile(refModel, auxBackupFile);
 				LineageFiles.loadLineageFileIntoModel(auxBackupFile, copyModel);
 			} catch (IOException e) {

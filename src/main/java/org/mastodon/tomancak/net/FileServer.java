@@ -1,7 +1,11 @@
 package org.mastodon.tomancak.net;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.net.URLDecoder;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.Map;
@@ -17,7 +21,7 @@ public class FileServer
 {
 	public FileServer(final String filesRootFolder, final String hostname, final int port)
 	{
-		this.filesRootFolder = filesRootFolder;
+		this.filesRootFolder = Paths.get(filesRootFolder);
 
 		HttpHandler h = Handlers.path()
 		  .addPrefixPath("/put",   fileUploadHandler())
@@ -40,11 +44,11 @@ public class FileServer
 	}
 
 
-	final String filesRootFolder;
+	final Path filesRootFolder;
 
 	HttpHandler filePrettyListingHandler()
 	{
-		return Handlers.resource(new PathResourceManager(Paths.get(filesRootFolder)))
+		return Handlers.resource(new PathResourceManager(filesRootFolder))
 		         .setDirectoryListingEnabled(true);
 	}
 
@@ -102,7 +106,7 @@ public class FileServer
 
 				OutputStream fos
 				  = new BufferedOutputStream(
-				    new FileOutputStream(filesRootFolder+File.separator+nameValue) );
+				    new FileOutputStream(filesRootFolder.resolve(nameValue).toFile()) );
 
 				exchange.startBlocking();
 				exchange.getRequestReceiver().receivePartialBytes( (ex,bytes,flag) -> {

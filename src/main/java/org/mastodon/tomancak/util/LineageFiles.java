@@ -32,24 +32,18 @@ public class LineageFiles
 
 
 	static public
-	String getProjectRootFoldername(final MastodonPluginAppModel pluginAppModel)
+	Path getProjectRootFoldername(final MastodonPluginAppModel pluginAppModel)
 	{
 		return getProjectRootFoldername(pluginAppModel.getWindowManager().getProjectManager().getProject());
 	}
 
 	static public
-	String getProjectRootFoldername(final MamutProject mp)
+	Path getProjectRootFoldername(final MamutProject mp)
 	{
 		final File pRoot = mp.getProjectRoot();
-		return pRoot.isDirectory()? pRoot.getAbsolutePath() : pRoot.getParentFile().getAbsolutePath();
+		return pRoot.isDirectory()? pRoot.toPath() : pRoot.getParentFile().toPath();
 	}
 
-
-	static public
-	String lineageFilename(final String parentFolder, final String userName)
-	{
-		return (parentFolder + File.separator + lineageFilename(userName));
-	}
 
 	static public
 	String lineageFilename(final String userName)
@@ -58,10 +52,10 @@ public class LineageFiles
 	}
 
 	static public
-	Stream<Path> listLineageFiles(final String parentFolder) throws IOException
+	Stream<Path> listLineageFiles(final Path parentFolder) throws IOException
 	{
 		return Files
-			.walk(Paths.get(parentFolder),1,FileVisitOption.FOLLOW_LINKS)
+			.walk(parentFolder,1,FileVisitOption.FOLLOW_LINKS)
 			.filter( p -> lineageFilePattern.test(p.getFileName().toString()) );
 	}
 
@@ -99,7 +93,7 @@ public class LineageFiles
 
 
 	static public
-	void loadLineageFileIntoModel(final String filename, final Model model)
+	void loadLineageFileIntoModel(final Path filename, final Model model)
 	throws IOException
 	{
 		final ZippedModelReader reader = new ZippedModelReader(filename);
@@ -108,7 +102,7 @@ public class LineageFiles
 	}
 
 	static public
-	void saveModelIntoLineageFile(final Model model, final String filename)
+	void saveModelIntoLineageFile(final Model model, final Path filename)
 	throws IOException
 	{
 		final ZippedModelWriter writer = new ZippedModelWriter(filename);
