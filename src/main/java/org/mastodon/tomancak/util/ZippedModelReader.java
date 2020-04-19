@@ -5,6 +5,7 @@ import org.mastodon.project.ReadZip;
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 
 public class ZippedModelReader implements MamutProject.ProjectReader
@@ -12,9 +13,9 @@ public class ZippedModelReader implements MamutProject.ProjectReader
 	/** the main input source */
 	private ReadZip zip;
 
-	public ZippedModelReader(final String filename) throws IOException
+	public ZippedModelReader(final Path filename) throws IOException
 	{
-		zip = new ReadZip(filename);
+		zip = new ReadZip(filename.toFile());
 	}
 
 	@Override
