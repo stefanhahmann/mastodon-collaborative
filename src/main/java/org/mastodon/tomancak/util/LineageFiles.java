@@ -24,11 +24,11 @@ public class LineageFiles
 	// --------------- files names handling methods ---------------
 	static public
 	final SimpleDateFormat dateFormatter
-		= new SimpleDateFormat("yyyy-MM-dd__HH:mm:ss__");
+		= new SimpleDateFormat("yyyy-MM-dd__HH-mm-ss__");
 
 	static public
 	final Predicate<String> lineageFilePattern
-		= Pattern.compile("[2-9][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]__[012][0-9]:[0-5][0-9]:[0-5][0-9]__.*\\.mstdn").asPredicate();
+		= Pattern.compile("[2-9][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]__[012][0-9]-[0-5][0-9]-[0-5][0-9]__.*\\.mstdn").asPredicate();
 
 
 	static public
