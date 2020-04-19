@@ -34,12 +34,12 @@
 		<dependency>
 			<groupId>org.mastodon</groupId>
 			<artifactId>mastodon</artifactId>
-			<version>1.0.0-beta-17-SNAPSHOT</version>
+			<version>1.0.0-beta-15-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mastodon</groupId>
 			<artifactId>mastodon-tomancak</artifactId>
-			<version>0.1.2-SNAPSHOT</version>
+			<version>0.1.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>io.undertow</groupId>
@@ -85,11 +85,6 @@
 		<license.organizationName>Mastodon authors</license.organizationName>
 		<license.copyrightOwners>Tobias Pietzsch</license.copyrightOwners>
 		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
-
-		<bigdataviewer-core.version>9.0.1</bigdataviewer-core.version>
-		<bigdataviewer-vistools.version>1.0.0-beta-20</bigdataviewer-vistools.version>
-		<spim_data.version>2.2.4</spim_data.version>
-		<ui-behaviour.version>2.0.1</ui-behaviour.version>
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<!-- TODO: Needs to be updated -->
