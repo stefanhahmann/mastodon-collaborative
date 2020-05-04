@@ -27,7 +27,7 @@ public class FileServer
 		  .addPrefixPath("/put",   fileUploadHandler())
 		  .addPrefixPath("/list",  fileSkinnyListingHandler())
 		  .addPrefixPath("/files", filePrettyListingHandler())
-		  .addPrefixPath("/",      filePrettyListingHandler());
+		  .addPrefixPath("/",      helpListingHandler());
 
 		Undertow server = Undertow.builder()
 		  .addHttpListener(port, hostname)
@@ -117,6 +117,51 @@ public class FileServer
 
 				fos.close();
 				System.out.println("Just stored: " + nameValue + " (" + noOfSpots + "," + noOfLinks + ")");
+			}
+		};
+	}
+
+	HttpHandler helpListingHandler()
+	{
+		return new HttpHandler() {
+			static final char newLine = '\n';
+			final StringBuilder sb = new StringBuilder();
+
+			void writeLine(final String l)
+			{ sb.append(l); sb.append(newLine); }
+
+			{
+				writeLine("Listings:");
+				writeLine("---------");
+				writeLine("/\t-- accessing root folder of the server prints this help");
+				writeLine("/files\t-- lists all files and folders that the server sees");
+				writeLine("/list\t-- lists all snapshot files (files matching the specific filename syntax) that the server sees");
+				writeLine("\t-- printed in plain text, one file per row");
+
+				writeLine(newLine+"Download/Upload:");
+				writeLine(        "----------------");
+				writeLine("/snapshot.mstdn -- downloads the 'snapshot.mstdn' file from the server");
+				writeLine("/put?name=snapshot.mstdn&spots=100&links=99");
+				writeLine("\t-- uploads a file to the server via the POST method");
+				writeLine("\t-- parameters name, spots, links are mandatory");
+				writeLine("\t\tname -- specifies the name under which the uploaded file will be saved");
+				writeLine("\t\t     -- the file should be some snapshot file, here 'snapshot.mstdn'");
+				writeLine("\t\tspots -- specifies the number of spots in the uploaded snapshot");
+				writeLine("\t\tlinks -- specifies the number of links in the uploaded snapshot");
+				writeLine("\t\t      -- both spots and links are here to avoid scanning the content of the snapshot file");
+
+				writeLine(newLine+"Details:");
+				writeLine(        "--------");
+				writeLine("snapshot.mstdn -- includes (only) a complete lineage as of given point in time from a certain user");
+				writeLine("               -- collection of these from one user shows her annotation progress");
+				writeLine("               -- here, it is a simplified substitute name for a properly named files");
+				writeLine("proper syntax is: YYYY-MM-DD__HH-MM-SS__userIdentifingAnyString.mstdn");
+			}
+
+			@Override
+			public void handleRequest(HttpServerExchange exchange) throws Exception
+			{
+				exchange.getResponseSender().send(sb.toString());
 			}
 		};
 	}
