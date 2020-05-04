@@ -12,6 +12,7 @@ import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
+import org.mastodon.tomancak.net.FileServer;
 
 import java.io.IOException;
 import java.nio.file.Path;
