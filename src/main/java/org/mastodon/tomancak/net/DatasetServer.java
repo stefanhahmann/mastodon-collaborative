@@ -72,6 +72,25 @@ public class DatasetServer
 			@Override
 			public void handleRequest(HttpServerExchange exchange)
 			{
+				final String datasetStr = extractDatasetString(exchange);
+				if (datasetStr == null) { respondERROR(exchange); return; }
+
+				//which folder shall be created
+				final Path datasetPath = datasetsRootFolder.resolve(datasetStr);
+
+				//filesystem stuff
+				if (datasetPath.toFile().exists() || !datasetPath.toFile().mkdir())
+				{
+					//the folder already exist or cannot be created
+					respondERROR(exchange);
+					return;
+				}
+
+				//HTTP stuff
+				requestsRooter.addPrefixPath("/"+datasetStr, FileServer.createDatasetHttpHandler(datasetPath));
+
+				System.out.println("Created a dataset handler for files in "+datasetPath);
+				respondOK(exchange);
 			}
 		};
 	}
@@ -82,8 +101,78 @@ public class DatasetServer
 			@Override
 			public void handleRequest(HttpServerExchange exchange) throws Exception
 			{
+				final String datasetStr = extractDatasetString(exchange);
+				if (datasetStr == null) { respondERROR(exchange); return; }
+
+				//which folder shall be removed
+				final Path datasetPath = datasetsRootFolder.resolve(datasetStr);
+
+				//filesystem stuff
+				if (!datasetPath.toFile().exists())
+				{
+					//the folder does not exist
+					respondERROR(exchange);
+					return;
+				}
+
+				// delete recursively (with counting): create a stream
+				Stream<Path> files = Files.walk(datasetPath);
+
+				class deleteAndCount
+				{
+					long filesCnt = 0;
+					long foldersCnt = 0;
+					void delete(final File f)
+					{
+						foldersCnt += f.isDirectory() && f.delete() ? 1 : 0;
+						filesCnt   += f.isFile() && f.delete() ? 1 : 0;
+					}
+				}
+				deleteAndCount DAC = new deleteAndCount();
+
+				// delete directory including files and sub-folders
+				files.sorted(Comparator.reverseOrder())
+				  .map(Path::toFile)
+				  .forEach(DAC::delete);
+
+				// close the stream
+				files.close();
+
+				//HTTP stuff
+				requestsRooter.removePrefixPath("/"+datasetStr);
+
+				System.out.println("Removed a dataset handler and "+DAC.foldersCnt+" folders and "+DAC.filesCnt+" files in "+datasetPath);
+				respondOK(exchange);
 			}
 		};
+	}
+
+	String extractDatasetString(final HttpServerExchange exchange)
+	{
+		String dataset = exchange.getRelativePath();
+		System.out.println("Processing request: "+dataset);
+
+		if (dataset.length() <= 1)
+		{
+			System.out.println("Requested to manage a dataset without giving its name.");
+			return null;
+		}
+
+		int nextSlashPos = dataset.indexOf('/',1);
+		dataset = nextSlashPos < 0 ? dataset.substring(1) : dataset.substring(1,nextSlashPos);
+
+		System.out.println("Extracted  DATASET: "+dataset);
+		return dataset;
+	}
+
+	void respondOK(final HttpServerExchange exchange)
+	{
+		exchange.getResponseSender().send("OK");
+	}
+
+	void respondERROR(final HttpServerExchange exchange)
+	{
+		exchange.getResponseSender().send("ERROR ");
 	}
 
 
