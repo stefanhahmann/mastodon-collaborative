@@ -1,6 +1,7 @@
 package org.mastodon.tomancak.net;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,6 +52,23 @@ public class DatasetServer
 
 		System.out.println("Starting server "+hostname+":"+port+" over "+datasetsRootFolder);
 		server.start();
+
+		//check if there are already any folders/datasets in there and register FileServer handlers for them
+		try {
+			Stream<Path> datasetFolders = Files.walk(this.datasetsRootFolder,1);
+			datasetFolders.forEach( datasetPath -> {
+				//double-check that the item is really an existing folder,
+				//and filter out our own root folder (e.q. '.' folder on Unixes)
+				final File datasetAsFile = datasetPath.toFile();
+				if (datasetAsFile.isDirectory() && !this.datasetsRootFolder.equals(datasetPath))
+				{
+					final String datasetStr = datasetAsFile.getName();
+					requestsRooter.addPrefixPath("/"+datasetStr, FileServer.createDatasetHttpHandler(datasetPath));
+					System.out.println("Auto-created a dataset handler for files in "+datasetPath);
+				}
+			});
+			datasetFolders.close();
+		} catch (IOException e) { /* just ignore errors */ }
 	}
 
 	/** actually starts the server at default hostname and port */
