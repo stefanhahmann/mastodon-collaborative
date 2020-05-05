@@ -39,9 +39,10 @@ public class DatasetServer
 		this.datasetsRootFolder = Paths.get(datasetsRootFolder);
 
 		requestsRooter = Handlers.path()
-		  .addPrefixPath("/add",    addDatasetHandler())
-		  .addPrefixPath("/remove", removeDatasetHandler())
-		  .addExactPath( "/",       helpListingHandler());
+		  .addPrefixPath("/add",       addDatasetHandler(false))
+		  .addPrefixPath("/addSecret", addDatasetHandler(true))
+		  .addPrefixPath("/remove",    removeDatasetHandler())
+		  .addExactPath( "/",          helpListingHandler());
 
 		Undertow server = Undertow.builder()
 		  .addHttpListener(port, hostname)
@@ -66,14 +67,16 @@ public class DatasetServer
 	final Path datasetsRootFolder;
 	final PathHandler requestsRooter;
 
-	HttpHandler addDatasetHandler()
+	HttpHandler addDatasetHandler(final boolean prefixWithSecret)
 	{
 	    return new HttpHandler() {
 			@Override
 			public void handleRequest(HttpServerExchange exchange)
 			{
-				final String datasetStr = extractDatasetString(exchange);
+				String datasetStr = extractDatasetString(exchange);
 				if (datasetStr == null) { respondERROR(exchange); return; }
+
+				if (prefixWithSecret) datasetStr = java.util.UUID.randomUUID().toString() +'-'+ datasetStr;
 
 				//which folder shall be created
 				final Path datasetPath = datasetsRootFolder.resolve(datasetStr);
@@ -82,6 +85,7 @@ public class DatasetServer
 				if (datasetPath.toFile().exists() || !datasetPath.toFile().mkdir())
 				{
 					//the folder already exist or cannot be created
+					System.out.println("Refused to create a dataset handler for files in "+datasetPath);
 					respondERROR(exchange);
 					return;
 				}
@@ -90,7 +94,8 @@ public class DatasetServer
 				requestsRooter.addPrefixPath("/"+datasetStr, FileServer.createDatasetHttpHandler(datasetPath));
 
 				System.out.println("Created a dataset handler for files in "+datasetPath);
-				respondOK(exchange);
+				exchange.getResponseSender().send(datasetStr);
+				//respondOK(exchange);
 			}
 		};
 	}
@@ -111,6 +116,7 @@ public class DatasetServer
 				if (!datasetPath.toFile().exists())
 				{
 					//the folder does not exist
+					System.out.println("Refused to remove a dataset handler for files in "+datasetPath);
 					respondERROR(exchange);
 					return;
 				}
@@ -194,8 +200,12 @@ public class DatasetServer
 				writeLine(newLine+"Dataset management:");
 				writeLine(        "-------------------");
 				writeLine("/add/DATASET\t-- adds a new DATASET to this server");
+				writeLine("            \t-- returns either DATASET or ERROR textual response");
+				writeLine("/addSecret/DATASET\t-- creates random (and hard to guess) PREFIX sequence");
+				writeLine("                  \t-- adds a PREFIX-DATASET to this server");
+				writeLine("                  \t-- returns either PREFIX-DATASET or ERROR textual response");
 				writeLine("/remove/DATASET\t-- removes DATASET from this server");
-				writeLine("               \t-- both operations always return either OK or ERROR textual response");
+				writeLine("               \t-- returns either OK or ERROR textual response");
 
 				writeLine(newLine+"Dataset operations:");
 				writeLine(        "-------------------");
