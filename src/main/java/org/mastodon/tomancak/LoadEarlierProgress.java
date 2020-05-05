@@ -16,7 +16,7 @@ import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.tomancak.util.MergeModelDialog;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
-import org.mastodon.tomancak.net.FileServer;
+import org.mastodon.tomancak.net.DatasetServer;
 import org.mastodon.tomancak.merging.MergeDatasets;
 import org.mastodon.tomancak.merging.MergeModels;
 
@@ -89,7 +89,7 @@ extends DynamicCommand
 
 	@Parameter(label = "URL address of the remote monitor:",
 		description = "This entry is ignored if the above is not checked.")
-	private String remoteMonitorURL = "setHereServerAddress:"+ FileServer.defaultPort;
+	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
 
 
 	// ----------------- available file names -----------------

@@ -6,44 +6,43 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.Map;
 
 import io.undertow.Handlers;
-import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.resource.PathResourceManager;
+
 import org.mastodon.tomancak.util.LineageFiles;
 
 public class FileServer
 {
-	public FileServer(final String filesRootFolder, final String hostname, final int port)
+	// --------------------- given dataset handling chain ---------------------
+	/** intentionally private to prevent creating this object without an associated HttpHandler,
+	    use createDatasetHttpHandler() instead */
+	private FileServer(final Path filesRootFolder)
 	{
-		this.filesRootFolder = Paths.get(filesRootFolder);
+		this.filesRootFolder = filesRootFolder;
+	}
 
-		HttpHandler h = Handlers.path()
+	HttpHandler createHttpHandler()
+	{
+		return Handlers.path()
 		  .addPrefixPath("/put",   fileUploadHandler())
 		  .addPrefixPath("/list",  fileSkinnyListingHandler())
 		  .addPrefixPath("/files", filePrettyListingHandler())
-		  .addPrefixPath("/",      helpListingHandler());
-
-		Undertow server = Undertow.builder()
-		  .addHttpListener(port, hostname)
-		  .setHandler(h)
-		  .build();
-
-		System.out.println("Starting server "+hostname+":"+port+" over "+filesRootFolder);
-		server.start();
+		  .addExactPath( "/",      helpListingHandler());
 	}
 
-	public FileServer(final String filesRootFolder)
+	public static
+	HttpHandler createDatasetHttpHandler(final Path filesRootFolder)
 	{
-		this(filesRootFolder,"localhost",defaultPort);
+		return new FileServer(filesRootFolder).createHttpHandler();
 	}
 
 
+	// --------------------- files management ---------------------
 	final Path filesRootFolder;
 
 	HttpHandler filePrettyListingHandler()
@@ -121,6 +120,8 @@ public class FileServer
 		};
 	}
 
+
+	// --------------------- help listing and aux/helper methods ---------------------
 	HttpHandler helpListingHandler()
 	{
 		return new HttpHandler() {
@@ -140,12 +141,12 @@ public class FileServer
 
 				writeLine(newLine+"Download/Upload:");
 				writeLine(        "----------------");
-				writeLine("/snapshot.mstdn -- downloads the 'snapshot.mstdn' file from the server");
+				writeLine("/files/snapshot.mstdn -- downloads the 'snapshot.mstdn' file from the server");
 				writeLine("/put?name=snapshot.mstdn&spots=100&links=99");
 				writeLine("\t-- uploads a file to the server via the POST method");
 				writeLine("\t-- parameters name, spots, links are mandatory");
-				writeLine("\t\tname -- specifies the name under which the uploaded file will be saved");
-				writeLine("\t\t     -- the file should be some snapshot file, here 'snapshot.mstdn'");
+				writeLine("\t\tname  -- specifies the name under which the uploaded file will be saved");
+				writeLine("\t\t      -- the file should be some snapshot file, here 'snapshot.mstdn'");
 				writeLine("\t\tspots -- specifies the number of spots in the uploaded snapshot");
 				writeLine("\t\tlinks -- specifies the number of links in the uploaded snapshot");
 				writeLine("\t\t      -- both spots and links are here to avoid scanning the content of the snapshot file");
@@ -159,16 +160,12 @@ public class FileServer
 			}
 
 			@Override
-			public void handleRequest(HttpServerExchange exchange) throws Exception
+			public void handleRequest(HttpServerExchange exchange)
 			{
 				exchange.getResponseSender().send(sb.toString());
 			}
 		};
 	}
-
-
-	/** the default port if none is provided to start a server */
-	public static final int defaultPort = 7070;
 
 	/**
 	 * requires/collects and formats the mandatory data into
@@ -178,22 +175,5 @@ public class FileServer
 	String fileUploadQueryStringCreate(final String name, final int spotsCnt, final int linksCnt)
 	{
 		return String.format("?name=%s&spots=%d&links=%d",name,spotsCnt,linksCnt);
-	}
-
-
-	public static void main(final String[] args)
-	{
-		if (args.length < 1 || args.length > 3)
-		{
-			System.out.println("I need these arguments: filesRootFolder [hostname [port]]");
-			return;
-		}
-
-		if (args.length == 1)
-			new FileServer(args[0]);
-		else if (args.length == 2)
-			new FileServer(args[0], args[1], defaultPort);
-		else
-			new FileServer(args[0], args[1], Integer.parseInt(args[2]));
 	}
 }
