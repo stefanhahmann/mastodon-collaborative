@@ -82,6 +82,10 @@ extends DynamicCommand
 		description = "This entry is ignored if the above is not checked.")
 	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
 
+	@Parameter(label = "Project name on the remote monitor:",
+			description = "This entry is ignored if the above is not checked.")
+	private String projectName = "setHereProjectName";
+
 
 	// ----------------- implementation -----------------
 	@Override
@@ -109,8 +113,9 @@ extends DynamicCommand
 			if (sendAlsoToRemoteMonitor)
 			{
 				remoteMonitorURL = FileTransfer.fixupURL(remoteMonitorURL);
-				logService.info("Saving also to remote URL: "+remoteMonitorURL);
-				FileTransfer.postParticularFile(remoteMonitorURL, model, lineageFilename, projectRootFoldername);
+				final String URL = remoteMonitorURL + "/" + projectName;
+				logService.info("Saving also to remote URL: "+URL);
+				FileTransfer.postParticularFile(URL, model, lineageFilename, projectRootFoldername);
 			}
 		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();

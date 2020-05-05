@@ -75,8 +75,10 @@ extends DynamicCommand
 		if (isCheckBoxSavedInPreferences("readAlsoFromRemoteMonitor"))
 			readAlsoFromRemoteMonitor = prefService.getBoolean(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",false);
 
-		final String newRemoteURL = prefService.get(LoadEarlierProgress.class,"remoteMonitorURL");
-		if (newRemoteURL != null) remoteMonitorURL = newRemoteURL;
+		String helperURL = prefService.get(LoadEarlierProgress.class,"remoteMonitorURL");
+		if (helperURL != null) remoteMonitorURL = helperURL;
+		helperURL = prefService.get(LoadEarlierProgress.class,"projectName");
+		if (helperURL != null) projectName = helperURL;
 
 		discoverInputFiles();
 	}
@@ -90,6 +92,10 @@ extends DynamicCommand
 	@Parameter(label = "URL address of the remote monitor:",
 		description = "This entry is ignored if the above is not checked.")
 	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
+
+	@Parameter(label = "Project name on the remote monitor:",
+			description = "This entry is ignored if the above is not checked.")
+	private String projectName = "setHereProjectName";
 
 
 	// ----------------- available file names -----------------
@@ -123,6 +129,7 @@ extends DynamicCommand
 			//first, make sure every button toggle is remembered
 			prefService.put(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",readAlsoFromRemoteMonitor);
 			prefService.put(LoadEarlierProgress.class,"remoteMonitorURL",remoteMonitorURL);
+			prefService.put(LoadEarlierProgress.class,"projectName",projectName);
 
 			//second, start populating the list of discovered input files
 			final List<String> localOnlyFiles  = new LinkedList<>();
@@ -138,8 +145,9 @@ extends DynamicCommand
 			if (readAlsoFromRemoteMonitor)
 			{
 				remoteMonitorURL = FileTransfer.fixupURL(remoteMonitorURL);
-				logService.info("Reading from "+remoteMonitorURL);
-				FileTransfer.listAvailableFiles(remoteMonitorURL)
+				final String URL = remoteMonitorURL + "/" + projectName;
+				logService.info("Reading from "+URL);
+				FileTransfer.listAvailableFiles(URL)
 				  .forEach( p -> enlistNewInputFile(localOnlyFiles,syncedFiles,remoteOnlyFiles,p) );
 			}
 
@@ -190,8 +198,9 @@ extends DynamicCommand
 		//
 		try {
 			if (doRemoteRead) {
-				logService.info("Loading from remote URL: " + remoteMonitorURL);
-				FileTransfer.getParticularFile(remoteMonitorURL, lineageFilenameStr, projectRootFoldername);
+				final String URL = remoteMonitorURL + "/" + projectName;
+				logService.info("Loading from remote URL: " + URL);
+				FileTransfer.getParticularFile(URL, lineageFilenameStr, projectRootFoldername);
 				//files arrives to the local folder....
 			}
 
