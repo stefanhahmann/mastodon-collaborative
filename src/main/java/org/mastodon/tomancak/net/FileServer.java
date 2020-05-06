@@ -86,9 +86,9 @@ public class FileServer
 				final Deque<String> _noOfSpots = params.get("spots");
 				final Deque<String> _noOfLinks = params.get("links");
 
-				final String nameValue = _nameValue != null ? URLDecoder.decode(_nameValue.getFirst(),"UTF-8") : "fake file";
-				final String noOfSpots = _noOfSpots != null ? _noOfSpots.getFirst() : "fake spot";
-				final String noOfLinks = _noOfLinks != null ? _noOfLinks.getFirst() : "fake link";
+				final String nameValue = _nameValue != null ? URLDecoder.decode(_nameValue.getFirst(),"UTF-8") : "fake_file";
+				final String noOfSpots = _noOfSpots != null ? _noOfSpots.getFirst() : "0";
+				final String noOfLinks = _noOfLinks != null ? _noOfLinks.getFirst() : "0";
 
 				/*
 				System.out.println("Query: name=" + nameValue);

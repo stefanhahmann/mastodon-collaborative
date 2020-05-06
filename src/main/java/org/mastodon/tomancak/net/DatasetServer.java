@@ -95,6 +95,13 @@ public class DatasetServer
 				if (datasetStr == null) { respondERROR(exchange); return; }
 
 				if (prefixWithSecret) datasetStr = java.util.UUID.randomUUID().toString() +'-'+ datasetStr;
+				if (datasetStr.equals("add") || datasetStr.equals("addSecret") || datasetStr.equals("remove"))
+				{
+					//forbidden folder names
+					System.out.println("Refused to create a dataset of the name "+datasetStr);
+					respondERROR(exchange);
+					return;
+				}
 
 				//which folder shall be created
 				final Path datasetPath = datasetsRootFolder.resolve(datasetStr);
