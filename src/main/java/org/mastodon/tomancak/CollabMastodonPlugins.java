@@ -33,15 +33,21 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 {
 	private static final String SAVE_MODEL_SNAPSHOT = "[tomancak] save current lineage";
 	private static final String LOAD_MODEL_SNAPSHOT = "[tomancak] load external lineage";
+	private static final String CREATE_SNAPSHOT_SPACE = "[tomancak] create project space";
+	private static final String DELETE_SNAPSHOT_SPACE = "[tomancak] delete project space";
 
 	private static final String[] SAVE_MODEL_SNAPSHOT_KEYS = { "not mapped" };
 	private static final String[] LOAD_MODEL_SNAPSHOT_KEYS = { "not mapped" };
+	private static final String[] CREATE_SNAPSHOT_SPACE_KEYS = { "not mapped" };
+	private static final String[] DELETE_SNAPSHOT_SPACE_KEYS = { "not mapped" };
 
 	private static Map< String, String > menuTexts = new HashMap<>();
 	static
 	{
 		menuTexts.put( SAVE_MODEL_SNAPSHOT, "Save Current Lineage" );
 		menuTexts.put( LOAD_MODEL_SNAPSHOT, "Load External Lineage" );
+		menuTexts.put( CREATE_SNAPSHOT_SPACE, "Create Project Space" );
+		menuTexts.put( DELETE_SNAPSHOT_SPACE, "Delete Project Space" );
 	}
 
 	/** Command descriptions for all provided commands */
@@ -56,19 +62,25 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 		@Override
 		public void getCommandDescriptions( final CommandDescriptions descriptions )
 		{
-			descriptions.add( SAVE_MODEL_SNAPSHOT, SAVE_MODEL_SNAPSHOT_KEYS, "Export the current complete lineage into file in the folder next to your .mastodon project file." );
-			descriptions.add( LOAD_MODEL_SNAPSHOT, LOAD_MODEL_SNAPSHOT_KEYS, "Replaces the current complete lineage with that from a chosen file." );
+			descriptions.add( SAVE_MODEL_SNAPSHOT, SAVE_MODEL_SNAPSHOT_KEYS, "Export the current complete lineage into file in the folder next to your .mastodon project file, possibly sends it away to a remote server." );
+			descriptions.add( LOAD_MODEL_SNAPSHOT, LOAD_MODEL_SNAPSHOT_KEYS, "Replaces the current complete lineage with that from a chosen file, or possibly from a remote server." );
+			descriptions.add( CREATE_SNAPSHOT_SPACE, CREATE_SNAPSHOT_SPACE_KEYS, "Opens a new project space on a remote server for storing lineage files." );
+			descriptions.add( DELETE_SNAPSHOT_SPACE, DELETE_SNAPSHOT_SPACE_KEYS, "Closes and deletes project space on a remote server." );
 		}
 	}
 
 
 	private final AbstractNamedAction saveModelSnapshotAction;
 	private final AbstractNamedAction loadModelSnapshotAction;
+	private final AbstractNamedAction createSnapshotSpaceAction;
+	private final AbstractNamedAction deleteSnapshotSpaceAction;
 
 	public CollabMastodonPlugins()
 	{
 		saveModelSnapshotAction = new RunnableAction( SAVE_MODEL_SNAPSHOT, this::saveModelSnapshot );
 		loadModelSnapshotAction = new RunnableAction( LOAD_MODEL_SNAPSHOT, this::loadModelSnapshot );
+		createSnapshotSpaceAction = new RunnableAction( CREATE_SNAPSHOT_SPACE, this::createSnapshotSpace );
+		deleteSnapshotSpaceAction = new RunnableAction( DELETE_SNAPSHOT_SPACE, this::deleteSnapshotSpace );
 		updateEnabledActions();
 	}
 
@@ -88,7 +100,9 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 				menu( "Plugins",
 						menu( "Racing",
 								item( SAVE_MODEL_SNAPSHOT ),
-								item( LOAD_MODEL_SNAPSHOT ) ) ) );
+								item( LOAD_MODEL_SNAPSHOT ),
+								item( CREATE_SNAPSHOT_SPACE ),
+								item( DELETE_SNAPSHOT_SPACE ) ) ) );
 	}
 
 	@Override
@@ -102,6 +116,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 	{
 		actions.namedAction( saveModelSnapshotAction, SAVE_MODEL_SNAPSHOT_KEYS );
 		actions.namedAction( loadModelSnapshotAction, LOAD_MODEL_SNAPSHOT_KEYS );
+		actions.namedAction( createSnapshotSpaceAction, CREATE_SNAPSHOT_SPACE_KEYS );
+		actions.namedAction( deleteSnapshotSpaceAction, DELETE_SNAPSHOT_SPACE_KEYS );
 	}
 
 	private void updateEnabledActions()
@@ -109,6 +125,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 		final MamutAppModel appModel = ( pluginAppModel == null ) ? null : pluginAppModel.getAppModel();
 		saveModelSnapshotAction.setEnabled( appModel != null );
 		loadModelSnapshotAction.setEnabled( appModel != null );
+		createSnapshotSpaceAction.setEnabled( appModel != null );
+		deleteSnapshotSpaceAction.setEnabled( appModel != null );
 	}
 
 
@@ -130,6 +148,24 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 			"logService",  this.getContext().getService(LogService.class),
 			"prefService", this.getContext().getService(PrefService.class),
 			"appModel", pluginAppModel
+		);
+	}
+
+
+	private void createSnapshotSpace()
+	{
+		this.getContext().getService(CommandService.class).run(
+			CreateProject.class, true,
+			"logService",  this.getContext().getService(LogService.class)
+		);
+	}
+
+
+	private void deleteSnapshotSpace()
+	{
+		this.getContext().getService(CommandService.class).run(
+			DeleteProject.class, true,
+			"logService",  this.getContext().getService(LogService.class)
 		);
 	}
 

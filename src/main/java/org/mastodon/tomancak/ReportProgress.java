@@ -12,7 +12,7 @@ import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.model.mamut.Model;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
-import org.mastodon.tomancak.net.FileServer;
+import org.mastodon.tomancak.net.DatasetServer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -80,7 +80,11 @@ extends DynamicCommand
 
 	@Parameter(label = "URL address of the remote monitor:",
 		description = "This entry is ignored if the above is not checked.")
-	private String remoteMonitorURL = "setHereServerAddress:"+ FileServer.defaultPort;
+	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
+
+	@Parameter(label = "Project name on the remote monitor:",
+			description = "This entry is ignored if the above is not checked.")
+	private String projectName = "setHereProjectName";
 
 
 	// ----------------- implementation -----------------
@@ -109,8 +113,9 @@ extends DynamicCommand
 			if (sendAlsoToRemoteMonitor)
 			{
 				remoteMonitorURL = FileTransfer.fixupURL(remoteMonitorURL);
-				logService.info("Saving also to remote URL: "+remoteMonitorURL);
-				FileTransfer.postParticularFile(remoteMonitorURL, model, lineageFilename, projectRootFoldername);
+				final String URL = remoteMonitorURL + "/" + projectName;
+				logService.info("Saving also to remote URL: "+URL);
+				FileTransfer.postParticularFile(URL, model, lineageFilename, projectRootFoldername);
 			}
 		} catch (MalformedURLException | UnknownHostException e) {
 			logService.error("URL is probably wrong:"); e.printStackTrace();

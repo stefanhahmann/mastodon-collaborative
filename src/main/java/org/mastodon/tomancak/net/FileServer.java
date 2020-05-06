@@ -6,44 +6,43 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.Map;
 
 import io.undertow.Handlers;
-import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.resource.PathResourceManager;
+
 import org.mastodon.tomancak.util.LineageFiles;
 
 public class FileServer
 {
-	public FileServer(final String filesRootFolder, final String hostname, final int port)
+	// --------------------- given dataset handling chain ---------------------
+	/** intentionally private to prevent creating this object without an associated HttpHandler,
+	    use createDatasetHttpHandler() instead */
+	private FileServer(final Path filesRootFolder)
 	{
-		this.filesRootFolder = Paths.get(filesRootFolder);
+		this.filesRootFolder = filesRootFolder;
+	}
 
-		HttpHandler h = Handlers.path()
+	HttpHandler createHttpHandler()
+	{
+		return Handlers.path()
 		  .addPrefixPath("/put",   fileUploadHandler())
 		  .addPrefixPath("/list",  fileSkinnyListingHandler())
 		  .addPrefixPath("/files", filePrettyListingHandler())
-		  .addPrefixPath("/",      filePrettyListingHandler());
-
-		Undertow server = Undertow.builder()
-		  .addHttpListener(port, hostname)
-		  .setHandler(h)
-		  .build();
-
-		System.out.println("Starting server "+hostname+":"+port+" over "+filesRootFolder);
-		server.start();
+		  .addExactPath( "/",      helpListingHandler());
 	}
 
-	public FileServer(final String filesRootFolder)
+	public static
+	HttpHandler createDatasetHttpHandler(final Path filesRootFolder)
 	{
-		this(filesRootFolder,"localhost",defaultPort);
+		return new FileServer(filesRootFolder).createHttpHandler();
 	}
 
 
+	// --------------------- files management ---------------------
 	final Path filesRootFolder;
 
 	HttpHandler filePrettyListingHandler()
@@ -122,8 +121,51 @@ public class FileServer
 	}
 
 
-	/** the default port if none is provided to start a server */
-	public static final int defaultPort = 7070;
+	// --------------------- help listing and aux/helper methods ---------------------
+	HttpHandler helpListingHandler()
+	{
+		return new HttpHandler() {
+			static final char newLine = '\n';
+			final StringBuilder sb = new StringBuilder();
+
+			void writeLine(final String l)
+			{ sb.append(l); sb.append(newLine); }
+
+			{
+				writeLine("Listings:");
+				writeLine("---------");
+				writeLine("/\t-- accessing root folder of the server prints this help");
+				writeLine("/files\t-- lists all files and folders that the server sees");
+				writeLine("/list\t-- lists all snapshot files (files matching the specific filename syntax) that the server sees");
+				writeLine("\t-- printed in plain text, one file per row");
+
+				writeLine(newLine+"Download/Upload:");
+				writeLine(        "----------------");
+				writeLine("/files/snapshot.mstdn -- downloads the 'snapshot.mstdn' file from the server");
+				writeLine("/put?name=snapshot.mstdn&spots=100&links=99");
+				writeLine("\t-- uploads a file to the server via the POST method");
+				writeLine("\t-- parameters name, spots, links are mandatory");
+				writeLine("\t\tname  -- specifies the name under which the uploaded file will be saved");
+				writeLine("\t\t      -- the file should be some snapshot file, here 'snapshot.mstdn'");
+				writeLine("\t\tspots -- specifies the number of spots in the uploaded snapshot");
+				writeLine("\t\tlinks -- specifies the number of links in the uploaded snapshot");
+				writeLine("\t\t      -- both spots and links are here to avoid scanning the content of the snapshot file");
+
+				writeLine(newLine+"Details:");
+				writeLine(        "--------");
+				writeLine("snapshot.mstdn -- includes (only) a complete lineage as of given point in time from a certain user");
+				writeLine("               -- collection of these from one user shows her annotation progress");
+				writeLine("               -- here, it is a simplified substitute name for a properly named files");
+				writeLine("proper syntax is: YYYY-MM-DD__HH-MM-SS__userIdentifingAnyString.mstdn");
+			}
+
+			@Override
+			public void handleRequest(HttpServerExchange exchange)
+			{
+				exchange.getResponseSender().send(sb.toString());
+			}
+		};
+	}
 
 	/**
 	 * requires/collects and formats the mandatory data into
@@ -133,22 +175,5 @@ public class FileServer
 	String fileUploadQueryStringCreate(final String name, final int spotsCnt, final int linksCnt)
 	{
 		return String.format("?name=%s&spots=%d&links=%d",name,spotsCnt,linksCnt);
-	}
-
-
-	public static void main(final String[] args)
-	{
-		if (args.length < 1 || args.length > 3)
-		{
-			System.out.println("I need these arguments: filesRootFolder [hostname [port]]");
-			return;
-		}
-
-		if (args.length == 1)
-			new FileServer(args[0]);
-		else if (args.length == 2)
-			new FileServer(args[0], args[1], defaultPort);
-		else
-			new FileServer(args[0], args[1], Integer.parseInt(args[2]));
 	}
 }
