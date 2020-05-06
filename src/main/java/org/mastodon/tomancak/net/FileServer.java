@@ -22,9 +22,10 @@ public class FileServer
 	// --------------------- given dataset handling chain ---------------------
 	/** intentionally private to prevent creating this object without an associated HttpHandler,
 	    use createDatasetHttpHandler() instead */
-	private FileServer(final Path filesRootFolder)
+	private FileServer(final Path filesRootFolder, final DatasetListeners datasetListeners)
 	{
 		this.filesRootFolder = filesRootFolder;
+		this.listeners       = datasetListeners;
 	}
 
 	HttpHandler createHttpHandler()
@@ -36,10 +37,12 @@ public class FileServer
 		  .addExactPath( "/",      helpListingHandler());
 	}
 
+	/** the official way to obtain a HttpHandler to server over a given dataset folder, one may
+	    optionally supply listeners that would be triggered (or give null if this is not needed) */
 	public static
-	HttpHandler createDatasetHttpHandler(final Path filesRootFolder)
+	HttpHandler createDatasetHttpHandler(final Path filesRootFolder, final DatasetListeners newDsListeners)
 	{
-		return new FileServer(filesRootFolder).createHttpHandler();
+		return new FileServer(filesRootFolder,newDsListeners).createHttpHandler();
 	}
 
 
