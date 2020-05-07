@@ -64,8 +64,54 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 		userStats.put(date.toEpochSecond(ZoneOffset.UTC), (long)(noOfSpots+noOfLinks));
 
 		//TODO: add more outputs
+		try {
+			if (gnuplotOutputFolder != null) gnuplotWriteFile(user,userStats);
+		} catch (IOException e) {
+			System.out.println("Some problem writing GNUplot files:");
+			e.printStackTrace();
+		}
 	}
 
 	/** maps Users to their Times-to-Progress maps */
 	final Map<String, Map<Long,Long>> stats = new HashMap<>(10);
+
+
+	// --------------------- gnuplot outputs ---------------------
+	/** if not null, gnuplot outputs will be made */
+	public Path gnuplotOutputFolder = null;
+
+	public
+	void gnuplotWriteFile(final String userName, final Map<Long,Long> userStats)
+	throws IOException
+	{
+		OutputStreamWriter osw = new OutputStreamWriter(new BufferedOutputStream(
+				new FileOutputStream( gnuplotOutputFolder.resolve(userName+".dat").toFile() )));
+
+		for (long time : userStats.keySet())
+		{
+			long progress = userStats.get(time);
+			osw.write(LocalDateTime.ofEpochSecond(time,0,ZoneOffset.UTC).toString()
+					+"\t"+ time +"\t"+ progress +"\n");
+		}
+
+		osw.close();
+
+		//run gnuplot now
+		Runtime.getRuntime().exec("gnuplot refreshPlot.gnuplot", new String[0], gnuplotOutputFolder.toFile());
+
+		/* this is the content of the refreshPlot.gnuplot
+# run me as "gnuplot refreshPlot.gnuplot" in this folder
+
+set terminal png size 800,800
+set output "status.png"
+
+files=system('ls *.dat')
+set ylabel "progress (spots+links)"
+unset xtics
+set x2tics
+set x2tics rotate by 45
+set x2label "time"
+plot for [D in files] D u 2:3:x2ticlabels(1) w lp t D ps 2
+		*/
+	}
 }

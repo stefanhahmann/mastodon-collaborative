@@ -31,5 +31,10 @@ public class listenersTest
 
         final DatasetServer ds = new DatasetServer("/temp/MastCollabServer/");
         final StatusStore ss = new StatusStore(ds.listeners, "x");
+
+        //this activates the gnuplot outputs... but:
+        // - the output folder must be already existing
+        // - a special gnuplot script has to be placed in there
+        ss.gnuplotOutputFolder = Paths.get("/temp/MastCollabServer/x/gnuplot");
     }
 }
