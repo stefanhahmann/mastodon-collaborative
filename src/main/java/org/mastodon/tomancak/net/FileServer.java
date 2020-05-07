@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.Deque;
 import java.util.Map;
 
@@ -21,9 +22,10 @@ public class FileServer
 	// --------------------- given dataset handling chain ---------------------
 	/** intentionally private to prevent creating this object without an associated HttpHandler,
 	    use createDatasetHttpHandler() instead */
-	private FileServer(final Path filesRootFolder)
+	private FileServer(final Path filesRootFolder, final DatasetListeners datasetListeners)
 	{
 		this.filesRootFolder = filesRootFolder;
+		this.listeners       = datasetListeners;
 	}
 
 	HttpHandler createHttpHandler()
@@ -35,20 +37,42 @@ public class FileServer
 		  .addExactPath( "/",      helpListingHandler());
 	}
 
+	/** the official way to obtain a HttpHandler to server over a given dataset folder, one may
+	    optionally supply listeners that would be triggered (or give null if this is not needed) */
 	public static
-	HttpHandler createDatasetHttpHandler(final Path filesRootFolder)
+	HttpHandler createDatasetHttpHandler(final Path filesRootFolder, final DatasetListeners newDsListeners)
 	{
-		return new FileServer(filesRootFolder).createHttpHandler();
+		return new FileServer(filesRootFolder,newDsListeners).createHttpHandler();
 	}
 
 
 	// --------------------- files management ---------------------
+	public final DatasetListeners listeners;
 	final Path filesRootFolder;
 
 	HttpHandler filePrettyListingHandler()
 	{
-		return Handlers.resource(new PathResourceManager(filesRootFolder))
-		         .setDirectoryListingEnabled(true);
+		return new HttpHandler() {
+			@Override
+			public void handleRequest(HttpServerExchange exchange)
+			{
+				if (listeners != null)
+				{
+					//if exchange leads to an existing file (and not a dir), activate listeners
+					String file = exchange.getRelativePath();
+					if (file.length() > 0) file = file.substring(1);
+					if (filesRootFolder.resolve(file).toFile().isFile())
+						listeners.notifyFileRequestedListeners(file);
+				}
+
+				//in any case, forward the request further
+				exchange.dispatch( fileBrowserHandler );
+			}
+
+			final HttpHandler fileBrowserHandler
+			  = Handlers.resource(new PathResourceManager(filesRootFolder))
+			            .setDirectoryListingEnabled(true);
+		};
 	}
 
 	HttpHandler fileSkinnyListingHandler()
@@ -116,6 +140,24 @@ public class FileServer
 
 				fos.close();
 				System.out.println("Just stored: " + nameValue + " (" + noOfSpots + "," + noOfLinks + ")");
+
+				if (listeners != null)
+				{
+					//read out the date from the arrived file
+					final String date = LineageFiles.dateOfLineageFile(nameValue);
+					LocalDateTime lDT = LocalDateTime.of(
+							Integer.parseInt(date.substring(0,4)),
+							Integer.parseInt(date.substring(5,7)),
+							Integer.parseInt(date.substring(8,10)),
+							Integer.parseInt(date.substring(12,14)),
+							Integer.parseInt(date.substring(15,17)),
+							Integer.parseInt(date.substring(18,20)) );
+
+					//notify all listeners
+					listeners.notifyFileArrivedListeners(nameValue);
+					listeners.notifyLineageArrivedListeners(lDT, LineageFiles.authorOfLineageFile(nameValue),
+					                                Integer.parseInt(noOfSpots), Integer.parseInt(noOfLinks));
+				}
 			}
 		};
 	}

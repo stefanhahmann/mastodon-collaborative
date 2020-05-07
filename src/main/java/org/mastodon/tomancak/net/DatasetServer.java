@@ -63,7 +63,8 @@ public class DatasetServer
 				if (datasetAsFile.isDirectory() && !this.datasetsRootFolder.equals(datasetPath))
 				{
 					final String datasetStr = datasetAsFile.getName();
-					requestsRooter.addPrefixPath("/"+datasetStr, FileServer.createDatasetHttpHandler(datasetPath));
+					requestsRooter.addPrefixPath("/"+datasetStr,
+						FileServer.createDatasetHttpHandler( datasetPath, createListenersForDataset(datasetStr) ));
 					System.out.println("Auto-created a dataset handler for files in "+datasetPath);
 				}
 			});
@@ -116,7 +117,8 @@ public class DatasetServer
 				}
 
 				//HTTP stuff
-				requestsRooter.addPrefixPath("/"+datasetStr, FileServer.createDatasetHttpHandler(datasetPath));
+				requestsRooter.addPrefixPath("/"+datasetStr,
+					FileServer.createDatasetHttpHandler( datasetPath, createListenersForDataset(datasetStr) ));
 
 				System.out.println("Created a dataset handler for files in "+datasetPath);
 				exchange.getResponseSender().send(datasetStr);
@@ -170,6 +172,7 @@ public class DatasetServer
 				files.close();
 
 				//HTTP stuff
+				removeListenersForDataset(datasetStr);
 				requestsRooter.removePrefixPath("/"+datasetStr);
 
 				System.out.println("Removed a dataset handler and "+DAC.foldersCnt+" folders and "+DAC.filesCnt+" files in "+datasetPath);
@@ -251,5 +254,23 @@ public class DatasetServer
 				exchange.getResponseSender().send(sb.toString());
 			}
 		};
+	}
+
+
+	// --------------------- listeners management ---------------------
+	public final ServerListeners listeners = new ServerListeners();
+
+	private
+	DatasetListeners createListenersForDataset(final String dataset)
+	{
+		final DatasetListeners dsL = new DatasetListeners(dataset,listeners);
+		listeners.datasetListeners.put(dataset,dsL);
+		return dsL;
+	}
+
+	private
+	void removeListenersForDataset(final String dataset)
+	{
+		listeners.datasetListeners.remove(dataset);
 	}
 }
