@@ -1,14 +1,14 @@
 package org.mastodon.tomancak;
 
+import java.nio.file.Paths;
+
+import org.mastodon.tomancak.monitors.StatusStore;
 import org.mastodon.tomancak.net.DatasetListeners;
 import org.mastodon.tomancak.net.DatasetServer;
-import org.mastodon.tomancak.net.ServerListeners;
-
-import java.util.Date;
 
 public class listenersTest
 {
-    public static void main(String[] args)
+    static void genericListeners()
     {
         final DatasetServer ds = new DatasetServer("/temp/MastCollabServer/");
         ds.listeners.addFileRequestedListeners((d,s) -> System.out.println("Down "+s+" from "+d));
@@ -23,5 +23,13 @@ public class listenersTest
         zListeners = ds.listeners.getDatasetListeners("c");
         if (zListeners != null) zListeners.addLineageArrivedListeners(
                 (d,u,s,l) -> System.out.println("Lineage from "+u+" to ZZ of ("+s+","+l+") at "+d));
+    }
+
+    public static void main(String[] args)
+    {
+        //genericListeners();
+
+        final DatasetServer ds = new DatasetServer("/temp/MastCollabServer/");
+        final StatusStore ss = new StatusStore(ds.listeners, "x");
     }
 }
