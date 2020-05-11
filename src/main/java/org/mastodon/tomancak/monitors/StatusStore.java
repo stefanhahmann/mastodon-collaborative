@@ -66,8 +66,9 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 		//TODO: add more outputs
 		try {
 			if (gnuplotOutputFolder != null) gnuplotWriteFile(user,userStats);
+			if (htmlOutputFile != null) htmlProcessor.writeHtmlTableFile(htmlOutputFile);
 		} catch (IOException e) {
-			System.out.println("Some problem writing GNUplot files:");
+			System.out.println("Some problem writing files:");
 			e.printStackTrace();
 		}
 	}
@@ -114,4 +115,10 @@ set x2label "time"
 plot for [D in files] D u 2:3:x2ticlabels(1) w lp t D ps 2
 		*/
 	}
+
+
+	// --------------------- HTML outputs (via logs-processor) ---------------------
+	/** if not null, HTML outputs will be made here */
+	public Path htmlOutputFile = null;
+	private final LogsProcessor htmlProcessor = new LogsProcessor(this.stats);
 }

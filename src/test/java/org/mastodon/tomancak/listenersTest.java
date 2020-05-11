@@ -36,5 +36,6 @@ public class listenersTest
         // - the output folder must be already existing
         // - a special gnuplot script has to be placed in there
         ss.gnuplotOutputFolder = Paths.get("/temp/MastCollabServer/x/gnuplot");
+        ss.htmlOutputFile = Paths.get("/temp/MastCollabServer/x/status.html");
     }
 }
