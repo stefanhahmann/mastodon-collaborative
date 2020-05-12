@@ -14,18 +14,18 @@ import java.util.Map;
 import org.mastodon.tomancak.net.DatasetListeners;
 import org.mastodon.tomancak.net.ServerListeners;
 
-public class StatusStore
+public class ProgressStore
 implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 {
     /** monitor the given server for changes on the given dataset */
 	public
-	StatusStore(final ServerListeners listeners, final String dataset)
+	ProgressStore(final ServerListeners hookOnTheseListeners, final String dataset)
 	{
 		this.dataset = dataset;
 
 		//try to hook ourselves on the specific dataset handler -- if it exists already,
 		//if it does not, hook on the general level (and filter incoming actions later)
-		DatasetListeners dsL = listeners.getDatasetListeners(dataset);
+		DatasetListeners dsL = hookOnTheseListeners.getDatasetListeners(dataset);
 		if (dsL != null)
 		{
 			//hooking onto the specific list of listeners
@@ -34,7 +34,7 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 		else
 		{
 			//hooking onto the list of general listeners
-			listeners.addLineageArrivedListeners( this );
+			hookOnTheseListeners.addLineageArrivedListeners( this );
 		}
 	}
 
