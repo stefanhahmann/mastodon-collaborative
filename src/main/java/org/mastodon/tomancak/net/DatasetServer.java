@@ -13,6 +13,7 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.PathHandler;
+import static org.mastodon.tomancak.monitors.ProgressStore.createAttachedProgressStore;
 
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.revised.model.mamut.Model;
@@ -31,19 +32,52 @@ public class DatasetServer
 		}
 
 		if (args.length == 1)
-			new DatasetServer(args[0]);
+			new DatasetServer(args[0]).start();
 		else if (args.length == 2)
-			new DatasetServer(args[0], args[1], defaultPort);
+			new DatasetServer(args[0]).setHostname(args[1]).start();
 		else
-			new DatasetServer(args[0], args[1], Integer.parseInt(args[2]));
+			new DatasetServer(args[0]).setHostname(args[1]).setPort(Integer.parseInt(args[2])).start();
 	}
 
-	/** actually starts the server at specific hostname and port */
-	public DatasetServer(final String datasetsRootFolder, final String hostname, final int port)
+	/** create the dataset with the only mandatory parameter: folder where data is and should be */
+	public DatasetServer(final String datasetsRootFolder)
 	{
+		//setup all final attributes...
 		this.datasetsRootFolder = Paths.get(datasetsRootFolder);
+		if (!this.datasetsRootFolder.toFile().isDirectory())
+			throw new RuntimeException("Cannot start server, folder does not exists: "+datasetsRootFolder);
+		this.requestsRooter = Handlers.path();
+	}
 
-		requestsRooter = Handlers.path()
+	/** optional: set the port on which the server will be listening */
+	public DatasetServer setPort(final int port)
+	{ this.port = port; return this; }
+
+	/** optional: set the hostname on which the server will be listening */
+	public DatasetServer setHostname(final String hostname)
+	{ this.hostname = hostname; return this; }
+
+	/** optional: enable that the server will be creating gnuplot's PNG to monitor reported progresses */
+	public DatasetServer setUpdateGnuplotPngStats(final boolean enabled)
+	{ this.updateGnuplotPngStats = enabled; return this; }
+
+	/** optional: enable that the server will be creating HTML table to monitor reported progresses */
+	public DatasetServer setUpdateHtmlTableStats(final boolean enabled)
+	{ this.updateHtmlTableStats = enabled; return this; }
+
+	/** the default port if none is provided to start a server */
+	public static final int defaultPort = 7070;
+
+	/** the actual port on which the server will start */
+	private int port = defaultPort;
+	private String hostname = "localhost";
+	private boolean updateGnuplotPngStats = false;
+	private boolean updateHtmlTableStats  = false;
+
+	/** actually starts the server with the specific settings */
+	public void start()
+	{
+		requestsRooter
 		  .addPrefixPath("/add",       addDatasetHandler(false))
 		  .addPrefixPath("/addSecret", addDatasetHandler(true))
 		  .addPrefixPath("/remove",    removeDatasetHandler())
@@ -55,6 +89,8 @@ public class DatasetServer
 		  .build();
 
 		System.out.println("Starting server "+hostname+":"+port+" over "+datasetsRootFolder);
+		System.out.println("  will be updating gnuplot PNG: "+updateGnuplotPngStats
+		                  +", HTML table: "+updateHtmlTableStats);
 		server.start();
 
 		//check if there are already any folders/datasets in there and register FileServer handlers for them
@@ -69,21 +105,13 @@ public class DatasetServer
 					final String datasetStr = datasetAsFile.getName();
 					requestsRooter.addPrefixPath("/"+datasetStr,
 						FileServer.createDatasetHttpHandler( datasetPath, createListenersForDataset(datasetStr) ));
+					createAttachedProgressStore(datasetPath,this,updateGnuplotPngStats,updateHtmlTableStats);
 					System.out.println("Auto-created a dataset handler for files in "+datasetPath);
 				}
 			});
 			datasetFolders.close();
 		} catch (IOException e) { /* just ignore errors */ }
 	}
-
-	/** actually starts the server at default hostname and port */
-	public DatasetServer(final String datasetsRootFolder)
-	{
-		this(datasetsRootFolder,"localhost",defaultPort);
-	}
-
-	/** the default port if none is provided to start a server */
-	public static final int defaultPort = 7070;
 
 
 	// --------------------- dataset management ---------------------
@@ -92,7 +120,11 @@ public class DatasetServer
 
 	HttpHandler addDatasetHandler(final boolean prefixWithSecret)
 	{
-	    return new HttpHandler() {
+		return new HttpHandler() {
+			DatasetServer myDS; //needed for createAttachedProgressStore() below
+			HttpHandler setDS(final DatasetServer ds)
+			{ myDS = ds; return this; }
+
 			@Override
 			public void handleRequest(HttpServerExchange exchange)
 			{
@@ -123,12 +155,13 @@ public class DatasetServer
 				//HTTP stuff
 				requestsRooter.addPrefixPath("/"+datasetStr,
 					FileServer.createDatasetHttpHandler( datasetPath, createListenersForDataset(datasetStr) ));
+				createAttachedProgressStore(datasetPath,myDS,updateGnuplotPngStats,updateHtmlTableStats);
 
 				System.out.println("Created a dataset handler for files in "+datasetPath);
 				exchange.getResponseSender().send(datasetStr);
 				//respondOK(exchange);
 			}
-		};
+		}.setDS(this);
 	}
 
 	HttpHandler removeDatasetHandler()

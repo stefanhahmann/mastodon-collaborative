@@ -2,7 +2,7 @@ package org.mastodon.tomancak;
 
 import java.nio.file.Paths;
 
-import org.mastodon.tomancak.monitors.StatusStore;
+import org.mastodon.tomancak.monitors.ProgressStore;
 import org.mastodon.tomancak.net.DatasetListeners;
 import org.mastodon.tomancak.net.DatasetServer;
 
@@ -29,14 +29,10 @@ public class listenersTest
     {
         //genericListeners();
 
-        final DatasetServer ds = new DatasetServer("/temp/MastCollabServer/");
-        final StatusStore ss = new StatusStore(ds.listeners, "x");
-
-        //this activates the gnuplot outputs... but:
-        // - the output folder must be already existing
-        // - a special gnuplot script has to be placed in there
-        ss.gnuplotOutputFolder = Paths.get("/temp/MastCollabServer/x/gnuplot");
-        ss.htmlOutputFile = Paths.get("/temp/MastCollabServer/x/status.html");
-        ds.replayLineageArrivedOnDataset(ss, "x");
+        //start the server, and instruct it use "full" ProgressStores for every dataset
+        new DatasetServer("/tmp/MastCollabServer/")
+               .setUpdateHtmlTableStats(true)
+               .setUpdateGnuplotPngStats(false)
+               .start();
     }
 }
