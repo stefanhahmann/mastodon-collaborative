@@ -54,6 +54,27 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 		ds.replayLineageArrivedOnDataset(this, dataset);
 	}
 
+	/** monitor the given server for changes on "our" dataset,
+	    note that one may monitor multiple servers... */
+	public
+	void detachFromThisServer(final DatasetServer ds)
+	{
+		final ServerListeners unhookFromTheseListeners = ds.listeners;
+		if (unhookFromTheseListeners == null) //sanity check...
+			throw new RuntimeException("Given server is in very bad shape! Bailing out...");
+
+		//try to unhook ourselves from the specific dataset handler -- if it exists at all
+		DatasetListeners dsL = unhookFromTheseListeners.getDatasetListeners(dataset);
+		if (dsL != null)
+		{
+			//unhooking from the specific list of listeners
+			dsL.removeLineageArrivedListeners( this );
+		}
+
+		//also, unhooking from the list of general listeners
+		unhookFromTheseListeners.removeLineageArrivedListeners( this );
+	}
+
 	@Override
 	public
 	void action(final String dataset, final LocalDateTime date, final String user,
