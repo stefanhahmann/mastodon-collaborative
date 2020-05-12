@@ -29,14 +29,18 @@ public class listenersTest
     {
         //genericListeners();
 
+        //start the server
         final DatasetServer ds = new DatasetServer("/temp/MastCollabServer/");
-        final ProgressStore ss = new ProgressStore(ds.listeners, "x");
 
+        //setup the ProgressStore for chosen dataset, and connect it to the server
+        final ProgressStore ps = new ProgressStore("x");
+        //
         //this activates the gnuplot outputs... but:
         // - the output folder must be already existing
         // - a special gnuplot script has to be placed in there
-        ss.gnuplotOutputFolder = Paths.get("/temp/MastCollabServer/x/gnuplot");
-        ss.htmlOutputFile = Paths.get("/temp/MastCollabServer/x/status.html");
-        ds.replayLineageArrivedOnDataset(ss, "x");
+        ps.gnuplotOutputFolder = Paths.get("/temp/MastCollabServer/x/gnuplot");
+        ps.htmlOutputFile = Paths.get("/temp/MastCollabServer/x/status.html");
+        //
+        ps.attachToThisServer(ds);
     }
 }

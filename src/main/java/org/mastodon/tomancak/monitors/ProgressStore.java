@@ -11,17 +11,30 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.Map;
 
+import org.mastodon.tomancak.net.DatasetServer;
 import org.mastodon.tomancak.net.DatasetListeners;
 import org.mastodon.tomancak.net.ServerListeners;
 
 public class ProgressStore
 implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 {
-    /** monitor the given server for changes on the given dataset */
+	/** our contract is to store the progress for this given dataset */
 	public
-	ProgressStore(final ServerListeners hookOnTheseListeners, final String dataset)
+	ProgressStore(final String dataset)
 	{
 		this.dataset = dataset;
+	}
+
+	final String dataset;
+
+	/** monitor the given server for changes on "our" dataset,
+	    note that one may monitor multiple servers... */
+	public
+	void attachToThisServer(final DatasetServer ds)
+	{
+		final ServerListeners hookOnTheseListeners = ds.listeners;
+		if (hookOnTheseListeners == null) //sanity check...
+			throw new RuntimeException("Given server is in very bad shape! Bailing out...");
 
 		//try to hook ourselves on the specific dataset handler -- if it exists already,
 		//if it does not, hook on the general level (and filter incoming actions later)
@@ -36,9 +49,10 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 			//hooking onto the list of general listeners
 			hookOnTheseListeners.addLineageArrivedListeners( this );
 		}
-	}
 
-	final String dataset;
+		//now "replay" what everything the sever has witnessed so far
+		ds.replayLineageArrivedOnDataset(this, dataset);
+	}
 
 	@Override
 	public
