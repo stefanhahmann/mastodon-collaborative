@@ -31,6 +31,7 @@ public class listenersTest
 
         //start the server
         final DatasetServer ds = new DatasetServer("/temp/MastCollabServer/");
+        ds.start();
 
         //setup the ProgressStore for chosen dataset, and connect it to the server
         final ProgressStore ps = new ProgressStore("x");
