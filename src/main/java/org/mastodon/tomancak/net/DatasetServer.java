@@ -14,6 +14,10 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.PathHandler;
 
+import org.mastodon.tomancak.util.LineageFiles;
+import org.mastodon.revised.model.mamut.Model;
+import java.time.LocalDateTime;
+
 public class DatasetServer
 {
 	// --------------------- server management ---------------------
@@ -272,5 +276,38 @@ public class DatasetServer
 	void removeListenersForDataset(final String dataset)
 	{
 		listeners.datasetListeners.remove(dataset);
+	}
+
+	public
+	void replayLineageArrivedOnDataset(DatasetListeners.LineageArrived replayListeners, final String onThisDataset)
+	{
+		final Model model = new Model(); //aux model
+		final Path dsPath = datasetsRootFolder.resolve(onThisDataset);
+		try {
+			LineageFiles.listLineageFiles(dsPath).forEach( f -> {
+				try {
+					LineageFiles.loadLineageFileIntoModel(f,model);
+				} catch (IOException e) {
+					System.out.println("This is very surprising on file "+f+", should not happen:");
+					e.printStackTrace();
+					return; //skip over the rest of this block
+				}
+
+				//read out the date from the discovered file
+				final String filename = f.getFileName().toString();
+				final String date = LineageFiles.dateOfLineageFile(filename);
+				LocalDateTime lDT = LocalDateTime.of(
+						Integer.parseInt(date.substring(0,4)),
+						Integer.parseInt(date.substring(5,7)),
+						Integer.parseInt(date.substring(8,10)),
+						Integer.parseInt(date.substring(12,14)),
+						Integer.parseInt(date.substring(15,17)),
+						Integer.parseInt(date.substring(18,20)) );
+				replayListeners.action(lDT, LineageFiles.authorOfLineageFile(filename),
+						model.getGraph().vertices().size(), model.getGraph().edges().size());
+			});
+		} catch (IOException e) {
+			System.out.println("Path "+dsPath+" is most likely not accessible.");
+		}
 	}
 }

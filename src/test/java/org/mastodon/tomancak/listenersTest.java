@@ -37,5 +37,6 @@ public class listenersTest
         // - a special gnuplot script has to be placed in there
         ss.gnuplotOutputFolder = Paths.get("/temp/MastCollabServer/x/gnuplot");
         ss.htmlOutputFile = Paths.get("/temp/MastCollabServer/x/status.html");
+        ds.replayLineageArrivedOnDataset(ss, "x");
     }
 }
