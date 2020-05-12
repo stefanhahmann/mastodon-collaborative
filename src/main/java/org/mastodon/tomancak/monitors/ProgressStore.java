@@ -1,9 +1,9 @@
 package org.mastodon.tomancak.monitors;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -120,35 +120,52 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 	void gnuplotWriteFile(final String userName, final Map<Long,Long> userStats)
 	throws IOException
 	{
-		OutputStreamWriter osw = new OutputStreamWriter(new BufferedOutputStream(
-				new FileOutputStream( gnuplotOutputFolder.resolve(userName+".dat").toFile() )));
-
+		BufferedWriter osw = Files.newBufferedWriter(gnuplotOutputFolder.resolve(userName+".dat"));
 		for (long time : userStats.keySet())
 		{
 			long progress = userStats.get(time);
 			osw.write(LocalDateTime.ofEpochSecond(time,0,ZoneOffset.UTC).toString()
 					+"\t"+ time +"\t"+ progress +"\n");
 		}
-
 		osw.close();
 
-		//run gnuplot now
+		//run gnuplot now, the .gnuplot file content is "encrypted" below
 		Runtime.getRuntime().exec("gnuplot refreshPlot.gnuplot", new String[0], gnuplotOutputFolder.toFile());
+	}
 
-		/* this is the content of the refreshPlot.gnuplot
-# run me as "gnuplot refreshPlot.gnuplot" in this folder
+	public
+	void gnuplotSetupDirs(final Path datasetFolder)
+	{
+		//define the working folder
+		gnuplotOutputFolder = datasetFolder.resolve("gnuplot");
 
-set terminal png size 800,800
-set output "status.png"
+		//create the 'gnuplot' sub-folder
+		final File subFolder = gnuplotOutputFolder.toFile();
+		if (!subFolder.isDirectory() && !subFolder.mkdir())
+			throw new RuntimeException("Cannot create folder: "+subFolder);
 
-files=system('ls *.dat')
-set ylabel "progress (spots+links)"
-unset xtics
-set x2tics
-set x2tics rotate by 45
-set x2label "time"
-plot for [D in files] D u 2:3:x2ticlabels(1) w lp t D ps 2
-		*/
+		//place Script in here
+		final Path sp = gnuplotOutputFolder.resolve("refreshPlot.gnuplot");
+		try {
+			BufferedWriter script = Files.newBufferedWriter(sp);
+			script.write("# run me as \"gnuplot refreshPlot.gnuplot\" in this folder"); script.newLine();
+			script.newLine();
+			script.write("set terminal png size 800,800"); script.newLine();
+			script.write("set output \"status.png\""); script.newLine();
+			script.newLine();
+			script.write("files=system('ls *.dat')"); script.newLine();
+			script.write("set ylabel \"progress (spots+links)\""); script.newLine();
+			script.write("unset xtics"); script.newLine();
+			script.write("set x2tics"); script.newLine();
+			script.write("set x2tics rotate by 45"); script.newLine();
+			script.write("set x2label \"time\""); script.newLine();
+			script.write("plot for [D in files] D u 2:3:x2ticlabels(1) w lp t D ps 2"); script.newLine();
+			script.close();
+		} catch (IOException e) {
+			System.out.println("Problem writing file "+sp);
+			e.printStackTrace();
+			gnuplotOutputFolder = null;
+		}
 	}
 
 

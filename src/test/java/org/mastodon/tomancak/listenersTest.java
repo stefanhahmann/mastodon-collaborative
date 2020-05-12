@@ -36,10 +36,7 @@ public class listenersTest
         //setup the ProgressStore for chosen dataset, and connect it to the server
         final ProgressStore ps = new ProgressStore("x");
         //
-        //this activates the gnuplot outputs... but:
-        // - the output folder must be already existing
-        // - a special gnuplot script has to be placed in there
-        ps.gnuplotOutputFolder = Paths.get("/temp/MastCollabServer/x/gnuplot");
+        ps.gnuplotSetupDirs(Paths.get("/temp/MastCollabServer/x/"));
         ps.htmlOutputFile = Paths.get("/temp/MastCollabServer/x/status.html");
         //
         ps.attachToThisServer(ds);
