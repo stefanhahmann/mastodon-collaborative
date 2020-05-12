@@ -32,7 +32,7 @@ public class listenersTest
         //start the server, and instruct it use "full" ProgressStores for every dataset
         new DatasetServer("/tmp/MastCollabServer/")
                .setUpdateHtmlTableStats(true)
-               .setUpdateGnuplotPngStats(true)
+               .setUpdateGnuplotPngStats(false)
                .start();
     }
 }

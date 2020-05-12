@@ -139,7 +139,7 @@ public class FileServer
 				} );
 
 				fos.close();
-				System.out.println("Just stored: " + nameValue + " (" + noOfSpots + "," + noOfLinks + ")");
+				System.out.println("Just stored: " + filesRootFolder.getFileName()+"/"+nameValue + " (" + noOfSpots + "," + noOfLinks + ")");
 
 				if (listeners != null)
 				{

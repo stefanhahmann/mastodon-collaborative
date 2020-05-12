@@ -93,7 +93,7 @@ public class LogsProcessor
 		@Override
 		public
 		long getTypicalTimeResolution()
-		{ return 12*3600; }
+		{ return 6*3600; }
 	}
 
 
