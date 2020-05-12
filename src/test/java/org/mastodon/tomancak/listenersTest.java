@@ -29,16 +29,10 @@ public class listenersTest
     {
         //genericListeners();
 
-        //start the server
-        final DatasetServer ds = new DatasetServer("/temp/MastCollabServer/");
-        ds.start();
-
-        //setup the ProgressStore for chosen dataset, and connect it to the server
-        final ProgressStore ps = new ProgressStore("x");
-        //
-        ps.gnuplotSetupDirs(Paths.get("/temp/MastCollabServer/x/"));
-        ps.htmlOutputFile = Paths.get("/temp/MastCollabServer/x/status.html");
-        //
-        ps.attachToThisServer(ds);
+        //start the server, and instruct it use "full" ProgressStores for every dataset
+        new DatasetServer("/tmp/MastCollabServer/")
+               .setUpdateHtmlTableStats(true)
+               .setUpdateGnuplotPngStats(true)
+               .start();
     }
 }

@@ -27,6 +27,21 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 
 	final String dataset;
 
+	public static
+	ProgressStore createAttachedProgressStore(final Path datasetFolder,
+	                                          final DatasetServer server,
+	                                          final boolean enableGnuplotPngStats,
+	                                          final boolean enableHtmlTableStats)
+	{
+		final ProgressStore ps = new ProgressStore(datasetFolder.getFileName().toString());
+		if (enableGnuplotPngStats) ps.gnuplotSetupDirs(datasetFolder);
+		if (enableHtmlTableStats) ps.htmlOutputFile = datasetFolder.resolve("status.html");
+		ps.attachToThisServer(server);
+		return ps;
+	}
+
+
+	// --------------------- connection with DatasetServers ---------------------
 	/** monitor the given server for changes on "our" dataset,
 	    note that one may monitor multiple servers... */
 	public
@@ -75,6 +90,8 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 		unhookFromTheseListeners.removeLineageArrivedListeners( this );
 	}
 
+
+	// --------------------- actions handlers ---------------------
 	@Override
 	public
 	void action(final String dataset, final LocalDateTime date, final String user,

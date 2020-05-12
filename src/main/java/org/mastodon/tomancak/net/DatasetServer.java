@@ -13,6 +13,7 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.PathHandler;
+import static org.mastodon.tomancak.monitors.ProgressStore.createAttachedProgressStore;
 
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.revised.model.mamut.Model;
@@ -102,6 +103,7 @@ public class DatasetServer
 					final String datasetStr = datasetAsFile.getName();
 					requestsRooter.addPrefixPath("/"+datasetStr,
 						FileServer.createDatasetHttpHandler( datasetPath, createListenersForDataset(datasetStr) ));
+					createAttachedProgressStore(datasetPath,this,updateGnuplotPngStats,updateHtmlTableStats);
 					System.out.println("Auto-created a dataset handler for files in "+datasetPath);
 				}
 			});
@@ -116,7 +118,11 @@ public class DatasetServer
 
 	HttpHandler addDatasetHandler(final boolean prefixWithSecret)
 	{
-	    return new HttpHandler() {
+		return new HttpHandler() {
+			DatasetServer myDS; //needed for createAttachedProgressStore() below
+			HttpHandler setDS(final DatasetServer ds)
+			{ myDS = ds; return this; }
+
 			@Override
 			public void handleRequest(HttpServerExchange exchange)
 			{
@@ -147,12 +153,13 @@ public class DatasetServer
 				//HTTP stuff
 				requestsRooter.addPrefixPath("/"+datasetStr,
 					FileServer.createDatasetHttpHandler( datasetPath, createListenersForDataset(datasetStr) ));
+				createAttachedProgressStore(datasetPath,myDS,updateGnuplotPngStats,updateHtmlTableStats);
 
 				System.out.println("Created a dataset handler for files in "+datasetPath);
 				exchange.getResponseSender().send(datasetStr);
 				//respondOK(exchange);
 			}
-		};
+		}.setDS(this);
 	}
 
 	HttpHandler removeDatasetHandler()
