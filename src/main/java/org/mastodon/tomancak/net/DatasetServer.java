@@ -44,6 +44,8 @@ public class DatasetServer
 	{
 		//setup all final attributes...
 		this.datasetsRootFolder = Paths.get(datasetsRootFolder);
+		if (!this.datasetsRootFolder.toFile().isDirectory())
+			throw new RuntimeException("Cannot start server, folder does not exists: "+datasetsRootFolder);
 		this.requestsRooter = Handlers.path();
 	}
 
