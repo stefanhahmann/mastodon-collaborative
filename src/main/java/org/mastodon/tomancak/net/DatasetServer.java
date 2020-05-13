@@ -71,8 +71,8 @@ public class DatasetServer
 	/** the actual port on which the server will start */
 	private int port = defaultPort;
 	private String hostname = "localhost";
-	private boolean updateGnuplotPngStats = false;
-	private boolean updateHtmlTableStats  = false;
+	private boolean updateGnuplotPngStats = true;
+	private boolean updateHtmlTableStats  = true;
 
 	/** actually starts the server with the specific settings */
 	public void start()
