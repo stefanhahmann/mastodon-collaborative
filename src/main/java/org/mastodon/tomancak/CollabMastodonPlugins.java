@@ -1,21 +1,20 @@
 package org.mastodon.tomancak;
 
-import java.io.File;
 import java.util.*;
 import javax.swing.UIManager;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.project.MamutProject;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.Mastodon;
 import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
-import org.mastodon.tomancak.util.LineageFiles;
 
+import graphics.scenery.SceneryBase;
 import net.imagej.ImageJ;
+
 import org.scijava.AbstractContextual;
 import org.scijava.command.CommandService;
 import org.scijava.log.LogService;
@@ -175,6 +174,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 	 */
 	public static void main( final String[] args ) throws Exception
 	{
+		SceneryBase.xinitThreads();
+
 		Locale.setDefault( Locale.US );
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 
