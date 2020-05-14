@@ -1,5 +1,10 @@
 package org.mastodon.tomancak;
 
+import bdv.viewer.Source;
+import graphics.scenery.volumes.Colormap;
+import graphics.scenery.volumes.Volume;
+import net.imagej.display.ColorTables;
+
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
@@ -115,6 +120,24 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					e.printStackTrace();
 					return;
 				}
+
+				final String volumeName = "Mastodon's raw data";
+				final SourceAndConverter<?> sac = pluginAppModel.getAppModel().getSharedBdvData().getSources().get(0);
+
+				final Source<?> s = sac.getSpimSource();
+				final float[] voxelDims = new float[s.getVoxelDimensions().numDimensions()];
+				for (int d = 0; d < voxelDims.length; ++d)
+				{
+					voxelDims[d] = (float)s.getVoxelDimensions().dimension(d);
+					System.out.print(voxelDims[d]+"  ");
+				}
+				System.out.println("are the voxel dimensions");
+
+				Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, volumeName);
+				v.setName(volumeName);
+				v.setColormap(Colormap.fromColorTable(ColorTables.GRAYS));
+				v.setDirty(true);
+				v.setNeedsUpdate(true);
 			}
 		}.start();
 	}
