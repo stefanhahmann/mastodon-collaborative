@@ -1,14 +1,14 @@
 package org.mastodon.tomancak;
 
-import bdv.util.RandomAccessibleIntervalSource;
 import bdv.viewer.Source;
 import graphics.scenery.volumes.Colormap;
+import graphics.scenery.volumes.TransferFunction;
 import graphics.scenery.volumes.Volume;
-import net.imagej.display.ColorTables;
 
-import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.display.ColorTable8;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.ARGBType;
+import org.joml.*;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
@@ -18,6 +18,7 @@ import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
 
 import org.scijava.AbstractContextual;
+import org.scijava.command.CommandService;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
@@ -25,6 +26,7 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 
 import bdv.viewer.SourceAndConverter;
 import sc.iview.SciView;
+import sc.iview.commands.view.SetTransferFunction;
 
 import java.util.List;
 import java.util.Arrays;
@@ -133,47 +135,79 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				for (int d = 0; d < voxelDims.length; ++d)
 				{
 					voxelDims[d] = (float)s.getVoxelDimensions().dimension(d);
-					System.out.print(voxelDims[d]+"  ");
+					//System.out.print(voxelDims[d]+"  ");
 				}
-				System.out.println("are the voxel dimensions");
+				//System.out.println("are the voxel dimensions");
+				//this will rotate (wanted only y-axis flip) volume so that axes would match those of Mastodon's BDV
+				voxelDims[1] *= -1f;
+				voxelDims[2] *= -1f;
 
-				RandomAccessibleIntervalSource<?> rais = getRAIS((Source)s);
-				SourceAndConverter<?> newSac = new SourceAndConverter(rais,sac.getConverter());
+				//crank up the volume :-)
+				final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, volumeName);
 
-				reportTransform(s);
-				reportTransform(rais);
+				setVolumeColorFromMastodon(v);
+				//may setup own display range if need-be
 
-				//final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, volumeName);
-				final Volume v = (Volume)sv.addVolume((SourceAndConverter)newSac, volumeName);
+				//adjust the transfer function to a "diagonal"
+				TransferFunction tf = v.getTransferFunction();
+				tf.clear();
+				tf.addControlPoint(0.0f, 0.0f);
+				//TODO: try to raise the middle point by 20%
+				tf.addControlPoint(1.0f, 1.0f);
 
-				//try out some tuning
+
+				//optionally: watch when SciView's control panel adjusts the color
+				//and re-reset it back to that of Mastodon
+				v.getConverterSetups().get(0).setupChangeListeners().add( (t) -> {
+					System.out.println("display range: "+
+							v.getConverterSetups().get(0).getDisplayRangeMin()+" -> "+
+							v.getConverterSetups().get(0).getDisplayRangeMax() );
+					System.out.println( "zmenil barvu na "+t.getColor() );
+					//
+					//be of the current Mastodon's color
+					setVolumeColorFromMastodon(v);
+				});
+
 				v.setName(volumeName);
-				v.setColormap(Colormap.fromColorTable(ColorTables.GRAYS));
+				v.getScale().set(new Vector3f(voxelDims));
 				v.setDirty(true);
 				v.setNeedsUpdate(true);
+
+				//start the TransferFunction modifying dialog
+				getContext().getService(CommandService.class).run(SetTransferFunction.class,true,
+						"sciView",sv,"volume",v);
 			}
 		}.start();
 	}
 
-	<T extends NumericType<T>>
-	RandomAccessibleIntervalSource<T> getRAIS(final Source<T> s)
+	void setVolumeColorFromMastodon(final Volume v)
 	{
-	    //read out the transform
-		final AffineTransform3D t = new AffineTransform3D();
-		s.getSourceTransform(0,0,t);
+		int rgba = v.getConverterSetups().get(0).getColor().get();
+		int r = ARGBType.red( rgba );
+		int g = ARGBType.green( rgba );
+		int b = ARGBType.blue( rgba );
+		//int a = ARGBType.alpha( rgba );
+		//System.out.println("setVolumeCOlor to "+r+","+g+","+b+","+a);
+		v.setColormap(Colormap.fromColorTable(new ColorTable8( createMapArray(r,g,b) )));
+	}
 
-		//modify it...
-		double zStretch = t.get(2,2);
-		/*
-		t.set(zStretch,0,0);
-		t.set(zStretch,1,1);
-		t.set(1,2,2);
+	byte[][] createMapArray(int r, int g, int b)
+	{
+		final byte[][] map = new byte[3][256];
+		for (int i = 0; i < 256; ++i)
+		{
+			float ratio = (float)i / 256f;
+			map[0][i] = (byte)(ratio * (float)r);
+			map[1][i] = (byte)(ratio * (float)g);
+			map[2][i] = (byte)(ratio * (float)b);
+		}
+		/* DEBUG:
+		System.out.println("map[0] = "  +map[0][0]+","+map[1][0]+","+map[2][0]);
+		System.out.println("map[80] = " +map[0][80]+","+map[1][80]+","+map[2][80]);
+		System.out.println("map[160] = "+map[0][160]+","+map[1][160]+","+map[2][160]);
+		System.out.println("map[255] = "+map[0][255]+","+map[1][255]+","+map[2][255]);
 		*/
-		t.set(zStretch,2,2);
-
-		//create output RAIS
-		final RandomAccessibleInterval<T> rai = s.getSource(0,0);
-		return new RandomAccessibleIntervalSource<T>(rai,rai.randomAccess().get().createVariable(),t,"Vlado attempts");
+		return map;
 	}
 
 	void reportTransform(final Source<?> s)
