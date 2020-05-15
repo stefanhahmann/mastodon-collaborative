@@ -1,10 +1,14 @@
 package org.mastodon.tomancak;
 
+import bdv.util.RandomAccessibleIntervalSource;
 import bdv.viewer.Source;
 import graphics.scenery.volumes.Colormap;
 import graphics.scenery.volumes.Volume;
 import net.imagej.display.ColorTables;
 
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.numeric.NumericType;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
@@ -133,12 +137,51 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				}
 				System.out.println("are the voxel dimensions");
 
-				Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, volumeName);
+				RandomAccessibleIntervalSource<?> rais = getRAIS((Source)s);
+				SourceAndConverter<?> newSac = new SourceAndConverter(rais,sac.getConverter());
+
+				reportTransform(s);
+				reportTransform(rais);
+
+				//final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, volumeName);
+				final Volume v = (Volume)sv.addVolume((SourceAndConverter)newSac, volumeName);
+
+				//try out some tuning
 				v.setName(volumeName);
 				v.setColormap(Colormap.fromColorTable(ColorTables.GRAYS));
 				v.setDirty(true);
 				v.setNeedsUpdate(true);
 			}
 		}.start();
+	}
+
+	<T extends NumericType<T>>
+	RandomAccessibleIntervalSource<T> getRAIS(final Source<T> s)
+	{
+	    //read out the transform
+		final AffineTransform3D t = new AffineTransform3D();
+		s.getSourceTransform(0,0,t);
+
+		//modify it...
+		double zStretch = t.get(2,2);
+		/*
+		t.set(zStretch,0,0);
+		t.set(zStretch,1,1);
+		t.set(1,2,2);
+		*/
+		t.set(zStretch,2,2);
+
+		//create output RAIS
+		final RandomAccessibleInterval<T> rai = s.getSource(0,0);
+		return new RandomAccessibleIntervalSource<T>(rai,rai.randomAccess().get().createVariable(),t,"Vlado attempts");
+	}
+
+	void reportTransform(final Source<?> s)
+	{
+		final AffineTransform3D t = new AffineTransform3D();
+		s.getSourceTransform(0,0,t);
+
+		for (double d : t.getRowPackedCopy()) System.out.print(d+",");
+		System.out.println();
 	}
 }
