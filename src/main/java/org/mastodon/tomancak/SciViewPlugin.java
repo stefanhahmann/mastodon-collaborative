@@ -1,7 +1,8 @@
 package org.mastodon.tomancak;
 
+import bdv.tools.brightness.ConverterSetup;
+import bdv.util.Bounds;
 import bdv.viewer.Source;
-import graphics.scenery.Node;
 import graphics.scenery.Origin;
 import graphics.scenery.Sphere;
 import graphics.scenery.volumes.Colormap;
@@ -32,7 +33,6 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 import bdv.viewer.SourceAndConverter;
 import sc.iview.SciView;
 import sc.iview.commands.view.SetTransferFunction;
-import sc.iview.vector.FloatVector3;
 
 import java.lang.Math;
 import java.text.NumberFormat;
@@ -176,13 +176,26 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				//optionally: watch when SciView's control panel adjusts the color
 				//and re-reset it back to that of Mastodon
 				v.getConverterSetups().get(0).setupChangeListeners().add( (t) -> {
-					System.out.println("display range: "+
-							v.getConverterSetups().get(0).getDisplayRangeMin()+" -> "+
-							v.getConverterSetups().get(0).getDisplayRangeMax() );
-					System.out.println( "changed color to "+t.getColor() );
+					//read out the current min-max setting (which has been just re-set via the SciView's nodes panel)
+					final double min = v.getConverterSetups().get(0).getDisplayRangeMin();
+					final double max = v.getConverterSetups().get(0).getDisplayRangeMax();
+
+					System.out.println("display range: "+ min +" -> "+ max  );
+					System.out.println("changed color to "+t.getColor() );
 					//
-					//be of the current Mastodon's color
+					//be of the current Mastodon's color -- essentially,
+					//ignores (by re-setting back) whatever LUT choice has been made in SciView's nodel panel
 					setVolumeColorFromMastodon(v);
+
+					/* didn't see this working
+					pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups().getConverterSetup(
+						pluginAppModel.getAppModel().getSharedBdvData().getSources().get(0))
+							.setDisplayRange(min,max);
+					*/
+
+					final ConverterSetup cs = pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups().getConverterSetup(sac);
+					pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups().getBounds().setBounds(cs, new Bounds(min,max));
+					pluginAppModel.getWindowManager().forEachBdvView( view -> view.requestRepaint() );
 				});
 
 				v.setName(volumeName);
