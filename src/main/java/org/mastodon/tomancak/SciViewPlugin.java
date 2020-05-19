@@ -1,7 +1,9 @@
 package org.mastodon.tomancak;
 
 import bdv.viewer.Source;
+import graphics.scenery.Node;
 import graphics.scenery.Origin;
+import graphics.scenery.Sphere;
 import graphics.scenery.volumes.Colormap;
 import graphics.scenery.volumes.TransferFunction;
 import graphics.scenery.volumes.Volume;
@@ -15,9 +17,11 @@ import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
+import org.mastodon.revised.model.mamut.Spot;
 import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
 
+import org.mastodon.spatial.SpatialIndex;
 import org.scijava.AbstractContextual;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Plugin;
@@ -30,6 +34,8 @@ import sc.iview.SciView;
 import sc.iview.commands.view.SetTransferFunction;
 import sc.iview.vector.FloatVector3;
 
+import java.lang.Math;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
@@ -141,6 +147,18 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				}
 				//System.out.println("are the voxel dimensions");
 
+				//image size -- Ulrik suggested that spot coords should be normalized w.r.t. image size,
+				//but it turned out this is not needed.. so this piece of code has no use
+				final long imgSize[] = new long[3];
+				s.getSource(0,0).dimensions(imgSize);
+				System.out.println("ImgSize: "+printArray(imgSize));
+
+				//image transform -- this is what I should actually be considering when scaling the
+				//volume.. the fixVolumeScale() method should take it!
+				AffineTransform3D imgTransform = new AffineTransform3D();
+				s.getSourceTransform(0,0, imgTransform);
+				System.out.println("ImgTransform:"+printArray(imgTransform.getRowPackedCopy()));
+
 				//crank up the volume :-)
 				final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, volumeName);
 
@@ -161,7 +179,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					System.out.println("display range: "+
 							v.getConverterSetups().get(0).getDisplayRangeMin()+" -> "+
 							v.getConverterSetups().get(0).getDisplayRangeMax() );
-					System.out.println( "zmenil barvu na "+t.getColor() );
+					System.out.println( "changed color to "+t.getColor() );
 					//
 					//be of the current Mastodon's color
 					setVolumeColorFromMastodon(v);
@@ -173,10 +191,36 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				v.setDirty(true);
 				v.setNeedsUpdate(true);
 
+				System.out.println("VOlume is from "
+					+ v.getBoundingBox().getMin().toString(NumberFormat.getNumberInstance())
+					+ " to "
+					+ v.getBoundingBox().getMax().toString(NumberFormat.getNumberInstance()) );
+
 				//start the TransferFunction modifying dialog
 				getContext().getService(CommandService.class).run(SetTransferFunction.class,true,
 						"sciView",sv,"volume",v);
+
+				//--------------------------
+
+				SpatialIndex<Spot> spots = pluginAppModel.getAppModel().getModel().getSpatioTemporalIndex().getSpatialIndex(0);
+				float[] pos = new float[3];
+				for (Spot spot : spots)
+				{
+					spot.localize(pos);
+					System.out.println("adding 1/2 sphere at "+printArray(pos));
+
+					final Sphere sph = new Sphere(5.0f, 8);
+					sph.setName("hooked under Volume");
+					sph.setPosition(pos);
+					v.addChild(sph);
+					sph.setParent(v);
+				}
+
+				//TODO: does not update the scene graph panel, consider using:
+				//private EventService eventService;
+				//eventService.publish(new NodeAddedEvent(n));
 			}
+
 		}.start();
 	}
 
@@ -259,5 +303,11 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 
 		for (double d : t.getRowPackedCopy()) System.out.print(d+",");
 		System.out.println();
+	}
+
+
+	public static void main(String[] args) {
+		long[] data = new long[] {3, 5, 6};
+		System.out.println("data: "+printArray(data));
 	}
 }
