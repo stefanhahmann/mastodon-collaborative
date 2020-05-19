@@ -180,6 +180,34 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 		}.start();
 	}
 
+	public static
+	String printArray(long... array)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		for (Object a : array) sb.append(a+",");
+		sb.append("]\n");
+		return sb.toString();
+	}
+	public static
+	String printArray(float... array)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		for (Object a : array) sb.append(a+",");
+		sb.append("]\n");
+		return sb.toString();
+	}
+	public static
+	String printArray(double... array)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("[");
+		for (Object a : array) sb.append(a+",");
+		sb.append("]\n");
+		return sb.toString();
+	}
+
 	void setVolumeColorFromMastodon(final Volume v)
 	{
 		int rgba = v.getConverterSetups().get(0).getColor().get();
