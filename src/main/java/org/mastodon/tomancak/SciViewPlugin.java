@@ -1,6 +1,7 @@
 package org.mastodon.tomancak;
 
 import bdv.viewer.Source;
+import graphics.scenery.Origin;
 import graphics.scenery.volumes.Colormap;
 import graphics.scenery.volumes.TransferFunction;
 import graphics.scenery.volumes.Volume;
@@ -27,6 +28,7 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 import bdv.viewer.SourceAndConverter;
 import sc.iview.SciView;
 import sc.iview.commands.view.SetTransferFunction;
+import sc.iview.vector.FloatVector3;
 
 import java.util.List;
 import java.util.Arrays;
@@ -138,9 +140,6 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					//System.out.print(voxelDims[d]+"  ");
 				}
 				//System.out.println("are the voxel dimensions");
-				//this will rotate (wanted only y-axis flip) volume so that axes would match those of Mastodon's BDV
-				voxelDims[1] *= -1f;
-				voxelDims[2] *= -1f;
 
 				//crank up the volume :-)
 				final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, volumeName);
@@ -169,7 +168,8 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				});
 
 				v.setName(volumeName);
-				v.getScale().set(new Vector3f(voxelDims));
+				fixVolumeScale(v,voxelDims);
+				v.setOrigin(Origin.FrontBottomLeft);
 				v.setDirty(true);
 				v.setNeedsUpdate(true);
 
@@ -189,6 +189,20 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 		//int a = ARGBType.alpha( rgba );
 		//System.out.println("setVolumeCOlor to "+r+","+g+","+b+","+a);
 		v.setColormap(Colormap.fromColorTable(new ColorTable8( createMapArray(r,g,b) )));
+	}
+
+	void fixVolumeScale(final Volume v, final float[] voxelDims)
+	{
+		float min = voxelDims[0];
+		for (int i = 1; i < voxelDims.length; ++i) min = Math.min( voxelDims[i], min );
+		//TODO: what if min > 1.0?
+		for (int i = 0; i < voxelDims.length; ++i) voxelDims[i] /= min;
+
+		//this will rotate (wanted only y-axis flip) volume so that axes would match those of Mastodon's BDV
+		voxelDims[1] *= -1f;
+		voxelDims[2] *= -1f;
+
+		v.getScale().set(new Vector3f(voxelDims));
 	}
 
 	byte[][] createMapArray(int r, int g, int b)
