@@ -172,16 +172,39 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				//TODO: try to raise the middle point by 20%
 				tf.addControlPoint(1.0f, 1.0f);
 
+				pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups().listeners().add( t -> {
+					System.out.println("BDV says display range: " + t.getDisplayRangeMin() + " -> " + t.getDisplayRangeMax());
+					System.out.println("BDV says new color    : " + t.getColor());
+					setVolumeColorFromMastodon(v);
+
+					//does not work (even with v.setDirty() and company)
+					//v.getConverterSetups().get(0).setDisplayRange(t.getDisplayRangeMin(),t.getDisplayRangeMax());
+
+					//does not work (even with v.setDirty() and company)
+					//final ConverterSetup cs = pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups().getConverterSetup(sac);
+					//pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups().getBounds().setBounds(cs, new Bounds(t.getDisplayRangeMin(),t.getDisplayRangeMax()));
+
+					//does not work (even with v.setDirty() and company)
+					//need to notify of the "repaint request" explicitly because this change is not triggered from
+					//SciView itself and hence it does not know about (and does not "repaint" automatically)
+					v.setDirty(true);
+					v.setNeedsUpdate(true);
+					v.setNeedsUpdateWorld(true);
+					/*
+					*/
+
+					//plan D?
+				});
 
 				//optionally: watch when SciView's control panel adjusts the color
 				//and re-reset it back to that of Mastodon
 				v.getConverterSetups().get(0).setupChangeListeners().add( (t) -> {
 					//read out the current min-max setting (which has been just re-set via the SciView's nodes panel)
-					final double min = v.getConverterSetups().get(0).getDisplayRangeMin();
-					final double max = v.getConverterSetups().get(0).getDisplayRangeMax();
+					final double min = t.getDisplayRangeMin();
+					final double max = t.getDisplayRangeMax();
 
-					System.out.println("display range: "+ min +" -> "+ max  );
-					System.out.println("changed color to "+t.getColor() );
+					System.out.println("SciView says display range: " + min +" -> "+ max  );
+					System.out.println("SciView says new color    : " + t.getColor() );
 					//
 					//be of the current Mastodon's color -- essentially,
 					//ignores (by re-setting back) whatever LUT choice has been made in SciView's nodel panel
