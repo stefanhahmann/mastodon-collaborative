@@ -162,9 +162,10 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				//adjust the transfer function to a "diagonal"
 				TransferFunction tf = v.getTransferFunction();
 				tf.clear();
-				tf.addControlPoint(0.0f, 0.0f);
-				//TODO: try to raise the middle point by 20%
-				tf.addControlPoint(1.0f, 1.0f);
+				tf.addControlPoint(0.00f, 0.0f);
+				tf.addControlPoint(0.05f, 0.1f);
+				tf.addControlPoint(0.90f, 0.7f);
+				tf.addControlPoint(1.00f, 0.8f);
 
 				pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups().listeners().add( t -> {
 					System.out.println("BDV says display range: " + t.getDisplayRangeMin() + " -> " + t.getDisplayRangeMax());
