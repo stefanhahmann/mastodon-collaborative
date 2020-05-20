@@ -3,7 +3,6 @@ package org.mastodon.tomancak;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.Bounds;
 import bdv.viewer.Source;
-import graphics.scenery.Origin;
 import graphics.scenery.Sphere;
 import graphics.scenery.volumes.Colormap;
 import graphics.scenery.volumes.TransferFunction;
@@ -223,10 +222,12 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				}
 
 				v.setName(volumeName);
-				fixVolumeScale(v,voxelDims);
-				//v.setOrigin(Origin.FrontBottomLeft);
-				v.setDirty(true);
-				v.setNeedsUpdate(true);
+				v.setWantsComposeModel(false); //makes position,scale,rotation be ignored, also pxToWrld scale is ignored
+				final float scale = 0.5f;      //alternative to v.setPixelToWorldRatio(scale);
+				v.setModel( new Matrix4f(scale,0,0,0, 0,-scale,0,0, 0,0,-scale,0, 0,0,0,1) );
+				v.setNeedsUpdateWorld(true);
+				//now the volume's diagonal in world coords is now:
+				//      [0,0,0] -> [scale*origXSize, -scale*origYSize, -scale*origZSize]
 
 				System.out.println("VOlume is from "
 					+ v.getBoundingBox().getMin().toString(NumberFormat.getNumberInstance())
@@ -306,40 +307,6 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 		//int a = ARGBType.alpha( rgba );
 		//System.out.println("setVolumeCOlor to "+r+","+g+","+b+","+a);
 		v.setColormap(Colormap.fromColorTable(new ColorTable8( createMapArray(r,g,b) )));
-	}
-
-	void fixVolumeScale(final Volume v, final float[] voxelDims)
-	{
-		float min = voxelDims[0];
-		for (int i = 1; i < voxelDims.length; ++i) min = Math.min( voxelDims[i], min );
-		//TODO: what if min > 1.0?
-		for (int i = 0; i < voxelDims.length; ++i) voxelDims[i] /= min;
-
-		//this will rotate (wanted only y-axis flip) volume so that axes would match those of Mastodon's BDV
-		voxelDims[1] *= -1f;
-		voxelDims[2] *= -1f;
-
-		v.getScale().set(new Vector3f(voxelDims));
-
-	    /*
-		//image transform -- this is what I should actually be considering when scaling the
-		//volume.. the fixVolumeScale() method should take it!
-		AffineTransform3D imgTransform = new AffineTransform3D();
-		v.getViewerState().getSources().get( v.getViewerState().getCurrentSource() ).getSpimSource().getSourceTransform(0,0, imgTransform);
-		System.out.println("ImgTransform:"+printArray(imgTransform.getRowPackedCopy()));
-
-		double[] dTransform = imgTransform.getRowPackedCopy();
-		float[] fTransform = new float[16];
-		for (int i = 0; i < dTransform.length; ++i) fTransform[i] = (float)dTransform[i];
-		fTransform[15] = 1f;
-		System.out.println("ImgTransform:"+printArray(fTransform));
-		//v.getModel().set(fTransform); - does not do anything, it is not even visible when I read out the v.getModel() later
-
-		Matrix4f sourceTransform = new Matrix4f();
-		sourceTransform.set(fTransform);
-
-		v.getWorld().mul(sourceTransform);
-	    */
 	}
 
 	byte[][] createMapArray(int r, int g, int b)
