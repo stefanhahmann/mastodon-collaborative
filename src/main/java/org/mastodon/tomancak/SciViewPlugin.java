@@ -253,7 +253,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				}
 
 				float[] matrixData = new float[16];
-				v.getModelView().get(matrixData);
+				v.getModel().get(matrixData);
 				System.out.println("Volume model matrix: "+printArray(matrixData));
 				v.getWorld().get(matrixData);
 				System.out.println("Volume world matrix: "+printArray(matrixData));
