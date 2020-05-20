@@ -153,12 +153,6 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				s.getSource(0,0).dimensions(imgSize);
 				System.out.println("ImgSize: "+printArray(imgSize));
 
-				//image transform -- this is what I should actually be considering when scaling the
-				//volume.. the fixVolumeScale() method should take it!
-				AffineTransform3D imgTransform = new AffineTransform3D();
-				s.getSourceTransform(0,0, imgTransform);
-				System.out.println("ImgTransform:"+printArray(imgTransform.getRowPackedCopy()));
-
 				//crank up the volume :-)
 				final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, volumeName);
 
@@ -221,9 +215,15 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					pluginAppModel.getWindowManager().forEachBdvView( view -> view.requestRepaint() );
 				});
 
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
 				v.setName(volumeName);
 				fixVolumeScale(v,voxelDims);
-				v.setOrigin(Origin.FrontBottomLeft);
+				//v.setOrigin(Origin.FrontBottomLeft);
 				v.setDirty(true);
 				v.setNeedsUpdate(true);
 
@@ -251,6 +251,14 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					v.addChild(sph);
 					sph.setParent(v);
 				}
+
+				float[] matrixData = new float[16];
+				v.getModelView().get(matrixData);
+				System.out.println("Volume model matrix: "+printArray(matrixData));
+				v.getWorld().get(matrixData);
+				System.out.println("Volume world matrix: "+printArray(matrixData));
+				v.getModelView().get(matrixData);
+				System.out.println("Volume modelView matrix: "+printArray(matrixData));
 
 				//TODO: does not update the scene graph panel, consider using:
 				//private EventService eventService;
@@ -311,6 +319,26 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 		voxelDims[2] *= -1f;
 
 		v.getScale().set(new Vector3f(voxelDims));
+
+	    /*
+		//image transform -- this is what I should actually be considering when scaling the
+		//volume.. the fixVolumeScale() method should take it!
+		AffineTransform3D imgTransform = new AffineTransform3D();
+		v.getViewerState().getSources().get( v.getViewerState().getCurrentSource() ).getSpimSource().getSourceTransform(0,0, imgTransform);
+		System.out.println("ImgTransform:"+printArray(imgTransform.getRowPackedCopy()));
+
+		double[] dTransform = imgTransform.getRowPackedCopy();
+		float[] fTransform = new float[16];
+		for (int i = 0; i < dTransform.length; ++i) fTransform[i] = (float)dTransform[i];
+		fTransform[15] = 1f;
+		System.out.println("ImgTransform:"+printArray(fTransform));
+		//v.getModel().set(fTransform); - does not do anything, it is not even visible when I read out the v.getModel() later
+
+		Matrix4f sourceTransform = new Matrix4f();
+		sourceTransform.set(fTransform);
+
+		v.getWorld().mul(sourceTransform);
+	    */
 	}
 
 	byte[][] createMapArray(int r, int g, int b)
