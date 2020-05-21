@@ -123,6 +123,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				SciView sv;
 				try {
 					sv = SciView.create();
+					sv.setInterpreterWindowVisibility(false);
 					Thread.sleep(2000); //a bit of a grace time before we continue
 					System.out.println("SciView started...");
 				} catch (Exception e) {
