@@ -2,6 +2,7 @@ package org.mastodon.tomancak;
 
 import bdv.util.Bounds;
 import bdv.viewer.ConverterSetups;
+import graphics.scenery.Node;
 import graphics.scenery.Sphere;
 import graphics.scenery.volumes.Colormap;
 import graphics.scenery.volumes.TransferFunction;
@@ -193,17 +194,23 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				//--------------------------
 
 				SpatialIndex<Spot> spots = pluginAppModel.getAppModel().getModel().getSpatioTemporalIndex().getSpatialIndex(0);
+
+				final Node spotsNode = new Node("spots"); //fake "grouping" node
+				//sv.addChild(spotsNode); //adds node to the scene
+				sv.addNode(spotsNode);    //adds node to the scene and displays it in the Inspector
+
 				float[] pos = new float[3];
 				for (Spot spot : spots)
 				{
 					spot.localize(pos);
-					System.out.println("adding 1/2 sphere at "+printArray(pos));
+					pos[0] *= +scale; //adjust coords to the current volume scale
+					pos[1] *= -scale;
+					pos[2] *= -scale;
 
-					final Sphere sph = new Sphere(5.0f, 8);
-					sph.setName("hooked under Volume");
+					final Sphere sph = new Sphere(5.0f, 8); //radius could be scaled too...
+					sph.setName("hooked under Own Node");
 					sph.setPosition(pos);
-					v.addChild(sph);
-					sph.setParent(v);
+					spotsNode.addChild(sph);
 				}
 
 				//TODO: does not update the scene graph panel, consider using:
