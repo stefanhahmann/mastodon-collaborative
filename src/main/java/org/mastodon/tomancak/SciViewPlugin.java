@@ -28,6 +28,9 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
+import org.scijava.event.EventService;
+import sc.iview.event.NodeAddedEvent;
+
 import bdv.viewer.SourceAndConverter;
 import sc.iview.SciView;
 import sc.iview.commands.view.SetTransferFunction;
@@ -194,6 +197,9 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 
 				//--------------------------
 
+				EventService events = sv.getScijavaContext().getService(EventService.class);
+				System.out.println("Found an event service: "+events);
+
 				SpatialIndex<Spot> spots = pluginAppModel.getAppModel().getModel().getSpatioTemporalIndex().getSpatialIndex(0);
 
 				final Node spotsNode = new Node("spots"); //fake "grouping" node
@@ -212,11 +218,8 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					sph.setName("hooked under Own Node");
 					sph.setPosition(pos);
 					spotsNode.addChild(sph);
+					events.publish(new NodeAddedEvent(sph));
 				}
-
-				//TODO: does not update the scene graph panel, consider using:
-				//private EventService eventService;
-				//eventService.publish(new NodeAddedEvent(n));
 			}
 		}.start();
 	}
