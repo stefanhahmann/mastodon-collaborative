@@ -16,6 +16,7 @@ import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
+import org.mastodon.revised.mamut.MamutViewBdv;
 import org.mastodon.revised.model.mamut.Spot;
 import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
@@ -190,6 +191,10 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					pluginAppModel.getWindowManager().forEachBdvView( view -> view.requestRepaint() );
 				});
 
+				final MamutViewBdv bdv = pluginAppModel.getWindowManager().createBigDataViewer();
+				bdv.getViewerPanelMamut().addRenderTransformListener(a -> System.out.println("Here's BDV new view: "+printArray(a.getRowPackedCopy())));
+				bdv.getViewerPanelMamut().addTimePointListener(a -> System.out.println("Here's BDV new TP: "+a));
+				System.out.println("BDV window name: "+bdv.getFrame().getName());
 
 				//start the TransferFunction modifying dialog
 				getContext().getService(CommandService.class).run(SetTransferFunction.class,true,
