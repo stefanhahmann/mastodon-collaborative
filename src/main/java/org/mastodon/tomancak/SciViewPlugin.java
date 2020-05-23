@@ -215,7 +215,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					pos[2] *= -scale;
 
 					final Sphere sph = new Sphere(5.0f, 8); //radius could be scaled too...
-					sph.setName("hooked under Own Node");
+					sph.setName(spot.getLabel());
 					sph.setPosition(pos);
 					spotsNode.addChild(sph);
 					events.publish(new NodeAddedEvent(sph));
