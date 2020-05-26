@@ -195,7 +195,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				final MamutViewBdv bdv = pluginAppModel.getWindowManager().createBigDataViewer();
 				bdv.getViewerPanelMamut().addRenderTransformListener(a -> System.out.println("Here's BDV new view: "+printArray(a.getRowPackedCopy())));
 				bdv.getViewerPanelMamut().addTimePointListener(a -> System.out.println("Here's BDV new TP: "+a));
-				System.out.println("BDV window name: "+bdv.getFrame().getName());
+				System.out.println("BDV window name: "+bdv.getFrame().getTitle());
 
 				//start the TransferFunction modifying dialog
 				getContext().getService(CommandService.class).run(SetTransferFunction.class,true,
