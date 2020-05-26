@@ -169,7 +169,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 
 					//request that the volume be repainted in SciView
 					setVolumeColorFromMastodon(v);
-					v.setDirty(true);
+					v.getVolumeManager().requestRepaint();
 				});
 
 				//watch when SciView's control panel adjusts the color
