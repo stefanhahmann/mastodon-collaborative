@@ -168,7 +168,8 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 			script.write("# run me as \"gnuplot refreshPlot.gnuplot\" in this folder"); script.newLine();
 			script.newLine();
 			script.write("set terminal png size 800,800"); script.newLine();
-			script.write("set output \"status.png\""); script.newLine();
+			script.write("set output \"../status.png\""); script.newLine();
+			script.write("set size 0.87, 0.93"); script.newLine();
 			script.newLine();
 			script.write("files=system('ls *.dat')"); script.newLine();
 			script.write("set ylabel \"progress (spots+links)\""); script.newLine();
@@ -176,7 +177,10 @@ implements ServerListeners.LineageArrived, DatasetListeners.LineageArrived
 			script.write("set x2tics"); script.newLine();
 			script.write("set x2tics rotate by 45"); script.newLine();
 			script.write("set x2label \"time\""); script.newLine();
-			script.write("plot for [D in files] D u 2:3:x2ticlabels(1) w lp t D ps 2"); script.newLine();
+			script.write("set grid x2tics"); script.newLine();
+			script.write("set grid ytics"); script.newLine();
+			script.write("set key left top"); script.newLine();
+			script.write("plot for [D in files] D u 2:3:x2ticlabels(1) w lp t D ps 2 noenhanced"); script.newLine();
 			script.close();
 		} catch (IOException e) {
 			System.out.println("Problem writing file "+sp);
