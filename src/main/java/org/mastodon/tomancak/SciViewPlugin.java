@@ -2,6 +2,8 @@ package org.mastodon.tomancak;
 
 import bdv.util.Bounds;
 import bdv.viewer.ConverterSetups;
+import bdv.viewer.ViewerStateChange;
+import bdv.viewer.ViewerStateChangeListener;
 import graphics.scenery.Node;
 import graphics.scenery.Sphere;
 import graphics.scenery.volumes.Colormap;
@@ -124,6 +126,17 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 			@Override
 			public void run()
 			{
+				//find out if we are started from some BDV window
+				class FocusedBdvWindow {
+					MamutViewBdv focusedBdvWindow = null;
+					void setPossiblyTo(MamutViewBdv adept) { if (adept.getFrame().isFocused()) focusedBdvWindow = adept; }
+					boolean isThereSome() { return focusedBdvWindow != null; }
+					MamutViewBdv get() { return focusedBdvWindow; }
+				}
+				final FocusedBdvWindow focusedBdvWindow = new FocusedBdvWindow();
+				pluginAppModel.getWindowManager().forEachBdvView( bdvView -> focusedBdvWindow.setPossiblyTo(bdvView) );
+
+				//start the SciView
 				SciView sv;
 				try {
 					sv = SciView.create();
@@ -191,6 +204,13 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					setups.getBounds().setBounds( setups.getConverterSetup(sac), new Bounds(min,max) );
 					pluginAppModel.getWindowManager().forEachBdvView( view -> view.requestRepaint() );
 				});
+
+				//this block may set up a listener for TP change ot a BDV from which SciView was started, if any...
+				if (focusedBdvWindow.isThereSome())
+				{
+					System.out.println("Will be syncing timepoints with "+focusedBdvWindow.get().getFrame().getTitle());
+				}
+				else System.out.println("Will NOT be syncing timepoints to any BDV window");
 
 				final MamutViewBdv bdv = pluginAppModel.getWindowManager().createBigDataViewer();
 				bdv.getViewerPanelMamut().addRenderTransformListener(a -> System.out.println("Here's BDV new view: "+printArray(a.getRowPackedCopy())));
