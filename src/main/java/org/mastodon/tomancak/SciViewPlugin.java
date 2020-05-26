@@ -208,17 +208,37 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					pluginAppModel.getWindowManager().forEachBdvView( view -> view.requestRepaint() );
 				});
 
+
+				//this block needs to be here to re-assure the correct (that of BDV) color for the volume
+				v.getViewerState().getState().changeListeners().add(new ViewerStateChangeListener() {
+					@Override
+					public void viewerStateChanged(ViewerStateChange viewerStateChange) {
+						final int TP = v.getViewerState().getCurrentTimepoint();
+						System.out.println("SciView says new timepoint "+TP);
+
+						//also keep ignoring the SciView's color/LUT and enforce color from BDV
+						setVolumeColorFromMastodon(v);
+					}
+				});
+
 				//this block may set up a listener for TP change ot a BDV from which SciView was started, if any...
 				if (focusedBdvWindow.isThereSome())
 				{
 					System.out.println("Will be syncing timepoints with "+focusedBdvWindow.get().getFrame().getTitle());
+					focusedBdvWindow.get().getViewerPanelMamut().addTimePointListener(tp -> {
+							System.out.println("BDV says new timepoint "+tp);
+							v.getViewerState().setCurrentTimepoint(tp);
+							v.getVolumeManager().requestRepaint();
+						});
 				}
 				else System.out.println("Will NOT be syncing timepoints to any BDV window");
 
+/*
 				final MamutViewBdv bdv = pluginAppModel.getWindowManager().createBigDataViewer();
 				bdv.getViewerPanelMamut().addRenderTransformListener(a -> System.out.println("Here's BDV new view: "+printArray(a.getRowPackedCopy())));
 				bdv.getViewerPanelMamut().addTimePointListener(a -> System.out.println("Here's BDV new TP: "+a));
 				System.out.println("BDV window name: "+bdv.getFrame().getTitle());
+*/
 
 				//start the TransferFunction modifying dialog
 				getContext().getService(CommandService.class).run(SetTransferFunction.class,true,
