@@ -37,6 +37,7 @@ import sc.iview.event.NodeAddedEvent;
 import bdv.viewer.SourceAndConverter;
 import sc.iview.SciView;
 import sc.iview.commands.view.SetTransferFunction;
+import sc.iview.event.NodeChangedEvent;
 
 import java.util.List;
 import java.util.Arrays;
@@ -149,6 +150,10 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					return;
 				}
 
+				//find the event service to be able to notify the inspector
+				EventService events = sv.getScijavaContext().getService(EventService.class);
+				System.out.println("Found an event service: "+events);
+
 				final List<SourceAndConverter<?>> sacs = pluginAppModel.getAppModel().getSharedBdvData().getSources();
 				final Volume v = (Volume)sv.addVolume((List)sacs, 10, "V O L U M E S");
 
@@ -187,6 +192,9 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					//request that the volume be repainted in SciView
 					setVolumeColorFromMastodon(v);
 					v.getVolumeManager().requestRepaint();
+
+					//also notify the inspector panel
+					events.publish(new NodeChangedEvent(v));
 				});
 
 				//watch when SciView's control panel adjusts the color
@@ -229,6 +237,9 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 							System.out.println("BDV says new timepoint "+tp);
 							v.getViewerState().setCurrentTimepoint(tp);
 							v.getVolumeManager().requestRepaint();
+
+							//also notify the inspector panel
+							events.publish(new NodeChangedEvent(v));
 						});
 				}
 				else System.out.println("Will NOT be syncing timepoints to any BDV window");
@@ -245,9 +256,6 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 						"sciView",sv,"volume",v);
 
 				//--------------------------
-
-				EventService events = sv.getScijavaContext().getService(EventService.class);
-				System.out.println("Found an event service: "+events);
 
 				SpatialIndex<Spot> spots = pluginAppModel.getAppModel().getModel().getSpatioTemporalIndex().getSpatialIndex(0);
 
