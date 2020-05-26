@@ -149,10 +149,13 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					return;
 				}
 
+				final List<SourceAndConverter<?>> sacs = pluginAppModel.getAppModel().getSharedBdvData().getSources();
+				final Volume v = (Volume)sv.addVolume((List)sacs, 10, "V O L U M E S");
+
 				final String volumeName = "Mastodon's raw data";
 				final SourceAndConverter<?> sac = pluginAppModel.getAppModel().getSharedBdvData().getSources().get(0);
 				//
-				final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, volumeName);
+//				final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, 1, volumeName);
 
 				//adjust the transfer function to a "diagonal"
 				TransferFunction tf = v.getTransferFunction();
