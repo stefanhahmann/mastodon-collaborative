@@ -153,6 +153,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				//may setup own display range if need-be
 
 				v.setName(volumeName);
+				v.removeChild( v.getChildren().get(0) ); //removes the grid node
 				v.setWantsComposeModel(false); //makes position,scale,rotation be ignored, also pxToWrld scale is ignored
 				final float scale = 0.5f;      //alternative to v.setPixelToWorldRatio(scale);
 				v.setModel( new Matrix4f(scale,0,0,0, 0,-scale,0,0, 0,0,-scale,0, 0,0,0,1) );
