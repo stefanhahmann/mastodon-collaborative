@@ -7,6 +7,7 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Iterator;
 import de.mpicbg.ulman.inputParsers.AbstractParser;
+import de.mpicbg.ulman.ShowLogsCompacted;
 import de.mpicbg.ulman.outputPresenters.Presenter;
 import de.mpicbg.ulman.outputPresenters.HTML;
 
@@ -93,7 +94,7 @@ public class LogsProcessor
 		@Override
 		public
 		long getTypicalTimeResolution()
-		{ return 6*3600; }
+		{ return 3600; }
 	}
 
 
@@ -101,32 +102,15 @@ public class LogsProcessor
 	void writeHtmlTableFile(final Path htmlFile)
 	{
 		try {
-			final int columnWidth = 35;
+			final int columnWidth = 40;
 
 			parser.restartParsing();
 			final Presenter presenter = new HTML(htmlFile.toFile(), columnWidth, 2);
 
-			long timeMin = Long.MAX_VALUE;
-			long timeMax = Long.MIN_VALUE;
-			for (String user : stats.keySet())
-			{
-				final Map<Long,Long> userStats = stats.get(user);
-				for (long time : userStats.keySet())
-				{
-					timeMin = Math.min(time, timeMin);
-					timeMax = Math.max(time, timeMax);
-				}
-			}
-
-			timeMin /= parser.getTypicalTimeResolution();
-			timeMax /= parser.getTypicalTimeResolution();
-			//make sure timeMin < timeMax
-			if (timeMax == timeMin) ++timeMax;
-
-			presenter.initialize(stats.size(), timeMin,timeMax, columnWidth,1);
-			while (parser.hasNext())
-				presenter.show( parser.next() );
-			presenter.close();
+			final ShowLogsCompacted writer = new ShowLogsCompacted(parser,presenter,1);
+			//NB: this.parser.readNextXYMsg() already "granularizes" time stamps, so we set yTimeStep = 1
+			writer.msgWrap = columnWidth;
+			writer.process();
 		} catch (IOException e) {
 			System.out.println("Error producing output HTML file:");
 			e.printStackTrace();
