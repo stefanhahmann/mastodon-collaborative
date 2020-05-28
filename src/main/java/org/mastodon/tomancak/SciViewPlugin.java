@@ -156,6 +156,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				//show full volume
 				Volume v = dmd.showTimeSeries();
 				dmd.makeSciViewReadBdvSetting(v);
+				dmd.showTransferFunctionDialog(getContext(),v);
 
 				//show spots
 				final Node spotsNode = new Node("Mastodon spots");
