@@ -12,6 +12,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.display.ColorTable8;
 import net.imglib2.type.numeric.ARGBType;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.mamut.MamutViewBdv;
 
@@ -282,14 +283,15 @@ public class DisplayMastodonData
 	void showSpots(final int timepoint, final Node underThisNode)
 	{
 		SpatialIndex<Spot> spots = pluginAppModel.getAppModel().getModel().getSpatioTemporalIndex().getSpatialIndex(timepoint);
+		final Vector3f hubPos = underThisNode.getPosition();
 
 		float[] pos = new float[3];
 		for (Spot spot : spots)
 		{
 			spot.localize(pos);
-			pos[0] *= +scale; //adjust coords to the current volume scale
-			pos[1] *= -scale;
-			pos[2] *= -scale;
+			pos[0] = +scale *pos[0] -hubPos.x; //adjust coords to the current volume scale
+			pos[1] = -scale *pos[1] -hubPos.y;
+			pos[2] = -scale *pos[2] -hubPos.z;
 
 			final Sphere sph = new Sphere(spotRadius, 8);
 			sph.setName(spot.getLabel());
@@ -298,7 +300,7 @@ public class DisplayMastodonData
 			//events.publish(new NodeAddedEvent(sph));
 		}
 
-		events.publish(new NodeChangedEvent(underThisNode)); //TODO does it work?
+		events.publish(new NodeChangedEvent(underThisNode));
 	}
 
 	// ============================================================================================
@@ -346,5 +348,14 @@ public class DisplayMastodonData
 			map[2][i] = (byte)(ratio * (float)b);
 		}
 		return map;
+	}
+
+	public
+	void centerNodeOnVolume(final Node n, final Volume v)
+	{
+		final long[] dims = new long[3];
+		v.getViewerState().getSources().get(0).getSpimSource().getSource(0,0).dimensions(dims);
+
+		n.setPosition(new float[] { 0.5f*scale*dims[0], -0.5f*scale*dims[1], -0.5f*scale*dims[2] });
 	}
 }
