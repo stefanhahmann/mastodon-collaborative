@@ -172,7 +172,9 @@ public class DisplayMastodonData
 	Volume showTimeSeries(final MastodonPluginAppModel mastodonPlugin, final SciView sv)
 	{
 		final SourceAndConverter<?> sac = mastodonPlugin.getAppModel().getSharedBdvData().getSources().get(0);
-		final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, 20, volumeName); //TODO
+		final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac,
+				mastodonPlugin.getAppModel().getSharedBdvData().getNumTimepoints(), volumeName);
+
 
 		//adjust the transfer function to a "diagonal"
 		setTransferFunction(v);
