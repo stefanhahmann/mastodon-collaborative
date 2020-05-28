@@ -16,7 +16,9 @@ import org.joml.Vector3f;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.mamut.MamutViewBdv;
 
+import org.mastodon.revised.model.mamut.Link;
 import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.revised.ui.coloring.GraphColorGenerator;
 import org.mastodon.spatial.SpatialIndex;
 import org.scijava.command.CommandService;
 import sc.iview.SciView;
@@ -286,6 +288,12 @@ public class DisplayMastodonData
 	public
 	void showSpots(final int timepoint, final Node underThisNode)
 	{
+		showSpots(timepoint,underThisNode,null);
+	}
+
+	public
+	void showSpots(final int timepoint, final Node underThisNode, final GraphColorGenerator<Spot, Link> colorGenerator)
+	{
 		SpatialIndex<Spot> spots = pluginAppModel.getAppModel().getModel().getSpatioTemporalIndex().getSpatialIndex(timepoint);
 		final Vector3f hubPos = underThisNode.getPosition();
 
@@ -325,6 +333,15 @@ public class DisplayMastodonData
 			pos[1] = -scale *pos[1] -hubPos.y;
 			pos[2] = -scale *pos[2] -hubPos.z;
 			sph.setPosition(pos);
+
+			if (colorGenerator != null)
+			{
+				int rgbInt = colorGenerator.color(spot);
+				Vector3f rgb = sph.getMaterial().getDiffuse();
+				rgb.x = (float)((rgbInt >> 16) & 0xFF) / 255f;
+				rgb.y = (float)((rgbInt >>  8) & 0xFF) / 255f;
+				rgb.z = (float)((rgbInt      ) & 0xFF) / 255f;
+			}
 
 			sph.setName(spot.getLabel());
 		}
