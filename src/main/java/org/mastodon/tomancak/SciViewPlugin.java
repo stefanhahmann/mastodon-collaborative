@@ -14,6 +14,7 @@ import net.imglib2.display.ColorTable8;
 import net.imglib2.type.numeric.ARGBType;
 import org.joml.*;
 import org.mastodon.app.ui.ViewMenuBuilder;
+import org.mastodon.model.FocusModel;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.mamut.KeyConfigContexts;
@@ -163,16 +164,28 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 
 				if (dmd.controllingBdvWindow.isThereSome())
 				{
+					//setup coloring
 					final MamutViewTrackScheme tsWin = pluginAppModel.getWindowManager().createTrackScheme();
-
 					tsWin.getColoringModel().listeners().add( () -> {
 						System.out.println("coloring changed");
 						setColorGeneratorFrom(tsWin);
 					});
 
+					//setup focusing
+					sRef = pluginAppModel.getAppModel().getModel().getGraph().vertexRef();
+					final FocusModel<Spot, Link> focus = pluginAppModel.getAppModel().getFocusModel();
+					focus.listeners().add( () -> {
+						focus.getFocusedVertex(sRef);
+						System.out.println("focused on "+sRef.getLabel());
+						updateFocus( dmd.sv.find(sRef.getLabel()) );
+					});
+
 					dmd.controllingBdvWindow.get()
 							.getViewerPanelMamut()
-							.addTimePointListener( tp -> dmd.showSpots(tp,spotsNode,colorGenerator) );
+							.addTimePointListener( tp -> {
+								updateFocus(null);
+								dmd.showSpots(tp,spotsNode,colorGenerator);
+							} );
 				}
 
 				dmd.sv.getFloor().setVisible(false);
@@ -181,9 +194,38 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 		}.start();
 	}
 
+	//coloring attributes
 	private GraphColorGenerator<Spot, Link> colorGenerator = null;
 	private void setColorGeneratorFrom(final MamutViewTrackScheme tsWin)
 	{
-			colorGenerator = tsWin.getGraphColorGeneratorAdapter().getColorGenerator();
+		colorGenerator = tsWin.getGraphColorGeneratorAdapter().getColorGenerator();
 	}
+
+	//focus attributes
+	private Node stillFocusedNode = null;
+	private Spot sRef;
+	private void updateFocus(final Node newFocusNode)
+	{
+		/* DEBUG
+		System.out.println("defocus: "+(stillFocusedNode != null ? stillFocusedNode.getName() : "NONE")
+			+", focus newly: "+(newFocusNode != null ? newFocusNode.getName() : "NONE"));
+		*/
+
+		//something to defocus?
+		if (stillFocusedNode != null && stillFocusedNode.getParent() != null)
+		{
+			stillFocusedNode.setScale(normalScale);
+			stillFocusedNode.setNeedsUpdate(true);
+		}
+
+		//something to focus?
+		stillFocusedNode = newFocusNode;
+		if (stillFocusedNode != null)
+		{
+			stillFocusedNode.setScale(focusedScale);
+			stillFocusedNode.setNeedsUpdate(true);
+		}
+	}
+	static private Vector3f normalScale = new Vector3f(1.0f);
+	static private Vector3f focusedScale = new Vector3f(1.5f);
 }
