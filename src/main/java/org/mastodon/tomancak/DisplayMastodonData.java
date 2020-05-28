@@ -24,6 +24,10 @@ import org.scijava.event.EventService;
 import sc.iview.commands.view.SetTransferFunction;
 import sc.iview.event.NodeChangedEvent;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
 public class DisplayMastodonData
 {
 	//Mastodon connection
@@ -285,21 +289,48 @@ public class DisplayMastodonData
 		SpatialIndex<Spot> spots = pluginAppModel.getAppModel().getModel().getSpatioTemporalIndex().getSpatialIndex(timepoint);
 		final Vector3f hubPos = underThisNode.getPosition();
 
+		//list of existing nodes that shall be updated
+		Iterator<Node> existingNodes = underThisNode.getChildren().iterator();
+
+		//list of new nodes beyond the existing nodes, we better add at the very end
+		//to make sure the iterator can remain consistent
+		List<Node> extraNodes = new LinkedList<>();
+
 		float[] pos = new float[3];
 		for (Spot spot : spots)
 		{
+			//find a Sphere to represent this spot
+			Sphere sph;
+			if (existingNodes.hasNext())
+			{
+				//update existing one
+				sph = (Sphere)existingNodes.next();
+			}
+			else
+			{
+				//create a new one
+				sph = new Sphere(spotRadius, 8);
+				extraNodes.add(sph);
+			}
+
+			//setup the spot
 			spot.localize(pos);
 			pos[0] = +scale *pos[0] -hubPos.x; //adjust coords to the current volume scale
 			pos[1] = -scale *pos[1] -hubPos.y;
 			pos[2] = -scale *pos[2] -hubPos.z;
-
-			final Sphere sph = new Sphere(spotRadius, 8);
-			sph.setName(spot.getLabel());
 			sph.setPosition(pos);
-			underThisNode.addChild(sph);
-			//events.publish(new NodeAddedEvent(sph));
+
+			sph.setName(spot.getLabel());
 		}
 
+		//remove any remaining spots from the previous run
+		while (existingNodes.hasNext()) { existingNodes.next(); existingNodes.remove(); }
+
+		//register the extra new spots
+		for (Node s : extraNodes) underThisNode.addChild(s);
+
+		//notify the inspector to update the hub node
+		underThisNode.setName("Mastodon spots at "+timepoint);
 		events.publish(new NodeChangedEvent(underThisNode));
 	}
 
