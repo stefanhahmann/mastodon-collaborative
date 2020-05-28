@@ -19,7 +19,9 @@ import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.MamutViewBdv;
+import org.mastodon.revised.model.mamut.Link;
 import org.mastodon.revised.model.mamut.Spot;
+import org.mastodon.revised.ui.coloring.GraphColorGenerator;
 import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
 
@@ -169,5 +171,11 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				dmd.sv.centerOnNode(spotsNode);
 			}
 		}.start();
+	}
+
+	private GraphColorGenerator<Spot, Link> colorGenerator = null;
+	private void setColorGeneratorFrom(final MamutViewTrackScheme tsWin)
+	{
+			colorGenerator = tsWin.getGraphColorGeneratorAdapter().getColorGenerator();
 	}
 }
