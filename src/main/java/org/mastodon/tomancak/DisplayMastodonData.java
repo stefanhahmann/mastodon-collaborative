@@ -290,6 +290,12 @@ public class DisplayMastodonData
 		final Vector3f hubPos = underThisNode.getPosition();
 
 		//list of existing nodes that shall be updated
+		if (underThisNode.getChildren().size() > spots.size())
+		{
+			//removing spots from the children list is somewhat funky,
+			//we better remove all and add all anew
+			underThisNode.getChildren().removeIf(f -> true);
+		}
 		Iterator<Node> existingNodes = underThisNode.getChildren().iterator();
 
 		//list of new nodes beyond the existing nodes, we better add at the very end
@@ -322,9 +328,6 @@ public class DisplayMastodonData
 
 			sph.setName(spot.getLabel());
 		}
-
-		//remove any remaining spots from the previous run
-		while (existingNodes.hasNext()) { existingNodes.next(); existingNodes.remove(); }
 
 		//register the extra new spots
 		for (Node s : extraNodes) underThisNode.addChild(s);
