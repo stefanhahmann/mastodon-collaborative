@@ -164,6 +164,9 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 							.getViewerPanelMamut()
 							.addTimePointListener( tp -> dmd.showSpots(tp,spotsNode) );
 				}
+
+				dmd.sv.getFloor().setVisible(false);
+				dmd.sv.centerOnNode(spotsNode);
 			}
 		}.start();
 	}
