@@ -127,209 +127,37 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 			@Override
 			public void run()
 			{
-				//find out if we are started from some BDV window
-				class FocusedBdvWindow {
-					MamutViewBdv focusedBdvWindow = null;
-					void setPossiblyTo(MamutViewBdv adept) { if (adept.getFrame().isFocused()) focusedBdvWindow = adept; }
-					boolean isThereSome() { return focusedBdvWindow != null; }
-					MamutViewBdv get() { return focusedBdvWindow; }
-				}
-				final FocusedBdvWindow focusedBdvWindow = new FocusedBdvWindow();
-				pluginAppModel.getWindowManager().forEachBdvView( bdvView -> focusedBdvWindow.setPossiblyTo(bdvView) );
+				final DisplayMastodonData dmd = new DisplayMastodonData(pluginAppModel);
+				dmd.controllingBdvWindow.setupFrom(pluginAppModel);
 
-				//start the SciView
-				SciView sv;
 				try {
-					sv = SciView.create();
-					sv.setInterpreterWindowVisibility(false);
+					dmd.sv = SciView.create();
+					dmd.sv.setInterpreterWindowVisibility(false);
 					Thread.sleep(2000); //a bit of a grace time before we continue
 					System.out.println("SciView started...");
 				} catch (Exception e) {
 					System.out.println("SciView has a problem:");
 					e.printStackTrace();
-					return;
+					dmd.sv = null;
 				}
+				if (dmd.sv == null) return;
 
 				//find the event service to be able to notify the inspector
-				EventService events = sv.getScijavaContext().getService(EventService.class);
-				System.out.println("Found an event service: "+events);
+				dmd.events = dmd.sv.getScijavaContext().getService(EventService.class);
+				System.out.println("Found an event service: " + dmd.events);
 
-				final List<SourceAndConverter<?>> sacs = pluginAppModel.getAppModel().getSharedBdvData().getSources();
-				final Volume v = (Volume)sv.addVolume((List)sacs, 10, "V O L U M E S");
+				//show one volume
+				//Volume v = dmd.showOneTimePoint(10);
 
-				final String volumeName = "Mastodon's raw data";
-				final SourceAndConverter<?> sac = pluginAppModel.getAppModel().getSharedBdvData().getSources().get(0);
-				//
-//				final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac, 1, volumeName);
+				//show full volume
+				Volume v = dmd.showTimeSeries();
+				dmd.makeSciViewReadBdvSetting(v);
 
-				//adjust the transfer function to a "diagonal"
-				TransferFunction tf = v.getTransferFunction();
-				tf.clear();
-				tf.addControlPoint(0.00f, 0.0f);
-				tf.addControlPoint(0.05f, 0.1f);
-				tf.addControlPoint(0.90f, 0.7f);
-				tf.addControlPoint(1.00f, 0.8f);
-
-				setVolumeColorFromMastodon(v);
-				//may setup own display range if need-be
-
-				v.setName(volumeName);
-				v.removeChild( v.getChildren().get(0) ); //removes the grid node
-				v.setWantsComposeModel(false); //makes position,scale,rotation be ignored, also pxToWrld scale is ignored
-				final float scale = 0.5f;      //alternative to v.setPixelToWorldRatio(scale);
-				v.setModel( new Matrix4f(scale,0,0,0, 0,-scale,0,0, 0,0,-scale,0, 0,0,0,1) );
-				v.setNeedsUpdateWorld(true);
-				//now the volume's diagonal in world coords is now:
-				//      [0,0,0] -> [scale*origXSize, -scale*origYSize, -scale*origZSize]
-
-				//define various listeners:
-				//
-				//watch when BDV (through its color&brightness dialog) changes display range or volume's color
-				pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups().listeners().add( t -> {
-					System.out.println("BDV says display range: " + t.getDisplayRangeMin() + " -> " + t.getDisplayRangeMax());
-					System.out.println("BDV says new color    : " + t.getColor());
-
-					//request that the volume be repainted in SciView
-					setVolumeColorFromMastodon(v);
-					v.getVolumeManager().requestRepaint();
-
-					//also notify the inspector panel
-					events.publish(new NodeChangedEvent(v));
-				});
-
-				//watch when SciView's control panel adjusts the color
-				//and re-reset it back to that of Mastodon
-				v.getConverterSetups().get(0).setupChangeListeners().add( (t) -> {
-					//read out the current min-max setting (which has been just re-set via the SciView's nodes panel)
-					final double min = t.getDisplayRangeMin();
-					final double max = t.getDisplayRangeMax();
-
-					System.out.println("SciView says display range: " + min +" -> "+ max  );
-					System.out.println("SciView says new color    : " + t.getColor() );
-					//
-					//be of the current Mastodon's color -- essentially,
-					//ignores (by re-setting back) whatever LUT choice has been made in SciView's nodel panel
-					setVolumeColorFromMastodon(v);
-
-					final ConverterSetups setups = pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups();
-					setups.getBounds().setBounds( setups.getConverterSetup(sac), new Bounds(min,max) );
-					pluginAppModel.getWindowManager().forEachBdvView( view -> view.requestRepaint() );
-				});
-
-
-				//this block needs to be here to re-assure the correct (that of BDV) color for the volume
-				v.getViewerState().getState().changeListeners().add(new ViewerStateChangeListener() {
-					@Override
-					public void viewerStateChanged(ViewerStateChange viewerStateChange) {
-						final int TP = v.getViewerState().getCurrentTimepoint();
-						System.out.println("SciView says new timepoint "+TP);
-
-						//also keep ignoring the SciView's color/LUT and enforce color from BDV
-						setVolumeColorFromMastodon(v);
-					}
-				});
-
-				//this block may set up a listener for TP change ot a BDV from which SciView was started, if any...
-				if (focusedBdvWindow.isThereSome())
-				{
-					System.out.println("Will be syncing timepoints with "+focusedBdvWindow.get().getFrame().getTitle());
-					focusedBdvWindow.get().getViewerPanelMamut().addTimePointListener(tp -> {
-							System.out.println("BDV says new timepoint "+tp);
-							v.getViewerState().setCurrentTimepoint(tp);
-							v.getVolumeManager().requestRepaint();
-
-							//also notify the inspector panel
-							events.publish(new NodeChangedEvent(v));
-						});
-				}
-				else System.out.println("Will NOT be syncing timepoints to any BDV window");
-
-/*
-				final MamutViewBdv bdv = pluginAppModel.getWindowManager().createBigDataViewer();
-				bdv.getViewerPanelMamut().addRenderTransformListener(a -> System.out.println("Here's BDV new view: "+printArray(a.getRowPackedCopy())));
-				bdv.getViewerPanelMamut().addTimePointListener(a -> System.out.println("Here's BDV new TP: "+a));
-				System.out.println("BDV window name: "+bdv.getFrame().getTitle());
-*/
-
-				//start the TransferFunction modifying dialog
-				getContext().getService(CommandService.class).run(SetTransferFunction.class,true,
-						"sciView",sv,"volume",v);
-
-				//--------------------------
-
-				SpatialIndex<Spot> spots = pluginAppModel.getAppModel().getModel().getSpatioTemporalIndex().getSpatialIndex(0);
-
-				final Node spotsNode = new Node("spots"); //fake "grouping" node
-				//sv.addChild(spotsNode); //adds node to the scene
-				sv.addNode(spotsNode);    //adds node to the scene and displays it in the Inspector
-
-				float[] pos = new float[3];
-				for (Spot spot : spots)
-				{
-					spot.localize(pos);
-					pos[0] *= +scale; //adjust coords to the current volume scale
-					pos[1] *= -scale;
-					pos[2] *= -scale;
-
-					final Sphere sph = new Sphere(5.0f, 8); //radius could be scaled too...
-					sph.setName(spot.getLabel());
-					sph.setPosition(pos);
-					spotsNode.addChild(sph);
-					events.publish(new NodeAddedEvent(sph));
-				}
+				//show spots
+				Node spotsNode = new Node("Mastodon spots");
+				dmd.showSpots(10,spotsNode);
+				dmd.sv.addNode(spotsNode);
 			}
 		}.start();
-	}
-
-	public static
-	String printArray(long... array)
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		for (Object a : array) sb.append(a+",");
-		sb.append("]\n");
-		return sb.toString();
-	}
-	public static
-	String printArray(float... array)
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		for (Object a : array) sb.append(a+",");
-		sb.append("]\n");
-		return sb.toString();
-	}
-	public static
-	String printArray(double... array)
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("[");
-		for (Object a : array) sb.append(a+",");
-		sb.append("]\n");
-		return sb.toString();
-	}
-
-	void setVolumeColorFromMastodon(final Volume v)
-	{
-		int rgba = v.getConverterSetups().get(0).getColor().get();
-		int r = ARGBType.red( rgba );
-		int g = ARGBType.green( rgba );
-		int b = ARGBType.blue( rgba );
-		//int a = ARGBType.alpha( rgba );
-		//System.out.println("setVolumeCOlor to "+r+","+g+","+b+","+a);
-		v.setColormap(Colormap.fromColorTable(new ColorTable8( createMapArray(r,g,b) )));
-	}
-
-	byte[][] createMapArray(int r, int g, int b)
-	{
-		final byte[][] map = new byte[3][256];
-		for (int i = 0; i < 256; ++i)
-		{
-			float ratio = (float)i / 256f;
-			map[0][i] = (byte)(ratio * (float)r);
-			map[1][i] = (byte)(ratio * (float)g);
-			map[2][i] = (byte)(ratio * (float)b);
-		}
-		return map;
 	}
 }
