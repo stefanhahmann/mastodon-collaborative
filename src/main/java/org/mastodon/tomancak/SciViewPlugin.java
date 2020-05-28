@@ -19,6 +19,7 @@ import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.MamutViewBdv;
+import org.mastodon.revised.mamut.MamutViewTrackScheme;
 import org.mastodon.revised.model.mamut.Link;
 import org.mastodon.revised.model.mamut.Spot;
 import org.mastodon.revised.ui.coloring.GraphColorGenerator;
@@ -162,9 +163,16 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 
 				if (dmd.controllingBdvWindow.isThereSome())
 				{
+					final MamutViewTrackScheme tsWin = pluginAppModel.getWindowManager().createTrackScheme();
+
+					tsWin.getColoringModel().listeners().add( () -> {
+						System.out.println("coloring changed");
+						setColorGeneratorFrom(tsWin);
+					});
+
 					dmd.controllingBdvWindow.get()
 							.getViewerPanelMamut()
-							.addTimePointListener( tp -> dmd.showSpots(tp,spotsNode) );
+							.addTimePointListener( tp -> dmd.showSpots(tp,spotsNode,colorGenerator) );
 				}
 
 				dmd.sv.getFloor().setVisible(false);
