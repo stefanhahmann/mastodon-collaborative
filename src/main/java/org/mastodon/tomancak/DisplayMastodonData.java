@@ -1,7 +1,6 @@
 package org.mastodon.tomancak;
 
 import bdv.tools.brightness.ConverterSetup;
-import bdv.util.Bounds;
 import bdv.viewer.*;
 import graphics.scenery.Node;
 import graphics.scenery.Sphere;
@@ -20,6 +19,7 @@ import org.mastodon.revised.model.mamut.Link;
 import org.mastodon.revised.model.mamut.Spot;
 import org.mastodon.revised.ui.coloring.GraphColorGenerator;
 import org.mastodon.spatial.SpatialIndex;
+import org.scijava.Context;
 import org.scijava.command.CommandService;
 import sc.iview.SciView;
 import org.scijava.event.EventService;
@@ -357,10 +357,10 @@ public class DisplayMastodonData
 	// ============================================================================================
 
 	public
-	void showTransferFunctionDialog(final Volume v)
+	void showTransferFunctionDialog(final Context ctx, final Volume v)
 	{
 		//start the TransferFunction modifying dialog
-		sv.getScijavaContext().getService(CommandService.class).run(SetTransferFunction.class,true,
+		ctx.getService(CommandService.class).run(SetTransferFunction.class,true,
 				"sciView",sv,"volume",v);
 	}
 
