@@ -283,7 +283,7 @@ public class DisplayMastodonData
 	// ============================================================================================
 
 	public
-	float spotRadius = 2f;
+	float spotRadius = 0.8f;
 
 	public
 	void showSpots(final int timepoint, final Node underThisNode)
