@@ -39,7 +39,7 @@ public class DisplayMastodonData
 	//the overall coordinate scale factor from Mastodon to SciView coords
 	//NB: the smaller scale the better! with scale 1, pixels look terrible....
 	public static
-	final float scale = 0.2f;
+	final float scale = 0.01f;
 
 	//SciView connection + EventService that is used to update SciView's inspector panel
 	SciView sv = null;
@@ -283,7 +283,7 @@ public class DisplayMastodonData
 	// ============================================================================================
 
 	public
-	float spotRadius = 0.8f;
+	float spotRadius = 0.1f;
 
 	public
 	void showSpots(final int timepoint, final Node underThisNode)
