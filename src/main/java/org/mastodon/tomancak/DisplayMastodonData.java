@@ -445,6 +445,7 @@ public class DisplayMastodonData
 	{
 		//start the TransferFunction modifying dialog
 		ctx.getService(CommandService.class).run(SpotsDisplayParamsDialog.class,true,
-				"params",vizuParams, "spheresGatheringNode",spots);
+				"params",vizuParams, "spheresGatheringNode",spots,
+				"sphereAlpha",1.0f);
 	}
 }
