@@ -356,14 +356,6 @@ public class DisplayMastodonData
 
 	// ============================================================================================
 
-	public
-	void showTransferFunctionDialog(final Context ctx, final Volume v)
-	{
-		//start the TransferFunction modifying dialog
-		ctx.getService(CommandService.class).run(SetTransferFunction.class,true,
-				"sciView",sv,"volume",v);
-	}
-
 	static
 	void setTransferFunction(final Volume v)
 	{
@@ -408,5 +400,17 @@ public class DisplayMastodonData
 		v.getViewerState().getSources().get(0).getSpimSource().getSource(0,0).dimensions(dims);
 
 		n.setPosition(new float[] { 0.5f*scale*dims[0], -0.5f*scale*dims[1], -0.5f*scale*dims[2] });
+	}
+
+	// ============================================================================================
+
+	public static
+	void showTransferFunctionDialog(final Context ctx, final Volume v)
+	{
+		//start the TransferFunction modifying dialog
+		ctx.getService(CommandService.class).run(SetTransferFunction.class,true,
+				"sciView",v.getHub().getApplication(),
+				//NB: luckily, getApplication() returns SciView instance
+				"volume",v);
 	}
 }
