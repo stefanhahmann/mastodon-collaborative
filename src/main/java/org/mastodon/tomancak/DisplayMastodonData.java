@@ -351,6 +351,7 @@ public class DisplayMastodonData
 
 		//notify the inspector to update the hub node
 		underThisNode.setName("Mastodon spots at "+timepoint);
+		underThisNode.updateWorld(true,true);
 		events.publish(new NodeChangedEvent(underThisNode));
 	}
 
