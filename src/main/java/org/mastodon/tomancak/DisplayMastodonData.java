@@ -4,12 +4,9 @@ import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.*;
 import graphics.scenery.Node;
 import graphics.scenery.Sphere;
-import graphics.scenery.volumes.Colormap;
 import graphics.scenery.volumes.TransferFunction;
 import graphics.scenery.volumes.Volume;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.display.ColorTable8;
-import net.imglib2.type.numeric.ARGBType;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.mastodon.plugin.MastodonPluginAppModel;
@@ -45,6 +42,9 @@ public class DisplayMastodonData
 	//SciView connection + EventService that is used to update SciView's inspector panel
 	SciView sv = null;
 	EventService events = null;
+
+	//shared cache of colormaps for volumes (to prevent that they are re-created over and over again)
+	final CachedColorTables volumeColormaps = new CachedColorTables();
 
 	public
 	DisplayMastodonData(final MastodonPluginAppModel pluginAppModel)
@@ -137,7 +137,8 @@ public class DisplayMastodonData
 		setTransferFunction(v);
 
 		//override SciView's initial LUT
-		restoreVolumeColor(v);
+		final CachedColorTables volumeColormaps = new CachedColorTables();
+		restoreVolumeColor(v,volumeColormaps);
 
 		//initial min-max display range comes from BDV
 		final ConverterSetup cs = mastodonPlugin.getAppModel().getSharedBdvData().getConverterSetups().getConverterSetup(sac);
@@ -188,7 +189,8 @@ public class DisplayMastodonData
 		setTransferFunction(v);
 
 		//override SciView's initial LUT
-		restoreVolumeColor(v);
+		final CachedColorTables volumeColormaps = new CachedColorTables();
+		restoreVolumeColor(v,volumeColormaps);
 
 		//initial min-max display range comes from BDV
 		//... comes from BDV transiently since we're using its data directly ...
@@ -219,7 +221,7 @@ public class DisplayMastodonData
 				System.out.println("SciView says new timepoint "+TP);
 
 				//also keep ignoring the SciView's color/LUT and enforce color from BDV
-				restoreVolumeColor(v);
+				restoreVolumeColor(v,volumeColormaps);
 			}
 		});
 
@@ -235,7 +237,7 @@ public class DisplayMastodonData
 			System.out.println("BDV says new color    : " + t.getColor());
 
 			//request that the volume be repainted in SciView
-			restoreVolumeColor(v);
+			restoreVolumeColor(v,volumeColormaps);
 			v.getVolumeManager().requestRepaint();
 
 			//also notify the inspector panel
@@ -273,7 +275,7 @@ public class DisplayMastodonData
 			//
 			//be of the current Mastodon's color -- essentially,
 			//ignores (by re-setting back) whatever LUT choice has been made in SciView's nodel panel
-			restoreVolumeColor(v);
+			restoreVolumeColor(v,volumeColormaps);
 
 			//final ConverterSetups setups = pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups();
 			//setups.getBounds().setBounds( setups.getConverterSetup(sac), new Bounds(min,max) );
@@ -393,29 +395,10 @@ public class DisplayMastodonData
 	}
 
 	static
-	void restoreVolumeColor(final Volume v)
+	void restoreVolumeColor(final Volume v, final CachedColorTables colormapsCache)
 	{
 		int rgba = v.getConverterSetups().get(0).getColor().get();
-		int r = ARGBType.red( rgba );
-		int g = ARGBType.green( rgba );
-		int b = ARGBType.blue( rgba );
-		//int a = ARGBType.alpha( rgba );
-		//System.out.println("setVolumeCOlor to "+r+","+g+","+b+","+a);
-		v.setColormap(Colormap.fromColorTable(new ColorTable8( createMapArray(r,g,b) )));
-	}
-
-	static
-	byte[][] createMapArray(int r, int g, int b)
-	{
-		final byte[][] map = new byte[3][256];
-		for (int i = 0; i < 256; ++i)
-		{
-			float ratio = (float)i / 256f;
-			map[0][i] = (byte)(ratio * (float)r);
-			map[1][i] = (byte)(ratio * (float)g);
-			map[2][i] = (byte)(ratio * (float)b);
-		}
-		return map;
+		v.setColormap( colormapsCache.getColormap(rgba) );
 	}
 
 	public
