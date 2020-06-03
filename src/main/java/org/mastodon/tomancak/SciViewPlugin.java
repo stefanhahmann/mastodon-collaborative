@@ -14,9 +14,9 @@ import net.imglib2.display.ColorTable8;
 import net.imglib2.type.numeric.ARGBType;
 import org.joml.*;
 import org.mastodon.app.ui.ViewMenuBuilder;
-import org.mastodon.model.FocusModel;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
+import org.mastodon.model.HighlightModel;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.MamutViewBdv;
@@ -173,13 +173,20 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 						setColorGeneratorFrom(tsWin);
 					});
 
-					//setup focusing
+					//setup highlighting
 					sRef = pluginAppModel.getAppModel().getModel().getGraph().vertexRef();
-					final FocusModel<Spot, Link> focus = pluginAppModel.getAppModel().getFocusModel();
-					focus.listeners().add( () -> {
-						focus.getFocusedVertex(sRef);
-						System.out.println("focused on "+sRef.getLabel());
-						updateFocus( dmd.sv.find(sRef.getLabel()) );
+					final HighlightModel<Spot, Link> highlighter = pluginAppModel.getAppModel().getHighlightModel();
+					highlighter.listeners().add( () -> {
+						if (highlighter.getHighlightedVertex(sRef) != null)
+						{
+							//System.out.println("focused on "+sRef.getLabel());
+							updateFocus( dmd.sv.find(sRef.getLabel()) );
+						}
+						else
+						{
+							//System.out.println("defocused");
+							updateFocus( null );
+						}
 					});
 
 					dmd.controllingBdvWindow.get()
@@ -216,7 +223,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 		//something to defocus?
 		if (stillFocusedNode != null && stillFocusedNode.getParent() != null)
 		{
-			stillFocusedNode.setScale(normalScale);
+			stillFocusedNode.getScale().mul(0.66666f);
 			stillFocusedNode.setNeedsUpdate(true);
 		}
 
@@ -224,10 +231,8 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 		stillFocusedNode = newFocusNode;
 		if (stillFocusedNode != null)
 		{
-			stillFocusedNode.setScale(focusedScale);
+			stillFocusedNode.getScale().mul(1.50f);
 			stillFocusedNode.setNeedsUpdate(true);
 		}
 	}
-	static private Vector3f normalScale = new Vector3f(1.0f);
-	static private Vector3f focusedScale = new Vector3f(1.5f);
 }
