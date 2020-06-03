@@ -348,6 +348,25 @@ public class DisplayMastodonData
 				rgb.z = (float)((rgbInt      ) & 0xFF) / 255f;
 			}
 
+			/*
+			if (timepoint < 10)
+			{
+				float opacity = 0.1f * (10-timepoint);
+				System.out.println("odd timepoint: transparency ON with opacity = "+opacity);
+				//sph.getMaterial().getBlending().setTransparent(true);
+				sph.getMaterial().getBlending().setOpacity(opacity);
+				sph.getMaterial().getBlending().setSourceColorBlendFactor(Blending.BlendFactor.SrcAlpha);
+				sph.getMaterial().getBlending().setDestinationColorBlendFactor(Blending.BlendFactor.OneMinusSrcAlpha);
+				sph.getMaterial().getBlending().setSourceAlphaBlendFactor(Blending.BlendFactor.SrcAlpha);
+				sph.getMaterial().getBlending().setDestinationAlphaBlendFactor(Blending.BlendFactor.OneMinusSrcAlpha);
+			}
+			else
+			{
+				System.out.println("even timepoint: transparency OFF");
+				sph.getMaterial().getBlending().setTransparent(false);
+			}
+			*/
+
 			sph.setName(spot.getLabel());
 		}
 
