@@ -1,25 +1,15 @@
 package org.mastodon.tomancak;
 
-import bdv.util.Bounds;
-import bdv.viewer.ConverterSetups;
-import bdv.viewer.ViewerStateChange;
-import bdv.viewer.ViewerStateChangeListener;
+import sc.iview.SciView;
 import graphics.scenery.Node;
-import graphics.scenery.Sphere;
-import graphics.scenery.volumes.Colormap;
-import graphics.scenery.volumes.TransferFunction;
 import graphics.scenery.volumes.Volume;
 
-import net.imglib2.display.ColorTable8;
-import net.imglib2.type.numeric.ARGBType;
-import org.joml.*;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.model.HighlightModel;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.mamut.MamutViewBdv;
 import org.mastodon.revised.mamut.MamutViewTrackScheme;
 import org.mastodon.revised.model.mamut.Link;
 import org.mastodon.revised.model.mamut.Spot;
@@ -27,21 +17,12 @@ import org.mastodon.revised.ui.coloring.GraphColorGenerator;
 import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.revised.ui.keymap.CommandDescriptions;
 
-import org.mastodon.spatial.SpatialIndex;
 import org.scijava.AbstractContextual;
-import org.scijava.command.CommandService;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.RunnableAction;
-
 import org.scijava.event.EventService;
-import sc.iview.event.NodeAddedEvent;
-
-import bdv.viewer.SourceAndConverter;
-import sc.iview.SciView;
-import sc.iview.commands.view.SetTransferFunction;
-import sc.iview.event.NodeChangedEvent;
 
 import java.util.List;
 import java.util.Arrays;
