@@ -162,6 +162,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				final Node spotsNode = new Node("Mastodon spots");
 				dmd.centerNodeOnVolume(spotsNode,v); //so that shift+mouse rotates nicely
 				dmd.sv.addNode(spotsNode);
+				DisplayMastodonData.showSpotsDisplayParamsDialog(getContext(),spotsNode,dmd.spotVizuParams);
 
 				if (dmd.controllingBdvWindow.isThereSome())
 				{

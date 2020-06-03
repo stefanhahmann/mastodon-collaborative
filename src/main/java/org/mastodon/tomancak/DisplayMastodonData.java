@@ -19,6 +19,7 @@ import org.mastodon.revised.model.mamut.Link;
 import org.mastodon.revised.model.mamut.Spot;
 import org.mastodon.revised.ui.coloring.GraphColorGenerator;
 import org.mastodon.spatial.SpatialIndex;
+import org.mastodon.tomancak.dialogs.SpotsDisplayParamsDialog;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import sc.iview.SciView;
@@ -286,6 +287,9 @@ public class DisplayMastodonData
 	float spotRadius = 0.1f;
 
 	public
+	final SpotsDisplayParamsDialog.ParamsWrapper spotVizuParams = new SpotsDisplayParamsDialog.ParamsWrapper();
+
+	public
 	void showSpots(final int timepoint, final Node underThisNode)
 	{
 		showSpots(timepoint,underThisNode,null);
@@ -324,6 +328,7 @@ public class DisplayMastodonData
 			{
 				//create a new one
 				sph = new Sphere(spotRadius, 8);
+				sph.getScale().set(spotVizuParams.sphereSize,spotVizuParams.sphereSize,spotVizuParams.sphereSize);
 				extraNodes.add(sph);
 			}
 
@@ -413,5 +418,14 @@ public class DisplayMastodonData
 				"sciView",v.getHub().getApplication(),
 				//NB: luckily, getApplication() returns SciView instance
 				"volume",v);
+	}
+
+	public static
+	void showSpotsDisplayParamsDialog(final Context ctx, final Node spots,
+	                                  final SpotsDisplayParamsDialog.ParamsWrapper vizuParams)
+	{
+		//start the TransferFunction modifying dialog
+		ctx.getService(CommandService.class).run(SpotsDisplayParamsDialog.class,true,
+				"params",vizuParams, "spheresGatheringNode",spots);
 	}
 }
