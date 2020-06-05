@@ -1,7 +1,9 @@
 package org.mastodon.tomancak;
 
+import org.joml.Quaternionf;
 import sc.iview.SciView;
 import graphics.scenery.Node;
+import graphics.scenery.Camera;
 import graphics.scenery.volumes.Volume;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
@@ -23,6 +25,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.RunnableAction;
+import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.event.EventService;
 
 import java.util.List;
@@ -131,6 +134,29 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				//find the event service to be able to notify the inspector
 				dmd.events = dmd.sv.getScijavaContext().getService(EventService.class);
 				System.out.println("Found an event service: " + dmd.events);
+
+				class RotateCamera implements ClickBehaviour
+				{
+					final Quaternionf rotQ;
+					RotateCamera(final float byFixedAngInRad)
+					{ rotQ = new Quaternionf().rotateAxis(byFixedAngInRad,0,0,-1); }
+
+					void rotate()
+					{
+						final Camera cam = dmd.sv.getCamera();
+						if(!cam.getLock().tryLock()) return;
+
+						cam.setRotation( new Quaternionf(rotQ).mul(cam.getRotation()).normalize() );
+						cam.getLock().unlock();
+					}
+
+					@Override
+					public void click(int x, int y) { rotate(); }
+				}
+				dmd.sv.publicGetInputHandler().addBehaviour("rotate_right", new RotateCamera(0.1f));
+				dmd.sv.publicGetInputHandler().addKeyBinding("rotate_right","R");
+				dmd.sv.publicGetInputHandler().addBehaviour("rotate_left", new RotateCamera(-0.1f));
+				dmd.sv.publicGetInputHandler().addKeyBinding("rotate_left","shift R");
 
 				//show one volume
 				//Volume v = dmd.showOneTimePoint(10);
