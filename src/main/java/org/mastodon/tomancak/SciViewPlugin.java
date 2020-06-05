@@ -8,6 +8,7 @@ import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.plugin.MastodonPlugin;
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.model.HighlightModel;
+import org.mastodon.model.FocusModel;
 import org.mastodon.revised.mamut.KeyConfigContexts;
 import org.mastodon.revised.mamut.MamutAppModel;
 import org.mastodon.revised.mamut.MamutViewTrackScheme;
@@ -185,6 +186,18 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					pluginAppModel.getAppModel()
 						.getModel().getGraph()
 						.addVertexPositionListener( l -> dmd.updateSpotPosition(spotsNode,l) );
+
+					//setup "activating" of a Node in SciView in response
+					//to focusing its counterpart Spot in Mastodon
+					fRef = pluginAppModel.getAppModel().getModel().getGraph().vertexRef();
+					final FocusModel<Spot, Link> focuser = pluginAppModel.getAppModel().getFocusModel();
+					focuser.listeners().add(() -> {
+						if (focuser.getFocusedVertex(fRef) != null)
+						{
+							final Node n = dmd.sv.find(fRef.getLabel());
+							if (n != null) dmd.sv.setActiveNode(n);
+						}
+					});
 				}
 				else
 				{
@@ -207,7 +220,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 
 	//focus attributes
 	private Node stillFocusedNode = null;
-	private Spot sRef;
+	private Spot sRef,fRef;
 	private void updateFocus(final Node newFocusNode)
 	{
 		/* DEBUG
