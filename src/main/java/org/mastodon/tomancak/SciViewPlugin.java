@@ -173,12 +173,23 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 						}
 					});
 
+					//setup updating of spots to the currently viewed timepoint
 					dmd.controllingBdvWindow.get()
 							.getViewerPanelMamut()
 							.addTimePointListener( tp -> {
 								updateFocus(null);
 								dmd.showSpots(tp,spotsNode,colorGenerator);
 							} );
+
+					//setup updating of spots when they are dragged in the BDV
+					pluginAppModel.getAppModel()
+						.getModel().getGraph()
+						.addVertexPositionListener( l -> dmd.updateSpotPosition(spotsNode,l) );
+				}
+				else
+				{
+					//just show spots w/o any additional "services"
+					dmd.showSpots( v.getCurrentTimepoint(), spotsNode);
 				}
 
 				dmd.sv.getFloor().setVisible(false);

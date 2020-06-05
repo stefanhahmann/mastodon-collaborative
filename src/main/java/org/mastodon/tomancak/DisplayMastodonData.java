@@ -180,7 +180,6 @@ public class DisplayMastodonData
 		final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac,
 				mastodonPlugin.getAppModel().getSharedBdvData().getNumTimepoints(), volumeName);
 
-
 		//adjust the transfer function to a "diagonal"
 		setTransferFunction(v);
 
