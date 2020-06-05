@@ -311,7 +311,6 @@ public class DisplayMastodonData
 		//to make sure the iterator can remain consistent
 		List<Node> extraNodes = new LinkedList<>();
 
-		float[] pos = new float[3];
 		for (Spot spot : spots)
 		{
 			//find a Sphere to represent this spot
@@ -375,6 +374,25 @@ public class DisplayMastodonData
 		underThisNode.updateWorld(true,true);
 		events.publish(new NodeChangedEvent(underThisNode));
 	}
+
+	public
+	void updateSpotPosition(final Node spotsGatheringNode, final Spot updatedSpot)
+	{
+		final Node spotNode = sv.find(updatedSpot.getLabel()); //KILLER! TODO
+		if (spotNode != null)
+		{
+			final Vector3f hubPos = spotsGatheringNode.getPosition();
+			updatedSpot.localize(pos);
+			pos[0] = +scale *pos[0] -hubPos.x; //adjust coords to the current volume scale
+			pos[1] = -scale *pos[1] -hubPos.y;
+			pos[2] = -scale *pos[2] -hubPos.z;
+			spotNode.setPosition(pos);
+			spotNode.setNeedsUpdate(true);
+		}
+	}
+
+	//aux array to aid transferring of float positions (and avoid re-allocating it)
+	final float[] pos = new float[3];
 
 	// ============================================================================================
 
