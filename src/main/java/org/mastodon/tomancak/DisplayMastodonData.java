@@ -431,4 +431,16 @@ public class DisplayMastodonData
 				"params",vizuParams, "spheresGatheringNode",spots,
 				"sphereAlpha",1.0f);
 	}
+
+	public
+	DisplayCompassAxes showCompassAxes(final Vector3f atThisCenter)
+	{
+		final DisplayCompassAxes compass = new DisplayCompassAxes();
+		final Node compassMainNode = compass.getGatheringNode();
+		compassMainNode.setPosition(atThisCenter);
+		compassMainNode.getScale().set(scale,-scale,-scale);
+		//NB: follow the axes orientation of showTimeSeries() and showSpots()
+		sv.addNode( compassMainNode );
+		return compass;
+	}
 }

@@ -145,6 +145,9 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				dmd.sv.addNode(spotsNode);
 				DisplayMastodonData.showSpotsDisplayParamsDialog(getContext(),spotsNode,dmd.spotVizuParams);
 
+				//show compass
+				dmd.showCompassAxes(spotsNode.getPosition());
+
 				if (dmd.controllingBdvWindow.isThereSome())
 				{
 					//setup coloring
