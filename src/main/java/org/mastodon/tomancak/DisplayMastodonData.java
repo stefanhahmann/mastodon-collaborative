@@ -4,12 +4,9 @@ import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.*;
 import graphics.scenery.Node;
 import graphics.scenery.Sphere;
-import graphics.scenery.volumes.Colormap;
 import graphics.scenery.volumes.TransferFunction;
 import graphics.scenery.volumes.Volume;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.display.ColorTable8;
-import net.imglib2.type.numeric.ARGBType;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.mastodon.plugin.MastodonPluginAppModel;
@@ -19,6 +16,7 @@ import org.mastodon.revised.model.mamut.Link;
 import org.mastodon.revised.model.mamut.Spot;
 import org.mastodon.revised.ui.coloring.GraphColorGenerator;
 import org.mastodon.spatial.SpatialIndex;
+import org.mastodon.tomancak.dialogs.SpotsDisplayParamsDialog;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import sc.iview.SciView;
@@ -39,11 +37,14 @@ public class DisplayMastodonData
 	//the overall coordinate scale factor from Mastodon to SciView coords
 	//NB: the smaller scale the better! with scale 1, pixels look terrible....
 	public static
-	final float scale = 0.2f;
+	final float scale = 0.01f;
 
 	//SciView connection + EventService that is used to update SciView's inspector panel
 	SciView sv = null;
 	EventService events = null;
+
+	//shared cache of colormaps for volumes (to prevent that they are re-created over and over again)
+	final CachedColorTables volumeColormaps = new CachedColorTables();
 
 	public
 	DisplayMastodonData(final MastodonPluginAppModel pluginAppModel)
@@ -136,7 +137,8 @@ public class DisplayMastodonData
 		setTransferFunction(v);
 
 		//override SciView's initial LUT
-		restoreVolumeColor(v);
+		final CachedColorTables volumeColormaps = new CachedColorTables();
+		restoreVolumeColor(v,volumeColormaps);
 
 		//initial min-max display range comes from BDV
 		final ConverterSetup cs = mastodonPlugin.getAppModel().getSharedBdvData().getConverterSetups().getConverterSetup(sac);
@@ -144,11 +146,7 @@ public class DisplayMastodonData
 
 		//prepare per axis scaling factors to maintain the data voxel ratio
 		final double[] voxelDims = new double[3];
-		sac.getSpimSource().getVoxelDimensions().dimensions(voxelDims);
-		//
-		double minDim = voxelDims[0];
-		for (int i = 1; i < voxelDims.length; ++i) minDim = Math.min( voxelDims[i], minDim );
-		for (int i = 0; i < voxelDims.length; ++i) voxelDims[i] /= minDim;
+		calculateDisplayVoxelRatioAlaBDV(voxelDims, sac.getSpimSource());
 		System.out.println("scaling: "+voxelDims[0]+" x "+voxelDims[1]+" x "+voxelDims[2]);
 
 		v.setName(volumeName);
@@ -182,12 +180,12 @@ public class DisplayMastodonData
 		final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac,
 				mastodonPlugin.getAppModel().getSharedBdvData().getNumTimepoints(), volumeName);
 
-
 		//adjust the transfer function to a "diagonal"
 		setTransferFunction(v);
 
 		//override SciView's initial LUT
-		restoreVolumeColor(v);
+		final CachedColorTables volumeColormaps = new CachedColorTables();
+		restoreVolumeColor(v,volumeColormaps);
 
 		//initial min-max display range comes from BDV
 		//... comes from BDV transiently since we're using its data directly ...
@@ -218,7 +216,7 @@ public class DisplayMastodonData
 				System.out.println("SciView says new timepoint "+TP);
 
 				//also keep ignoring the SciView's color/LUT and enforce color from BDV
-				restoreVolumeColor(v);
+				restoreVolumeColor(v,volumeColormaps);
 			}
 		});
 
@@ -234,7 +232,7 @@ public class DisplayMastodonData
 			System.out.println("BDV says new color    : " + t.getColor());
 
 			//request that the volume be repainted in SciView
-			restoreVolumeColor(v);
+			restoreVolumeColor(v,volumeColormaps);
 			v.getVolumeManager().requestRepaint();
 
 			//also notify the inspector panel
@@ -272,7 +270,7 @@ public class DisplayMastodonData
 			//
 			//be of the current Mastodon's color -- essentially,
 			//ignores (by re-setting back) whatever LUT choice has been made in SciView's nodel panel
-			restoreVolumeColor(v);
+			restoreVolumeColor(v,volumeColormaps);
 
 			//final ConverterSetups setups = pluginAppModel.getAppModel().getSharedBdvData().getConverterSetups();
 			//setups.getBounds().setBounds( setups.getConverterSetup(sac), new Bounds(min,max) );
@@ -283,7 +281,10 @@ public class DisplayMastodonData
 	// ============================================================================================
 
 	public
-	float spotRadius = 0.8f;
+	float spotRadius = 0.1f;
+
+	public
+	final SpotsDisplayParamsDialog.ParamsWrapper spotVizuParams = new SpotsDisplayParamsDialog.ParamsWrapper();
 
 	public
 	void showSpots(final int timepoint, final Node underThisNode)
@@ -310,7 +311,6 @@ public class DisplayMastodonData
 		//to make sure the iterator can remain consistent
 		List<Node> extraNodes = new LinkedList<>();
 
-		float[] pos = new float[3];
 		for (Spot spot : spots)
 		{
 			//find a Sphere to represent this spot
@@ -324,6 +324,7 @@ public class DisplayMastodonData
 			{
 				//create a new one
 				sph = new Sphere(spotRadius, 8);
+				sph.getScale().set(spotVizuParams.sphereSize,spotVizuParams.sphereSize,spotVizuParams.sphereSize);
 				extraNodes.add(sph);
 			}
 
@@ -343,6 +344,25 @@ public class DisplayMastodonData
 				rgb.z = (float)((rgbInt      ) & 0xFF) / 255f;
 			}
 
+			/*
+			if (timepoint < 10)
+			{
+				float opacity = 0.1f * (10-timepoint);
+				System.out.println("odd timepoint: transparency ON with opacity = "+opacity);
+				//sph.getMaterial().getBlending().setTransparent(true);
+				sph.getMaterial().getBlending().setOpacity(opacity);
+				sph.getMaterial().getBlending().setSourceColorBlendFactor(Blending.BlendFactor.SrcAlpha);
+				sph.getMaterial().getBlending().setDestinationColorBlendFactor(Blending.BlendFactor.OneMinusSrcAlpha);
+				sph.getMaterial().getBlending().setSourceAlphaBlendFactor(Blending.BlendFactor.SrcAlpha);
+				sph.getMaterial().getBlending().setDestinationAlphaBlendFactor(Blending.BlendFactor.OneMinusSrcAlpha);
+			}
+			else
+			{
+				System.out.println("even timepoint: transparency OFF");
+				sph.getMaterial().getBlending().setTransparent(false);
+			}
+			*/
+
 			sph.setName(spot.getLabel());
 		}
 
@@ -351,18 +371,30 @@ public class DisplayMastodonData
 
 		//notify the inspector to update the hub node
 		underThisNode.setName("Mastodon spots at "+timepoint);
+		underThisNode.updateWorld(true,true);
 		events.publish(new NodeChangedEvent(underThisNode));
 	}
 
-	// ============================================================================================
-
 	public
-	void showTransferFunctionDialog(final Context ctx, final Volume v)
+	void updateSpotPosition(final Node spotsGatheringNode, final Spot updatedSpot)
 	{
-		//start the TransferFunction modifying dialog
-		ctx.getService(CommandService.class).run(SetTransferFunction.class,true,
-				"sciView",sv,"volume",v);
+		final Node spotNode = sv.find(updatedSpot.getLabel()); //KILLER! TODO
+		if (spotNode != null)
+		{
+			final Vector3f hubPos = spotsGatheringNode.getPosition();
+			updatedSpot.localize(pos);
+			pos[0] = +scale *pos[0] -hubPos.x; //adjust coords to the current volume scale
+			pos[1] = -scale *pos[1] -hubPos.y;
+			pos[2] = -scale *pos[2] -hubPos.z;
+			spotNode.setPosition(pos);
+			spotNode.setNeedsUpdate(true);
+		}
 	}
+
+	//aux array to aid transferring of float positions (and avoid re-allocating it)
+	final float[] pos = new float[3];
+
+	// ============================================================================================
 
 	static
 	void setTransferFunction(final Volume v)
@@ -376,37 +408,70 @@ public class DisplayMastodonData
 	}
 
 	static
-	void restoreVolumeColor(final Volume v)
+	void restoreVolumeColor(final Volume v, final CachedColorTables colormapsCache)
 	{
 		int rgba = v.getConverterSetups().get(0).getColor().get();
-		int r = ARGBType.red( rgba );
-		int g = ARGBType.green( rgba );
-		int b = ARGBType.blue( rgba );
-		//int a = ARGBType.alpha( rgba );
-		//System.out.println("setVolumeCOlor to "+r+","+g+","+b+","+a);
-		v.setColormap(Colormap.fromColorTable(new ColorTable8( createMapArray(r,g,b) )));
-	}
-
-	static
-	byte[][] createMapArray(int r, int g, int b)
-	{
-		final byte[][] map = new byte[3][256];
-		for (int i = 0; i < 256; ++i)
-		{
-			float ratio = (float)i / 256f;
-			map[0][i] = (byte)(ratio * (float)r);
-			map[1][i] = (byte)(ratio * (float)g);
-			map[2][i] = (byte)(ratio * (float)b);
-		}
-		return map;
+		v.setColormap( colormapsCache.getColormap(rgba) );
 	}
 
 	public
 	void centerNodeOnVolume(final Node n, final Volume v)
 	{
-		final long[] dims = new long[3];
-		v.getViewerState().getSources().get(0).getSpimSource().getSource(0,0).dimensions(dims);
+		//short cut to the Source of this Volume
+		final Source<?> volumeAsSource = v.getViewerState().getSources().get(0).getSpimSource();
 
-		n.setPosition(new float[] { 0.5f*scale*dims[0], -0.5f*scale*dims[1], -0.5f*scale*dims[2] });
+		//image size in number of pixels per axis/dimension
+		final long[] dims = new long[3];
+		volumeAsSource.getSource(0,0).dimensions(dims);
+
+		//pixel size in units of the smallest-pixel-size
+		final double[] ratios = new double[3];
+		calculateDisplayVoxelRatioAlaBDV(ratios, volumeAsSource);
+
+		n.setPosition(new double[] { 0.5*scale*dims[0]*ratios[0], -0.5*scale*dims[1]*ratios[1], -0.5*scale*dims[2]*ratios[2] });
+	}
+
+	public static
+	void calculateDisplayVoxelRatioAlaBDV(final double[] vxAxisRatio, final Source<?> forThisSource)
+	{
+		forThisSource.getVoxelDimensions().dimensions(vxAxisRatio);
+
+		double minLength = vxAxisRatio[0];
+		for (int i = 1; i < vxAxisRatio.length; ++i) minLength = Math.min( vxAxisRatio[i], minLength );
+		for (int i = 0; i < vxAxisRatio.length; ++i) vxAxisRatio[i] /= minLength;
+	}
+
+	// ============================================================================================
+
+	public static
+	void showTransferFunctionDialog(final Context ctx, final Volume v)
+	{
+		//start the TransferFunction modifying dialog
+		ctx.getService(CommandService.class).run(SetTransferFunction.class,true,
+				"sciView",v.getHub().getApplication(),
+				//NB: luckily, getApplication() returns SciView instance
+				"volume",v);
+	}
+
+	public static
+	void showSpotsDisplayParamsDialog(final Context ctx, final Node spots,
+	                                  final SpotsDisplayParamsDialog.ParamsWrapper vizuParams)
+	{
+		//start the TransferFunction modifying dialog
+		ctx.getService(CommandService.class).run(SpotsDisplayParamsDialog.class,true,
+				"params",vizuParams, "spheresGatheringNode",spots,
+				"sphereAlpha",1.0f);
+	}
+
+	public
+	DisplayCompassAxes showCompassAxes(final Vector3f atThisCenter)
+	{
+		final DisplayCompassAxes compass = new DisplayCompassAxes();
+		final Node compassMainNode = compass.getGatheringNode();
+		compassMainNode.setPosition(atThisCenter);
+		compassMainNode.getScale().set(scale,-scale,-scale);
+		//NB: follow the axes orientation of showTimeSeries() and showSpots()
+		sv.addNode( compassMainNode );
+		return compass;
 	}
 }
