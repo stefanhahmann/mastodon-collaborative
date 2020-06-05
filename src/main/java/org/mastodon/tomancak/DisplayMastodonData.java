@@ -146,11 +146,7 @@ public class DisplayMastodonData
 
 		//prepare per axis scaling factors to maintain the data voxel ratio
 		final double[] voxelDims = new double[3];
-		sac.getSpimSource().getVoxelDimensions().dimensions(voxelDims);
-		//
-		double minDim = voxelDims[0];
-		for (int i = 1; i < voxelDims.length; ++i) minDim = Math.min( voxelDims[i], minDim );
-		for (int i = 0; i < voxelDims.length; ++i) voxelDims[i] /= minDim;
+		calculateDisplayVoxelRatioAlaBDV(voxelDims, sac.getSpimSource());
 		System.out.println("scaling: "+voxelDims[0]+" x "+voxelDims[1]+" x "+voxelDims[2]);
 
 		v.setName(volumeName);
@@ -404,10 +400,28 @@ public class DisplayMastodonData
 	public
 	void centerNodeOnVolume(final Node n, final Volume v)
 	{
-		final long[] dims = new long[3];
-		v.getViewerState().getSources().get(0).getSpimSource().getSource(0,0).dimensions(dims);
+		//short cut to the Source of this Volume
+		final Source<?> volumeAsSource = v.getViewerState().getSources().get(0).getSpimSource();
 
-		n.setPosition(new float[] { 0.5f*scale*dims[0], -0.5f*scale*dims[1], -0.5f*scale*dims[2] });
+		//image size in number of pixels per axis/dimension
+		final long[] dims = new long[3];
+		volumeAsSource.getSource(0,0).dimensions(dims);
+
+		//pixel size in units of the smallest-pixel-size
+		final double[] ratios = new double[3];
+		calculateDisplayVoxelRatioAlaBDV(ratios, volumeAsSource);
+
+		n.setPosition(new double[] { 0.5*scale*dims[0]*ratios[0], -0.5*scale*dims[1]*ratios[1], -0.5*scale*dims[2]*ratios[2] });
+	}
+
+	public static
+	void calculateDisplayVoxelRatioAlaBDV(final double[] vxAxisRatio, final Source<?> forThisSource)
+	{
+		forThisSource.getVoxelDimensions().dimensions(vxAxisRatio);
+
+		double minLength = vxAxisRatio[0];
+		for (int i = 1; i < vxAxisRatio.length; ++i) minLength = Math.min( vxAxisRatio[i], minLength );
+		for (int i = 0; i < vxAxisRatio.length; ++i) vxAxisRatio[i] /= minLength;
 	}
 
 	// ============================================================================================
