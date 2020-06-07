@@ -2,6 +2,7 @@ package org.mastodon.tomancak;
 
 import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.*;
+import graphics.scenery.Material;
 import graphics.scenery.Node;
 import graphics.scenery.Sphere;
 import graphics.scenery.volumes.TransferFunction;
@@ -311,6 +312,10 @@ public class DisplayMastodonData
 		//to make sure the iterator can remain consistent
 		List<Node> extraNodes = new LinkedList<>();
 
+		//reference vector with diffuse color from the gathering node
+		//NB: relying on the fact that Scenery keeps only a reference (does not make own copies)
+		final Material sharedMaterialObj = underThisNode.getMaterial();
+
 		for (Spot spot : spots)
 		{
 			//find a Sphere to represent this spot
@@ -338,10 +343,28 @@ public class DisplayMastodonData
 			if (colorGenerator != null)
 			{
 				int rgbInt = colorGenerator.color(spot);
-				Vector3f rgb = sph.getMaterial().getDiffuse();
-				rgb.x = (float)((rgbInt >> 16) & 0xFF) / 255f;
-				rgb.y = (float)((rgbInt >>  8) & 0xFF) / 255f;
-				rgb.z = (float)((rgbInt      ) & 0xFF) / 255f;
+				if ((rgbInt&0x00FFFFFF) > 0)
+				{
+					//before we set the color from the colorGenerator,
+					//we have to have for sure own material object (not the shared one)
+					if (sph.getMaterial() == sharedMaterialObj) sph.setMaterial(new Material());
+					Vector3f rgb = sph.getMaterial().getDiffuse();
+					rgb.x = (float)((rgbInt >> 16) & 0xFF) / 255f;
+					rgb.y = (float)((rgbInt >>  8) & 0xFF) / 255f;
+					rgb.z = (float)((rgbInt      ) & 0xFF) / 255f;
+				}
+				else
+				{
+					//share the same color settings of the gathering node (this allows user to choose once and "set" for all)
+					//NB: relying on the fact that Scenery keeps only a reference (does not make own copy)
+					sph.setMaterial(sharedMaterialObj);
+				}
+			}
+			else
+			{
+				//share the same color settings of the gathering node (this allows user to choose once and "set" for all)
+				//NB: relying on the fact that Scenery keeps only a reference (does not make own copy)
+				sph.setMaterial(sharedMaterialObj);
 			}
 
 			/*
