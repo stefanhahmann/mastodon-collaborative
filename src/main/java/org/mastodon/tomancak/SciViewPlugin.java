@@ -28,6 +28,9 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.event.EventService;
 
+import org.scijava.event.EventHandler;
+import sc.iview.event.NodeActivatedEvent;
+
 import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
@@ -172,6 +175,10 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				dmd.sv.addNode(spotsNode);
 				DisplayMastodonData.showSpotsDisplayParamsDialog(getContext(),spotsNode,dmd.spotVizuParams);
 
+				//now, the spots are click-selectable in SciView and we want to listen if some spot was
+				//selected/activated and consequently select it in the Mastodon itself
+				dmd.events.subscribe(notifierOfMastodonWhenSpotIsSelectedInSciView);
+
 				//show compass
 				dmd.showCompassAxes(spotsNode.getPosition());
 
@@ -233,6 +240,21 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 
 				dmd.sv.getFloor().setVisible(false);
 				dmd.sv.centerOnNode(spotsNode);
+			}
+
+			//this object cannot be created within the scope of the run() method, otherwise
+			//it will be GC'ed after run() is over.. and the listener will never get activated...
+			final EventListener notifierOfMastodonWhenSpotIsSelectedInSciView = new EventListener();
+			class EventListener extends AbstractContextual
+			{
+				@EventHandler
+				public void onEvent(NodeActivatedEvent event) {
+					if (event.getNode() == null) return;
+					pluginAppModel.getAppModel().getModel().getGraph().vertices()
+							.stream()
+							.filter(s -> (s.getLabel().equals(event.getNode().getName())))
+							.forEach(s -> pluginAppModel.getAppModel().getSelectionModel().setSelected(s,true));
+				}
 			}
 		}.start();
 	}
