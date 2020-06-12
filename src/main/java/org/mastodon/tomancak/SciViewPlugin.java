@@ -138,29 +138,6 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				dmd.events = dmd.sv.getScijavaContext().getService(EventService.class);
 				System.out.println("Found an event service: " + dmd.events);
 
-				class RotateCamera implements ClickBehaviour
-				{
-					final Quaternionf rotQ;
-					RotateCamera(final float byFixedAngInRad)
-					{ rotQ = new Quaternionf().rotateAxis(byFixedAngInRad,0,0,-1); }
-
-					void rotate()
-					{
-						final Camera cam = dmd.sv.getCamera();
-						if(!cam.getLock().tryLock()) return;
-
-						cam.setRotation( new Quaternionf(rotQ).mul(cam.getRotation()).normalize() );
-						cam.getLock().unlock();
-					}
-
-					@Override
-					public void click(int x, int y) { rotate(); }
-				}
-				dmd.sv.publicGetInputHandler().addBehaviour("rotate_right", new RotateCamera(0.1f));
-				dmd.sv.publicGetInputHandler().addKeyBinding("rotate_right","R");
-				dmd.sv.publicGetInputHandler().addBehaviour("rotate_left", new RotateCamera(-0.1f));
-				dmd.sv.publicGetInputHandler().addKeyBinding("rotate_left","shift R");
-
 				//show one volume
 				//Volume v = dmd.showOneTimePoint(10);
 
