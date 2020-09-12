@@ -144,11 +144,15 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				dmd.makeSciViewReadBdvSetting(v);
 				DisplayMastodonData.showTransferFunctionDialog(getContext(),v);
 
-				//show spots
+				//show spots...
 				final Node spotsNode = new Node("Mastodon spots");
 				dmd.centerNodeOnVolume(spotsNode,v); //so that shift+mouse rotates nicely
 				dmd.sv.addNode(spotsNode);
-				DisplayMastodonData.showSpotsDisplayParamsDialog(getContext(),spotsNode,dmd.spotVizuParams);
+
+				//...and links
+				final Node linksNode = new Node("Mastodon links");
+				dmd.sv.addNode(linksNode);
+				DisplayMastodonData.showSpotsDisplayParamsDialog(getContext(),spotsNode,linksNode,dmd.spotVizuParams);
 
 				//now, the spots are click-selectable in SciView and we want to listen if some spot was
 				//selected/activated and consequently select it in the Mastodon itself

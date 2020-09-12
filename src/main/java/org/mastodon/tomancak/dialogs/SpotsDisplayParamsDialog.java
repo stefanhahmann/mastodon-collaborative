@@ -13,7 +13,12 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 	public static class ParamsWrapper {
 		public float spotSize = 1.0f;
 		public float spotAlpha = 1.0f;
-	};
+
+		public float linkSize = 0.01f;
+		public float linkAlpha = 1.0f;
+		public int link_TPsInPast = 0;
+		public int link_TPsAhead = 0;
+	}
 
 	/** the object with parameters shared between this dialog and its caller */
 	@Parameter
@@ -21,6 +26,10 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 
 	@Parameter
 	private Node spotsGatheringNode;
+
+	@Parameter
+	private Node linksGatheringNode;
+
 
 	@Parameter(label = "Spots size", style = NumberWidget.SLIDER_STYLE,
 	           min = "0.1", max = "10.0", stepSize = "0.1", callback = "adjustSpotSize")
@@ -49,5 +58,51 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 		for (Node s : spotsGatheringNode.getChildren())
 			s.getMaterial().getBlending().setOpacity(spotAlpha);
 		spotsGatheringNode.updateWorld(true,true);
+	}
+
+
+	@Parameter(label = "Links size", style = NumberWidget.SLIDER_STYLE,
+	           min = "0.01", max = "10.0", stepSize = "0.01", callback = "adjustLinkSize")
+	private float linkSize = 1.0f;
+
+	@Parameter(label = "Links alpha", style = NumberWidget.SLIDER_STYLE,
+	           min = "0.1", max = "1.0", stepSize = "0.1", callback = "adjustLinkAlpha")
+	private float linkAlpha = 1.0f;
+
+	private
+	void adjustLinkSize()
+	{
+		//tell back to our caller about the new value of this attribute
+		params.linkSize = linkSize;
+
+		for (Node s : linksGatheringNode.getChildren())
+			s.getScale().set(linkSize,linkSize,linkSize);
+		linksGatheringNode.updateWorld(true,true);
+	}
+
+	private
+	void adjustLinkAlpha()
+	{
+		params.linkAlpha = linkAlpha;
+
+		for (Node s : linksGatheringNode.getChildren())
+			s.getMaterial().getBlending().setOpacity(linkAlpha);
+		linksGatheringNode.updateWorld(true,true);
+	}
+
+
+	@Parameter(label = "Show past links", style = NumberWidget.SLIDER_STYLE,
+	           min = "0", stepSize = "1", callback = "adjustLinkCounts")
+	private int link_TPsInPast = 0;
+
+	@Parameter(label = "Show future links", style = NumberWidget.SLIDER_STYLE,
+	           min = "0", stepSize = "1", callback = "adjustLinkCounts")
+	private int link_TPsAhead = 0;
+
+	private
+	void adjustLinkCounts()
+	{
+		params.link_TPsInPast = link_TPsInPast;
+		params.link_TPsAhead  = link_TPsAhead;
 	}
 }
