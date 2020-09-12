@@ -30,6 +30,7 @@ import org.scijava.event.EventService;
 
 import org.scijava.event.EventHandler;
 import sc.iview.event.NodeActivatedEvent;
+import sc.iview.vector.FloatVector3;
 
 import java.util.List;
 import java.util.Arrays;
@@ -205,7 +206,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 						if (focuser.getFocusedVertex(fRef) != null)
 						{
 							final Node n = dmd.sv.find(fRef.getLabel());
-							if (n != null) dmd.sv.setActiveNode(n);
+							if (n != null) dmd.sv.setActiveCenteredNode(n);
 						}
 					});
 				}
@@ -214,6 +215,16 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 					//just show spots w/o any additional "services"
 					dmd.showSpots( v.getCurrentTimepoint(), spotsNode);
 				}
+
+				//big black box
+				FloatVector3 bbbP = new FloatVector3(spotsNode.getPosition().x,spotsNode.getPosition().y,spotsNode.getPosition().z );
+				FloatVector3 bbbS = new FloatVector3(spotsNode.getPosition().x,spotsNode.getPosition().y,spotsNode.getPosition().z );
+				bbbS.setX( bbbS.xf() *2);
+				bbbS.setY( bbbS.yf() *2);
+				bbbS.setZ( bbbS.zf() *2);
+				final Node box = dmd.sv.addBox(bbbP,bbbS);
+				box.setName("BLOCKING BOX");
+				box.setVisible(false);
 
 				dmd.sv.getFloor().setVisible(false);
 				dmd.sv.centerOnNode(spotsNode);
