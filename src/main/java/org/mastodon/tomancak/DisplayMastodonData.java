@@ -330,7 +330,7 @@ public class DisplayMastodonData
 			{
 				//create a new one
 				sph = new Sphere(spotRadius, 8);
-				sph.getScale().set(spotVizuParams.sphereSize,spotVizuParams.sphereSize,spotVizuParams.sphereSize);
+				sph.getScale().set(spotVizuParams.spotSize,spotVizuParams.spotSize,spotVizuParams.spotSize);
 				extraNodes.add(sph);
 			}
 
@@ -464,8 +464,8 @@ public class DisplayMastodonData
 	{
 		//start the TransferFunction modifying dialog
 		ctx.getService(CommandService.class).run(SpotsDisplayParamsDialog.class,true,
-				"params",vizuParams, "spheresGatheringNode",spots,
-				"sphereAlpha",1.0f);
+				"params",vizuParams, "spotsGatheringNode",spots,
+				"spotAlpha",1.0f);
 	}
 
 	public static
