@@ -289,25 +289,25 @@ public class DisplayMastodonData
 	final SpotsDisplayParamsDialog.ParamsWrapper spotVizuParams = new SpotsDisplayParamsDialog.ParamsWrapper();
 
 	public
-	void showSpots(final int timepoint, final Node underThisNode)
+	void showSpots(final int timepoint, final Node spotsHubNode, final Node linksHubNode)
 	{
-		showSpots(timepoint,underThisNode,null);
+		showSpots(timepoint,spotsHubNode,linksHubNode,null);
 	}
 
 	public
-	void showSpots(final int timepoint, final Node underThisNode, final GraphColorGenerator<Spot, Link> colorGenerator)
+	void showSpots(final int timepoint, final Node spotsHubNode, final Node linksHubNode, final GraphColorGenerator<Spot, Link> colorGenerator)
 	{
 		SpatialIndex<Spot> spots = pluginAppModel.getAppModel().getModel().getSpatioTemporalIndex().getSpatialIndex(timepoint);
-		final Vector3f hubPos = underThisNode.getPosition();
+		final Vector3f hubPos = spotsHubNode.getPosition();
 
 		//list of existing nodes that shall be updated
-		if (underThisNode.getChildren().size() > spots.size())
+		if (spotsHubNode.getChildren().size() > spots.size())
 		{
 			//removing spots from the children list is somewhat funky,
 			//we better remove all and add all anew
-			underThisNode.getChildren().removeIf(f -> true);
+			spotsHubNode.getChildren().removeIf(f -> true);
 		}
-		Iterator<Node> existingNodes = underThisNode.getChildren().iterator();
+		Iterator<Node> existingNodes = spotsHubNode.getChildren().iterator();
 
 		//list of new nodes beyond the existing nodes, we better add at the very end
 		//to make sure the iterator can remain consistent
@@ -315,7 +315,7 @@ public class DisplayMastodonData
 
 		//reference vector with diffuse color from the gathering node
 		//NB: relying on the fact that Scenery keeps only a reference (does not make own copies)
-		final Material sharedMaterialObj = underThisNode.getMaterial();
+		final Material sharedMaterialObj = spotsHubNode.getMaterial();
 
 		for (Spot spot : spots)
 		{
@@ -372,12 +372,12 @@ public class DisplayMastodonData
 		}
 
 		//register the extra new spots
-		for (Node s : extraNodes) underThisNode.addChild(s);
+		for (Node s : extraNodes) spotsHubNode.addChild(s);
 
 		//notify the inspector to update the hub node
-		underThisNode.setName("Mastodon spots at "+timepoint);
-		underThisNode.updateWorld(true,true);
-		events.publish(new NodeChangedEvent(underThisNode));
+		spotsHubNode.setName("Mastodon spots at "+timepoint);
+		spotsHubNode.updateWorld(true,true);
+		events.publish(new NodeChangedEvent(spotsHubNode));
 	}
 
 	public

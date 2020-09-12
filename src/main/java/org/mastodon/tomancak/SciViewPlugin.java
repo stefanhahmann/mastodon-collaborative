@@ -191,7 +191,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 							.getViewerPanelMamut()
 							.addTimePointListener( tp -> {
 								updateFocus(null);
-								dmd.showSpots(tp,spotsNode,colorGenerator);
+								dmd.showSpots(tp,spotsNode,linksNode,colorGenerator);
 							} );
 
 					//setup updating of spots when they are dragged in the BDV
@@ -214,7 +214,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				else
 				{
 					//just show spots w/o any additional "services"
-					dmd.showSpots( v.getCurrentTimepoint(), spotsNode);
+					dmd.showSpots( v.getCurrentTimepoint(), spotsNode,linksNode);
 				}
 
 				//big black box
