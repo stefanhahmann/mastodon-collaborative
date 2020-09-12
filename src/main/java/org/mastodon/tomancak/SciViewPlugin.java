@@ -1,9 +1,7 @@
 package org.mastodon.tomancak;
 
-import org.joml.Quaternionf;
 import sc.iview.SciView;
 import graphics.scenery.Node;
-import graphics.scenery.Camera;
 import graphics.scenery.volumes.Volume;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
@@ -25,7 +23,6 @@ import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.RunnableAction;
-import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.event.EventService;
 
 import org.scijava.event.EventHandler;
@@ -158,7 +155,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				dmd.events.subscribe(notifierOfMastodonWhenSpotIsSelectedInSciView);
 
 				//show compass
-				dmd.showCompassAxes(spotsNode.getPosition());
+				dmd.showCompassAxes(dmd, spotsNode.getPosition());
 
 				if (dmd.controllingBdvWindow.isThereSome())
 				{

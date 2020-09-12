@@ -22,6 +22,7 @@ import org.scijava.Context;
 import org.scijava.command.CommandService;
 import sc.iview.SciView;
 import org.scijava.event.EventService;
+import sc.iview.commands.edit.AddOrientationCompass;
 import sc.iview.commands.view.SetTransferFunction;
 import sc.iview.event.NodeChangedEvent;
 
@@ -486,15 +487,18 @@ public class DisplayMastodonData
 				"sphereAlpha",1.0f);
 	}
 
-	public
-	DisplayCompassAxes showCompassAxes(final Vector3f atThisCenter)
+	public static
+	void showCompassAxes(final DisplayMastodonData dmd, final Vector3f atThisCenter)
 	{
-		final DisplayCompassAxes compass = new DisplayCompassAxes();
-		final Node compassMainNode = compass.getGatheringNode();
-		compassMainNode.setPosition(atThisCenter);
-		compassMainNode.getScale().set(scale,-scale,-scale);
-		//NB: follow the axes orientation of showTimeSeries() and showSpots()
-		sv.addNode( compassMainNode );
-		return compass;
+		dmd.sv.getScijavaContext()
+			.getService(CommandService.class)
+			.run(AddOrientationCompass.class,true,
+				"sciView",dmd.sv,
+				"axisLength",0.1f, "axisBarRadius",0.001f,
+				"attachToCam",true, "showInTheScene",false);
+
+		//NB: we're not displaying axes-compass in the data, so we don't use this now
+		//compassMainNode.setPosition(atThisCenter);
+		//compassMainNode.getScale().set(scale,-scale,-scale);
 	}
 }
