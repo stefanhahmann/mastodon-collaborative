@@ -459,13 +459,14 @@ public class DisplayMastodonData
 	}
 
 	public static
-	void showSpotsDisplayParamsDialog(final Context ctx, final Node spots,
+	void showSpotsDisplayParamsDialog(final Context ctx, final Node spots, final Node links,
 	                                  final SpotsDisplayParamsDialog.ParamsWrapper vizuParams)
 	{
 		//start the TransferFunction modifying dialog
 		ctx.getService(CommandService.class).run(SpotsDisplayParamsDialog.class,true,
-				"params",vizuParams, "spotsGatheringNode",spots,
-				"spotAlpha",1.0f);
+				"params",vizuParams,
+				"spotsGatheringNode",spots, "linksGatheringNode",links,
+				"spotAlpha",1.0f, "linkAlpha",1.0f);
 	}
 
 	public static
