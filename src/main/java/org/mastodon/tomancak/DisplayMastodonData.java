@@ -316,6 +316,7 @@ public class DisplayMastodonData {
 
 			//NB: posF is base of the "vector" link, posT is the "vector" link itself
 			Cylinder node = new Cylinder(linkRadius, posT.length(), 8);
+			node.getScale().set( spotVizuParams.linkSize,1,spotVizuParams.linkSize );
 			node.setRotation( new Quaternionf().rotateTo( new Vector3f(0,1,0), posT ).normalize() );
 			node.setPosition( new Vector3f(posF) );
 			node.setName(from.getLabel() + " --> " + to.getLabel());
