@@ -465,12 +465,13 @@ public class DisplayMastodonData {
 			//removing spots from the children list is somewhat funky,
 			//we better remove all and add all anew
 			spotsHubNode.getChildren().removeIf(f -> true);
+			linksHubNode.getChildren().removeIf(f -> true);
 		}
 		Iterator<Node> existingNodes = spotsHubNode.getChildren().iterator();
 
 		//list of new nodes beyond the existing nodes, we better add at the very end
 		//to make sure the iterator can remain consistent
-		List<Node> extraNodes = new LinkedList<>();
+		List<SphereWithLinks> extraNodes = new LinkedList<>();
 
 		//reference vector with diffuse color from the gathering node
 		//NB: relying on the fact that Scenery keeps only a reference (does not make own copies)
@@ -479,17 +480,19 @@ public class DisplayMastodonData {
 		for (Spot spot : spots)
 		{
 			//find a Sphere to represent this spot
-			Sphere sph;
+			SphereWithLinks sph;
 			if (existingNodes.hasNext())
 			{
 				//update existing one
-				sph = (Sphere)existingNodes.next();
+				sph = (SphereWithLinks)existingNodes.next();
+				sph.clearAllLinks(); //because they're inappropriate for this new spot
 			}
 			else
 			{
 				//create a new one
-				sph = new Sphere(spotRadius, 8);
-				sph.getScale().set(spotVizuParams.spotSize,spotVizuParams.spotSize,spotVizuParams.spotSize);
+				sph = new SphereWithLinks(spotRadius, 8);
+				sph.getScale().set( spotVizuParams.spotSize );
+				sph.setupEmptyLinks();
 				extraNodes.add(sph);
 			}
 
@@ -525,10 +528,18 @@ public class DisplayMastodonData {
 			}
 
 			sph.setName(spot.getLabel());
+			sph.linksNodesHub.setName("Track of " + spot.getLabel());
+			sph.linksNodesHub.setMaterial(sph.getMaterial());
+
+			sph.registerNewSpot(spot);
+			sph.updateLinks(spotVizuParams.link_TPsInPast, spotVizuParams.link_TPsAhead);
 		}
 
 		//register the extra new spots
-		for (Node s : extraNodes) spotsHubNode.addChild(s);
+		for (SphereWithLinks s : extraNodes) {
+			spotsHubNode.addChild(s);
+			linksHubNode.addChild(s.linksNodesHub);
+		}
 
 		//notify the inspector to update the hub node
 		spotsHubNode.setName("Mastodon spots at "+timepoint);
