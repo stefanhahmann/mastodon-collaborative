@@ -7,7 +7,6 @@ import org.scijava.plugin.Plugin;
 import org.scijava.widget.NumberWidget;
 
 import graphics.scenery.Node;
-import graphics.scenery.Cylinder;
 import org.mastodon.tomancak.DisplayMastodonData;
 
 @Plugin(type = Command.class, name = "Spots Display Parameters Dialog")
@@ -17,7 +16,7 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 		public float spotSize = 1.0f;
 		public float spotAlpha = 1.0f;
 
-		public float linkSize = 0.01f;
+		public float linkSize = 1.0f;
 		public float linkAlpha = 1.0f;
 		public int link_TPsInPast = 0;
 		public int link_TPsAhead = 0;
@@ -80,7 +79,7 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 
 		for (Node links : linksGatheringNode.getChildren()) //over tracks
 			for (Node c : links.getChildren())              //over links of a track
-				((Cylinder)c).setRadius(linkSize);
+				c.getScale().set(linkSize,1,linkSize);
 		linksGatheringNode.updateWorld(true,true);
 	}
 
