@@ -289,6 +289,162 @@ public class DisplayMastodonData {
 	float spotRadius = 0.1f;
 
 	public
+	class SphereWithLinks extends Sphere
+	{
+		SphereWithLinks(float radius, int segments)
+		{
+			super(radius, segments);
+		}
+
+		public Node linksNodesHub;     // gathering node in sciview -- a links node associated to its spots node
+		public List<LinkNode> links;   // list of links of this spot
+
+		public Spot refSpot = null;
+		public int minTP, maxTP;
+
+		void addLink(final Spot from, final Spot to)
+		{
+			from.localize(pos);
+			toLocalCoords( posF.set(pos), linksNodesHub.getPosition() );
+
+			to.localize(pos);
+			toLocalCoords( posT.set(pos), linksNodesHub.getPosition() );
+			posT.sub( posF );
+
+			//NB: posF is base of the "vector" link, posT is the "vector" link itself
+			Cylinder node = new Cylinder(spotVizuParams.linkSize, posT.length(), 4);
+			node.setRotation( new Quaternionf().rotateTo( new Vector3f(0,1,0), posT ) );
+			node.setPosition( posF );
+			node.setName(from.getLabel() + " --> " + to.getLabel());
+			node.setMaterial( linksNodesHub.getMaterial() );
+
+			linksNodesHub.addChild( node );
+			links.add( new LinkNode(node,from.getTimepoint(),to.getTimepoint()) );
+
+			minTP = Math.min(minTP, from.getTimepoint());
+			maxTP = Math.max(maxTP,   to.getTimepoint());
+		}
+
+		private final float[] pos = new float[3];
+		private final Vector3f posF = new Vector3f();
+		private final Vector3f posT = new Vector3f();
+
+		void clearLinksOutsideRange(final int TPfrom, final int TPtill)
+		{
+		    final Iterator<LinkNode> it = links.iterator();
+		    while (it.hasNext())
+			{
+				final LinkNode link = it.next();
+				if (link.TPfrom < TPfrom || link.TPtill > TPtill)
+				{
+					linksNodesHub.removeChild(link.node);
+					it.remove();
+				}
+			}
+
+		    minTP = TPfrom;
+			maxTP = TPtill;
+		}
+
+		void clearAllLinks()
+		{
+			linksNodesHub.getChildren().removeIf(f -> true);
+			links.clear();
+			minTP = 999999;
+			maxTP = -1;
+		}
+
+		void setupEmptyLinks()
+		{
+			linksNodesHub = new Node();
+			links = new LinkedList<>();
+			minTP = 999999;
+			maxTP = -1;
+		}
+
+		void registerNewSpot(final Spot spot)
+		{
+			if (refSpot != null) refSpot.getModelGraph().releaseRef(refSpot);
+			refSpot = spot.getModelGraph().vertexRef();
+			refSpot.refTo(spot);
+
+			minTP = spot.getTimepoint();
+			maxTP = minTP;
+		}
+
+		public
+		void updateLinks(final int TPsInPast, final int TPsAhead)
+		{
+		    clearLinksOutsideRange(refSpot.getTimepoint(),refSpot.getTimepoint());
+		    backwardSearch(refSpot, refSpot.getTimepoint()+TPsInPast);
+			forwardSearch( refSpot, refSpot.getTimepoint()+TPsAhead);
+		}
+
+		private
+		void forwardSearch(final Spot spot, final int TPtill)
+		{
+			if (spot.getTimepoint() > TPtill) return;
+
+			//enumerate all forward links
+			final Spot s = spot.getModelGraph().vertexRef();
+			for (Link l : spot.incomingEdges())
+			{
+				if (l.getSource(s).getTimepoint() > spot.getTimepoint() && s.getTimepoint() <= TPtill)
+				{
+					addLink(spot,s);
+					forwardSearch(s,TPtill);
+				}
+			}
+			for (Link l : spot.outgoingEdges())
+			{
+				if (l.getTarget(s).getTimepoint() > spot.getTimepoint() && s.getTimepoint() <= TPtill)
+				{
+					addLink(spot,s);
+					forwardSearch(s,TPtill);
+				}
+			}
+			spot.getModelGraph().releaseRef(s);
+		}
+
+		private
+		void backwardSearch(final Spot spot, final int TPfrom)
+		{
+			if (spot.getTimepoint() < TPfrom) return;
+
+			//enumerate all backward links
+			final Spot s = spot.getModelGraph().vertexRef();
+			for (Link l : spot.incomingEdges())
+			{
+				if (l.getSource(s).getTimepoint() < spot.getTimepoint() && s.getTimepoint() >= TPfrom)
+				{
+					addLink(s,spot);
+					backwardSearch(s,TPfrom);
+				}
+			}
+			for (Link l : spot.outgoingEdges())
+			{
+				if (l.getTarget(s).getTimepoint() < spot.getTimepoint() && s.getTimepoint() >= TPfrom)
+				{
+					addLink(s,spot);
+					backwardSearch(s,TPfrom);
+				}
+			}
+			spot.getModelGraph().releaseRef(s);
+		}
+	}
+
+	class LinkNode
+	{
+		public Cylinder node;
+		public int TPfrom, TPtill;
+
+		LinkNode(final Cylinder node, final int TPfrom, final int TPtill)
+		{ this.node = node; this.TPfrom = TPfrom; this.TPtill = TPtill; }
+	}
+
+	// ============================================================================================
+
+	public
 	final SpotsDisplayParamsDialog.ParamsWrapper spotVizuParams = new SpotsDisplayParamsDialog.ParamsWrapper();
 
 	public
