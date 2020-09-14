@@ -96,11 +96,11 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 
 
 	@Parameter(label = "Show past links", style = NumberWidget.SLIDER_STYLE,
-	           min = "0", stepSize = "1", callback = "adjustLinkCounts")
+	           min = "0", max = "100", stepSize = "1", callback = "adjustLinkCounts")
 	private int link_TPsInPast = 0;
 
 	@Parameter(label = "Show future links", style = NumberWidget.SLIDER_STYLE,
-	           min = "0", stepSize = "1", callback = "adjustLinkCounts")
+	           min = "0", max = "100", stepSize = "1", callback = "adjustLinkCounts")
 	private int link_TPsAhead = 0;
 
 	private
