@@ -286,7 +286,7 @@ public class DisplayMastodonData {
 	// ============================================================================================
 
 	public
-	float spotRadius = 0.1f;
+	final SpotsDisplayParamsDialog.ParamsWrapper spotVizuParams = new SpotsDisplayParamsDialog.ParamsWrapper();
 
 	public
 	class SphereWithLinks extends Sphere
@@ -445,7 +445,7 @@ public class DisplayMastodonData {
 	// ============================================================================================
 
 	public
-	final SpotsDisplayParamsDialog.ParamsWrapper spotVizuParams = new SpotsDisplayParamsDialog.ParamsWrapper();
+	float spotRadius = 0.1f;
 
 	public
 	void showSpots(final int timepoint, final Node spotsHubNode, final Node linksHubNode)
