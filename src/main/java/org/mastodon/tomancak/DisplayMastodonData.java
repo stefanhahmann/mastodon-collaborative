@@ -379,8 +379,8 @@ public class DisplayMastodonData {
 		public
 		void updateLinks(final int TPsInPast, final int TPsAhead)
 		{
-		    clearLinksOutsideRange(refSpot.getTimepoint(),refSpot.getTimepoint());
-		    backwardSearch(refSpot, refSpot.getTimepoint()+TPsInPast);
+			clearLinksOutsideRange(refSpot.getTimepoint(),refSpot.getTimepoint());
+			backwardSearch(refSpot, refSpot.getTimepoint()-TPsInPast);
 			forwardSearch( refSpot, refSpot.getTimepoint()+TPsAhead);
 			events.publish(new NodeChangedEvent(linksNodesHub));
 		}
