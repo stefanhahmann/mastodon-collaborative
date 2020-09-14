@@ -536,12 +536,13 @@ public class DisplayMastodonData {
 			sph.setName(spot.getLabel());
 			sph.linksNodesHub.setName("Track of " + spot.getLabel());
 			sph.linksNodesHub.setMaterial( sph.getMaterial() != sharedMaterialObj ? sph.getMaterial() : sharedLinksMatObj );
+			sph.linksNodesHub.setParent( linksHubNode ); //NB: required for sph.updateLinks() -> sph.addNode()
 
 			sph.registerNewSpot(spot);
 			sph.updateLinks(spotVizuParams.link_TPsInPast, spotVizuParams.link_TPsAhead);
 		}
 
-		//register the extra new spots
+		//register the extra new spots (only after they are fully prepared)
 		for (SphereWithLinks s : extraNodes) {
 			spotsHubNode.addChild(s);
 			linksHubNode.addChild(s.linksNodesHub);
