@@ -2,36 +2,39 @@ package org.mastodon.tomancak;
 
 import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.*;
-import graphics.scenery.Material;
+
 import graphics.scenery.Node;
+import graphics.scenery.Material;
 import graphics.scenery.Sphere;
+import graphics.scenery.Cylinder;
 import graphics.scenery.volumes.TransferFunction;
 import graphics.scenery.volumes.Volume;
-import net.imglib2.RandomAccessibleInterval;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
+
 import org.mastodon.plugin.MastodonPluginAppModel;
 import org.mastodon.revised.mamut.MamutViewBdv;
-
 import org.mastodon.revised.model.mamut.Link;
 import org.mastodon.revised.model.mamut.Spot;
 import org.mastodon.revised.ui.coloring.GraphColorGenerator;
 import org.mastodon.spatial.SpatialIndex;
 import org.mastodon.tomancak.dialogs.SpotsDisplayParamsDialog;
+
+import net.imglib2.RandomAccessibleInterval;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
-import sc.iview.SciView;
 import org.scijava.event.EventService;
+import sc.iview.SciView;
+import sc.iview.event.NodeChangedEvent;
 import sc.iview.commands.edit.AddOrientationCompass;
 import sc.iview.commands.view.SetTransferFunction;
-import sc.iview.event.NodeChangedEvent;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.LinkedList;
 
-public class DisplayMastodonData
-{
+public class DisplayMastodonData {
 	//Mastodon connection
 	final MastodonPluginAppModel pluginAppModel;
 	final FocusedBdvWindow controllingBdvWindow = new FocusedBdvWindow();
