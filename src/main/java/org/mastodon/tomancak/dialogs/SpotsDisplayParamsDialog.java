@@ -112,4 +112,25 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 		for (Node s : spotsGatheringNode.getChildren())
 			((DisplayMastodonData.SphereWithLinks)s).updateLinks(link_TPsInPast,link_TPsAhead);
 	}
+
+	/* a hack to promote this dialog's values into the common shared object RIGHT AFTER the
+	   dialog is initiated from the prefs store, which (luckily for this story) happens when
+	   the dialog is created/opened (and also with every param change) -- when Sciview starts
+	   up, the vizu settings continues to be the same as it was when Sciview was run last */
+	@Override
+	public
+	void preview()
+	{
+		if (!wasSharedParamsObjInitiatedFromThisDialog)
+		{
+			params.spotSize       = this.spotSize;
+			params.spotAlpha      = this.spotAlpha;
+			params.linkSize       = this.linkSize;
+			params.linkAlpha      = this.linkAlpha;
+			params.link_TPsInPast = this.link_TPsInPast;
+			params.link_TPsAhead  = this.link_TPsAhead;
+			wasSharedParamsObjInitiatedFromThisDialog = true;
+		}
+	}
+	private boolean wasSharedParamsObjInitiatedFromThisDialog = false;
 }
