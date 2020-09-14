@@ -1,11 +1,14 @@
 package org.mastodon.tomancak.dialogs;
 
-import graphics.scenery.Node;
 import org.scijava.command.Command;
 import org.scijava.command.InteractiveCommand;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.widget.NumberWidget;
+
+import graphics.scenery.Node;
+import graphics.scenery.Cylinder;
+import org.mastodon.tomancak.DisplayMastodonData;
 
 @Plugin(type = Command.class, name = "Spots Display Parameters Dialog")
 public class SpotsDisplayParamsDialog extends InteractiveCommand
@@ -75,8 +78,9 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 		//tell back to our caller about the new value of this attribute
 		params.linkSize = linkSize;
 
-		for (Node s : linksGatheringNode.getChildren())
-			s.getScale().set(linkSize,linkSize,linkSize);
+		for (Node links : linksGatheringNode.getChildren()) //over tracks
+			for (Node c : links.getChildren())              //over links of a track
+				((Cylinder)c).setRadius(linkSize);
 		linksGatheringNode.updateWorld(true,true);
 	}
 
@@ -86,7 +90,8 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 		params.linkAlpha = linkAlpha;
 
 		for (Node s : linksGatheringNode.getChildren())
-			s.getMaterial().getBlending().setOpacity(linkAlpha);
+			for (Node c : s.getChildren())
+				c.getMaterial().getBlending().setOpacity(linkAlpha);
 		linksGatheringNode.updateWorld(true,true);
 	}
 
@@ -104,5 +109,8 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 	{
 		params.link_TPsInPast = link_TPsInPast;
 		params.link_TPsAhead  = link_TPsAhead;
+
+		for (Node s : spotsGatheringNode.getChildren())
+			((DisplayMastodonData.SphereWithLinks)s).updateLinks(link_TPsInPast,link_TPsAhead);
 	}
 }
