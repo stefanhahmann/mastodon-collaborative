@@ -477,6 +477,7 @@ public class DisplayMastodonData {
 		//reference vector with diffuse color from the gathering node
 		//NB: relying on the fact that Scenery keeps only a reference (does not make own copies)
 		final Material sharedMaterialObj = spotsHubNode.getMaterial();
+		final Material sharedLinksMatObj = linksHubNode.getMaterial();
 
 		for (Spot spot : spots)
 		{
@@ -530,7 +531,7 @@ public class DisplayMastodonData {
 
 			sph.setName(spot.getLabel());
 			sph.linksNodesHub.setName("Track of " + spot.getLabel());
-			sph.linksNodesHub.setMaterial(sph.getMaterial());
+			sph.linksNodesHub.setMaterial( sph.getMaterial() != sharedMaterialObj ? sph.getMaterial() : sharedLinksMatObj );
 
 			sph.registerNewSpot(spot);
 			sph.updateLinks(spotVizuParams.link_TPsInPast, spotVizuParams.link_TPsAhead);
