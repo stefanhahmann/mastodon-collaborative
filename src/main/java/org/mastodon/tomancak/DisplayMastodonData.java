@@ -339,10 +339,7 @@ public class DisplayMastodonData {
 
 			//setup the spot
 			spot.localize(pos);
-			pos[0] = +scale *pos[0] -hubPos.x; //adjust coords to the current volume scale
-			pos[1] = -scale *pos[1] -hubPos.y;
-			pos[2] = -scale *pos[2] -hubPos.z;
-			sph.setPosition(pos);
+			sph.setPosition( toLocalCoords(pos,hubPos) ); //adjust coords to the current volume scale
 
 			if (colorGenerator != null)
 			{
@@ -391,16 +388,32 @@ public class DisplayMastodonData {
 		{
 			final Vector3f hubPos = spotsGatheringNode.getPosition();
 			updatedSpot.localize(pos);
-			pos[0] = +scale *pos[0] -hubPos.x; //adjust coords to the current volume scale
-			pos[1] = -scale *pos[1] -hubPos.y;
-			pos[2] = -scale *pos[2] -hubPos.z;
-			spotNode.setPosition(pos);
+			spotNode.setPosition( toLocalCoords(pos,hubPos) ); //adjust coords to the current volume scale
 			spotNode.setNeedsUpdate(true);
 		}
 	}
 
 	//aux array to aid transferring of float positions (and avoid re-allocating it)
 	final float[] pos = new float[3];
+
+	// ============================================================================================
+
+	public static
+	Vector3f toLocalCoords(final Vector3f coord, final Vector3f relevantCentre)
+	{
+		coord.mul( scale, -scale, -scale );
+		coord.sub( relevantCentre );
+		return coord;
+	}
+
+	public static
+	float[] toLocalCoords(final float[] coord, final Vector3f relevantCentre)
+	{
+		coord[0] = +scale * coord[0]  - relevantCentre.x;
+		coord[1] = -scale * coord[1]  - relevantCentre.y;
+		coord[2] = -scale * coord[2]  - relevantCentre.z;
+		return coord;
+	}
 
 	// ============================================================================================
 
