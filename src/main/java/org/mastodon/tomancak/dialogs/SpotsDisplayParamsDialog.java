@@ -34,7 +34,7 @@ public class SpotsDisplayParamsDialog extends InteractiveCommand
 
 
 	@Parameter(label = "Spots size", style = NumberWidget.SLIDER_STYLE,
-	           min = "0.1", max = "10.0", stepSize = "0.1", callback = "adjustSpotSize")
+	           min = "0.1", max = "10.0", stepSize = "0.05", callback = "adjustSpotSize")
 	private float spotSize = 1.0f;
 
 	@Parameter(label = "Spots alpha", style = NumberWidget.SLIDER_STYLE,
