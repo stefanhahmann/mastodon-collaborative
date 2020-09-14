@@ -289,6 +289,9 @@ public class DisplayMastodonData {
 	final SpotsDisplayParamsDialog.ParamsWrapper spotVizuParams = new SpotsDisplayParamsDialog.ParamsWrapper();
 
 	public
+	float linkRadius = 0.01f;
+
+	public
 	class SphereWithLinks extends Sphere
 	{
 		SphereWithLinks(float radius, int segments)
@@ -305,16 +308,16 @@ public class DisplayMastodonData {
 		void addLink(final Spot from, final Spot to)
 		{
 			from.localize(pos);
-			toLocalCoords( posF.set(pos), linksNodesHub.getPosition() );
+			toLocalCoords( posF.set(pos), linksNodesHub.getParent().getPosition() );
 
 			to.localize(pos);
-			toLocalCoords( posT.set(pos), linksNodesHub.getPosition() );
+			toLocalCoords( posT.set(pos), linksNodesHub.getParent().getPosition() );
 			posT.sub( posF );
 
 			//NB: posF is base of the "vector" link, posT is the "vector" link itself
-			Cylinder node = new Cylinder(spotVizuParams.linkSize, posT.length(), 4);
-			node.setRotation( new Quaternionf().rotateTo( new Vector3f(0,1,0), posT ) );
-			node.setPosition( posF );
+			Cylinder node = new Cylinder(linkRadius, posT.length(), 8);
+			node.setRotation( new Quaternionf().rotateTo( new Vector3f(0,1,0), posT ).normalize() );
+			node.setPosition( new Vector3f(posF) );
 			node.setName(from.getLabel() + " --> " + to.getLabel());
 			node.setMaterial( linksNodesHub.getMaterial() );
 
