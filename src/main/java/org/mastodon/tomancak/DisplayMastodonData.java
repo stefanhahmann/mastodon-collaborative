@@ -378,6 +378,7 @@ public class DisplayMastodonData {
 		    clearLinksOutsideRange(refSpot.getTimepoint(),refSpot.getTimepoint());
 		    backwardSearch(refSpot, refSpot.getTimepoint()+TPsInPast);
 			forwardSearch( refSpot, refSpot.getTimepoint()+TPsAhead);
+			events.publish(new NodeChangedEvent(linksNodesHub));
 		}
 
 		private
