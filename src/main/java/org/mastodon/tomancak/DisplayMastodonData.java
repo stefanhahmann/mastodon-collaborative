@@ -388,7 +388,7 @@ public class DisplayMastodonData {
 		private
 		void forwardSearch(final Spot spot, final int TPtill)
 		{
-			if (spot.getTimepoint() > TPtill) return;
+			if (spot.getTimepoint() >= TPtill) return;
 
 			//enumerate all forward links
 			final Spot s = spot.getModelGraph().vertexRef();
@@ -414,7 +414,7 @@ public class DisplayMastodonData {
 		private
 		void backwardSearch(final Spot spot, final int TPfrom)
 		{
-			if (spot.getTimepoint() < TPfrom) return;
+			if (spot.getTimepoint() <= TPfrom) return;
 
 			//enumerate all backward links
 			final Spot s = spot.getModelGraph().vertexRef();
@@ -574,7 +574,7 @@ public class DisplayMastodonData {
 	public static
 	Vector3f toLocalCoords(final Vector3f coord, final Vector3f relevantCentre)
 	{
-		coord.mul( scale, -scale, -scale );
+		coord.mul( +scale, -scale, -scale );
 		coord.sub( relevantCentre );
 		return coord;
 	}
