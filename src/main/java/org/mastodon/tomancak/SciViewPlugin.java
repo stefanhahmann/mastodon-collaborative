@@ -151,6 +151,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 
 				//...and links
 				final Node linksNode = new Node("Mastodon links");
+				dmd.centerNodeOnVolume(linksNode,v);
 				dmd.sv.addNode(linksNode);
 				DisplayMastodonData.showSpotsDisplayParamsDialog(getContext(),spotsNode,linksNode,dmd.spotVizuParams);
 
