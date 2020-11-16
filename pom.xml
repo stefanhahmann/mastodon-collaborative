@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>29.0.0</version>
+		<version>29.2.1</version>
 		<relativePath />
 	</parent>
 
@@ -63,7 +63,6 @@
 		<dependency>
 			<groupId>sc.iview</groupId>
 			<artifactId>sciview</artifactId>
-			<version>0.2.0-beta-9-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>de.mpicbg.ulman</groupId>
@@ -110,13 +109,13 @@
 		<!-- TODO: Needs to be updated -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
-		<scenery.version>QWERTY</scenery.version>
+		<scenery.version>9d42647</scenery.version>
+		<sciview.version>0.2.0-beta-9-SNAPSHOT</sciview.version>
 
 		<!-- the same as in Mastodon -->
 		<bigdataviewer-core.version>9.0.5</bigdataviewer-core.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-20</bigdataviewer-vistools.version>
 		<spim_data.version>2.2.4</spim_data.version>
-		<ui-behaviour.version>2.0.3-SNAPSHOT</ui-behaviour.version>
 		<scijava-listeners.version>1.0.0-beta-2</scijava-listeners.version>
 	</properties>
 

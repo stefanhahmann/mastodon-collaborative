@@ -176,9 +176,6 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 	{
 		SceneryBase.xinitThreads();
 
-		Locale.setDefault( Locale.US );
-		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
-
 		//start up our own Fiji/Imagej2
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
