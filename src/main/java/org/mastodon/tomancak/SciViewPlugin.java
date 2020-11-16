@@ -27,7 +27,7 @@ import org.scijava.event.EventService;
 
 import org.scijava.event.EventHandler;
 import sc.iview.event.NodeActivatedEvent;
-import sc.iview.vector.FloatVector3;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Arrays;
@@ -223,11 +223,11 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				}
 
 				//big black box
-				FloatVector3 bbbP = new FloatVector3(spotsNode.getPosition().x,spotsNode.getPosition().y,spotsNode.getPosition().z );
-				FloatVector3 bbbS = new FloatVector3(spotsNode.getPosition().x,spotsNode.getPosition().y,spotsNode.getPosition().z );
-				bbbS.setX( bbbS.xf() *2);
-				bbbS.setY( bbbS.yf() *2);
-				bbbS.setZ( bbbS.zf() *2);
+				Vector3f bbbP = new Vector3f(spotsNode.getPosition().x,spotsNode.getPosition().y,spotsNode.getPosition().z);
+				Vector3f bbbS = new Vector3f(spotsNode.getPosition().x,spotsNode.getPosition().y,spotsNode.getPosition().z);
+				bbbS.setComponent(0, bbbS.get(0) *2);
+				bbbS.setComponent(1, bbbS.get(1) *2);
+				bbbS.setComponent(2, bbbS.get(2) *2);
 				final Node box = dmd.sv.addBox(bbbP,bbbS);
 				box.setName("BLOCKING BOX");
 				box.setVisible(false);
