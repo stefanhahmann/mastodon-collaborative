@@ -13,12 +13,12 @@ import java.nio.file.Path;
 
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.mamut.model.Model;
+import org.mastodon.mamut.tomancak.merging.MergeDatasets;
+import org.mastodon.mamut.tomancak.merging.MergeModels;
 import org.mastodon.tomancak.util.MergeModelDialog;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
 import org.mastodon.tomancak.net.DatasetServer;
-import org.mastodon.tomancak.merging.MergeDatasets;
-import org.mastodon.tomancak.merging.MergeModels;
 
 import java.io.IOException;
 import java.net.ConnectException;
