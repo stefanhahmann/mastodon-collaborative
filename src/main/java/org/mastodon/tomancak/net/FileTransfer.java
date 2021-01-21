@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import org.mastodon.revised.model.mamut.Model;
+import org.mastodon.mamut.model.Model;
 
 public class FileTransfer
 {

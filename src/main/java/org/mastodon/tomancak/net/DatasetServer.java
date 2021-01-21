@@ -16,7 +16,7 @@ import io.undertow.server.handlers.PathHandler;
 import static org.mastodon.tomancak.monitors.ProgressStore.createAttachedProgressStore;
 
 import org.mastodon.tomancak.util.LineageFiles;
-import org.mastodon.revised.model.mamut.Model;
+import org.mastodon.mamut.model.Model;
 import java.time.LocalDateTime;
 
 public class DatasetServer
@@ -166,10 +166,7 @@ public class DatasetServer
 
 	HttpHandler removeDatasetHandler()
 	{
-		return new HttpHandler() {
-			@Override
-			public void handleRequest(HttpServerExchange exchange) throws Exception
-			{
+		return exchange -> {
 				final String datasetStr = extractDatasetString(exchange);
 				if (datasetStr == null) { respondERROR(exchange); return; }
 
@@ -214,7 +211,6 @@ public class DatasetServer
 
 				System.out.println("Removed a dataset handler and "+DAC.foldersCnt+" folders and "+DAC.filesCnt+" files in "+datasetPath);
 				respondOK(exchange);
-			}
 		};
 	}
 

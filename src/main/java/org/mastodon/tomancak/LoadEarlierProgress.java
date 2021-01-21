@@ -11,14 +11,14 @@ import org.scijava.command.CommandService;
 
 import java.nio.file.Path;
 
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.revised.model.mamut.Model;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.model.Model;
+import org.mastodon.mamut.tomancak.merging.MergeDatasets;
+import org.mastodon.mamut.tomancak.merging.MergeModels;
 import org.mastodon.tomancak.util.MergeModelDialog;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
 import org.mastodon.tomancak.net.DatasetServer;
-import org.mastodon.tomancak.merging.MergeDatasets;
-import org.mastodon.tomancak.merging.MergeModels;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -41,7 +41,7 @@ extends DynamicCommand
 	private PrefService prefService;
 
 	@Parameter(persist = false)
-	private MastodonPluginAppModel appModel;
+	private MamutPluginAppModel appModel;
 
 	// ----------------- local folder -----------------
 	@Parameter(label = "Searching in this folder:",
