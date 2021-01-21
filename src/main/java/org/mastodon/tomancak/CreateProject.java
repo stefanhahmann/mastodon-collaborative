@@ -31,7 +31,7 @@ public class CreateProject implements Command
 	@Parameter(label = "New project name on the remote monitor:")
 	private String projectName = "setHereProjectName";
 
-	@Parameter(label = "Secure the access to the project:")
+	@Parameter(label = "Obfuscate the new project name:")
 	private boolean secureURL = true;
 
 

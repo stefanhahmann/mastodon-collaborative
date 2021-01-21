@@ -4,7 +4,6 @@ import java.util.*;
 import javax.swing.UIManager;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
-import org.mastodon.app.plugin.MastodonPlugin;
 import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.mamut.MamutAppModel;
@@ -26,7 +25,7 @@ import org.scijava.ui.behaviour.util.RunnableAction;
 import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;
 
-@Plugin( type = MastodonPlugin.class )
+@Plugin( type = MamutPlugin.class )
 public class CollabMastodonPlugins extends AbstractContextual implements MamutPlugin
 {
 	private static final String SAVE_MODEL_SNAPSHOT = "[tomancak] save current lineage";
@@ -96,7 +95,7 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 	{
 		return Collections.singletonList(
 				menu("Plugins",
-						menu("Racing",
+						menu("Collaboration",
 								item(SAVE_MODEL_SNAPSHOT),
 								item(LOAD_MODEL_SNAPSHOT),
 								item(CREATE_SNAPSHOT_SPACE),
