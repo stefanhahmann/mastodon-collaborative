@@ -90,7 +90,8 @@ extends DynamicCommand
 	private boolean readAlsoFromRemoteMonitor = false;
 
 	@Parameter(label = "URL address of the remote monitor:",
-		description = "This entry is ignored if the above is not checked.")
+		description = "This entry is ignored if the above is not checked.",
+		persistKey = "remoteMonitorURL")
 	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
 
 	@Parameter(label = "Project name on the remote monitor:",

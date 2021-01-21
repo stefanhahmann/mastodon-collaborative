@@ -25,7 +25,7 @@ public class DeleteProject implements Command
 
 
 	// ----------------- network options -----------------
-	@Parameter(label = "URL address of the remote monitor:")
+	@Parameter(label = "URL address of the remote monitor:", persistKey = "remoteMonitorURL")
 	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
 
 	@Parameter(label = "Delete this project on the remote monitor:")
