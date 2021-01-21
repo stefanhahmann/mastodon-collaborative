@@ -5,15 +5,14 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>28.0.0</version>
-		<relativePath />
+		<version>29.2.1</version>
 	</parent>
 
 	<groupId>org.mastodon</groupId>
 	<artifactId>mastodon-collaborative</artifactId>
 	<version>0.8.0-SNAPSHOT</version>
 
-	<name>Tomancak Lab Mastodon Plugins</name>
+	<name>Tomancak Lab Mastodon Plugin for Collaborative Manual Tracking</name>
 	<description>Mastodon plugins to foster collaborative annotations</description>
 	<!-- TODO: Needs to be updated -->
 	<url>https://github.com/xulman/mastodon-collaborative</url>
@@ -96,11 +95,6 @@
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
 		<enforcer.skip>true</enforcer.skip>
-
-		<bigdataviewer-core.version>9.0.2</bigdataviewer-core.version>
-		<bigdataviewer-vistools.version>1.0.0-beta-20</bigdataviewer-vistools.version>
-		<spim_data.version>2.2.4</spim_data.version>
-		<ui-behaviour.version>2.0.1</ui-behaviour.version>
 	</properties>
 
 	<developers>
