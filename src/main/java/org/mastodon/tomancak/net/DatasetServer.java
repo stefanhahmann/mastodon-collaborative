@@ -16,7 +16,7 @@ import io.undertow.server.handlers.PathHandler;
 import static org.mastodon.tomancak.monitors.ProgressStore.createAttachedProgressStore;
 
 import org.mastodon.tomancak.util.LineageFiles;
-import org.mastodon.revised.model.mamut.Model;
+import org.mastodon.mamut.model.Model;
 import java.time.LocalDateTime;
 
 public class DatasetServer

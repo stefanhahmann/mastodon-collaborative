@@ -1,21 +1,19 @@
 package org.mastodon.tomancak;
 
-import java.io.File;
 import java.util.*;
 import javax.swing.UIManager;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
-import org.mastodon.plugin.MastodonPlugin;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.project.MamutProject;
-import org.mastodon.revised.mamut.KeyConfigContexts;
-import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.mamut.Mastodon;
-import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.revised.ui.keymap.CommandDescriptions;
-import org.mastodon.tomancak.util.LineageFiles;
+import org.mastodon.app.plugin.MastodonPlugin;
+import org.mastodon.mamut.plugin.MamutPlugin;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.Mastodon;
 
 import net.imagej.ImageJ;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.AbstractContextual;
 import org.scijava.command.CommandService;
 import org.scijava.log.LogService;
@@ -29,7 +27,7 @@ import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;
 
 @Plugin( type = MastodonPlugin.class )
-public class CollabMastodonPlugins extends AbstractContextual implements MastodonPlugin
+public class CollabMastodonPlugins extends AbstractContextual implements MamutPlugin
 {
 	private static final String SAVE_MODEL_SNAPSHOT = "[tomancak] save current lineage";
 	private static final String LOAD_MODEL_SNAPSHOT = "[tomancak] load external lineage";
@@ -41,7 +39,7 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 	private static final String[] CREATE_SNAPSHOT_SPACE_KEYS = { "not mapped" };
 	private static final String[] DELETE_SNAPSHOT_SPACE_KEYS = { "not mapped" };
 
-	private static Map< String, String > menuTexts = new HashMap<>();
+	private static final Map< String, String > menuTexts = new HashMap<>();
 	static
 	{
 		menuTexts.put( SAVE_MODEL_SNAPSHOT, "Save Current Lineage" );
@@ -84,10 +82,10 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 		updateEnabledActions();
 	}
 
-	private MastodonPluginAppModel pluginAppModel;
+	private MamutPluginAppModel pluginAppModel;
 
 	@Override
-	public void setAppModel( final MastodonPluginAppModel model )
+	public void setAppPluginModel( final MamutPluginAppModel model )
 	{
 		this.pluginAppModel = model;
 		updateEnabledActions();
@@ -96,13 +94,13 @@ public class CollabMastodonPlugins extends AbstractContextual implements Mastodo
 	@Override
 	public List< ViewMenuBuilder.MenuItem > getMenuItems()
 	{
-		return Arrays.asList(
-				menu( "Plugins",
-						menu( "Racing",
-								item( SAVE_MODEL_SNAPSHOT ),
-								item( LOAD_MODEL_SNAPSHOT ),
-								item( CREATE_SNAPSHOT_SPACE ),
-								item( DELETE_SNAPSHOT_SPACE ) ) ) );
+		return Collections.singletonList(
+				menu("Plugins",
+						menu("Racing",
+								item(SAVE_MODEL_SNAPSHOT),
+								item(LOAD_MODEL_SNAPSHOT),
+								item(CREATE_SNAPSHOT_SPACE),
+								item(DELETE_SNAPSHOT_SPACE))));
 	}
 
 	@Override

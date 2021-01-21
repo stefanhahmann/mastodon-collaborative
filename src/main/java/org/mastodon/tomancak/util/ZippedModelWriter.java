@@ -1,7 +1,7 @@
 package org.mastodon.tomancak.util;
 
-import org.mastodon.project.MamutProject;
-import org.mastodon.project.WriteZip;
+import org.mastodon.mamut.project.MamutProject;
+import org.mastodon.mamut.project.WriteZip;
 
 import java.io.OutputStream;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.nio.file.Path;
 public class ZippedModelWriter implements MamutProject.ProjectWriter
 {
 	/** the main output source */
-	private WriteZip zip;
+	private final WriteZip zip;
 
 	public ZippedModelWriter(final Path filename) throws IOException
 	{
@@ -37,7 +37,7 @@ public class ZippedModelWriter implements MamutProject.ProjectWriter
 
 
 	/** fake output stream that saves nothing */
-	private OutputStream nullOutput = new OutputStream() {
+	private final OutputStream nullOutput = new OutputStream() {
 		@Override
 		public void write(int i)
 		{ /* does nothing, intentionally */ }

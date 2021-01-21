@@ -1,7 +1,7 @@
 package org.mastodon.tomancak.util;
 
-import org.mastodon.project.MamutProject;
-import org.mastodon.project.ReadZip;
+import org.mastodon.mamut.project.MamutProject;
+import org.mastodon.mamut.project.ReadZip;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.util.Collection;
 public class ZippedModelReader implements MamutProject.ProjectReader
 {
 	/** the main input source */
-	private ReadZip zip;
+	private final ReadZip zip;
 
 	public ZippedModelReader(final Path filename) throws IOException
 	{
@@ -38,7 +38,7 @@ public class ZippedModelReader implements MamutProject.ProjectReader
 
 
 	/** fake input stream that saves nothing */
-	private InputStream nullOutput = new InputStream() {
+	private final InputStream nullOutput = new InputStream() {
 		@Override
 		public int read()
 		{ return 0; /* does nothing, intentionally */ }
