@@ -91,16 +91,28 @@ extends DynamicCommand
 
 	@Parameter(label = "URL address of the remote monitor:",
 		description = "This entry is ignored if the above is not checked.",
-		persistKey = "remoteMonitorURL")
+		persistKey = "remoteMonitorURL",
+		callback = "remoteAuxDataFlagSetter")
 	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
 
 	@Parameter(label = "Project name on the remote monitor:",
-			description = "This entry is ignored if the above is not checked.")
+		description = "This entry is ignored if the above is not checked.",
+		callback = "remoteAuxDataFlagSetter")
 	private String projectName = "setHereProjectName";
+
+	// notifies if user has made any change in the two above fields
+	private boolean remoteAuxDataChangedFlag = false;
+	private void remoteAuxDataFlagSetter() { remoteAuxDataChangedFlag = true; }
 
 	private
 	void rebuildDialog()
 	{
+		// if user has updated aux network data and readAlsoFromRemoteMonitor was true,
+		// we assume he/she noticed a mistake in the aux network data and we will therefore
+		// open new dialog again with the readAlsoFromRemoteMonitor set to true
+		if (remoteAuxDataChangedFlag && !readAlsoFromRemoteMonitor) readAlsoFromRemoteMonitor = true;
+		remoteAuxDataChangedFlag = false;
+
 		this.cancel("");
 		this.saveInputs();
 		logService.warn("Deprecating this dialog and opening new with fresh list of detected files.");
