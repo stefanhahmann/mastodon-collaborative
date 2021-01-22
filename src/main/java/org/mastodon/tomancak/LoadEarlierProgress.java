@@ -86,7 +86,7 @@ extends DynamicCommand
 	// ----------------- network options -----------------
 	@Parameter(label = "Read also from a remote monitor:",
 		description = "Request that the progress files shall be retrieved also from a remote host.",
-		callback = "discoverInputFiles")
+		callback = "rebuildDialog")
 	private boolean readAlsoFromRemoteMonitor = false;
 
 	@Parameter(label = "URL address of the remote monitor:",
@@ -97,6 +97,18 @@ extends DynamicCommand
 	@Parameter(label = "Project name on the remote monitor:",
 			description = "This entry is ignored if the above is not checked.")
 	private String projectName = "setHereProjectName";
+
+	private
+	void rebuildDialog()
+	{
+		this.cancel("");
+		this.saveInputs();
+		logService.warn("Deprecating this dialog and opening new with fresh list of detected files.");
+		this.getContext().getService(CommandService.class).run(
+				LoadEarlierProgress.class, true,
+				"logService",  logService, "prefService", prefService,
+				"appModel", appModel );
+	}
 
 
 	// ----------------- available file names -----------------
@@ -181,6 +193,11 @@ extends DynamicCommand
 	{
 		//bail out if we are started incorrectly, or on wrong input file...
 		if (appModel == null) return;
+		if (this.isCanceled())
+		{
+			logService.info("This dialog was deprecated, doing nothing.");
+			return;
+		}
 
 		final boolean doRemoteRead = lineageFilenameStr.startsWith("Remote");
 
