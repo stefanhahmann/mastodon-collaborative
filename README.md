@@ -1,20 +1,138 @@
-# mastodon-collaborative
-Mastodon plugins to foster collaborative annotations
+# What is mastodon-collaborative?
+A suite of Mastodon plugins originally developed to foster collaborative tracking.
+
+## The idea
+The original purpose of this project was to enable tracking cells in the same
+image data by multiple users (collaborators) independently, that is, on their
+own laptops at their own pace. To make this effort an efficient one, ideally
+users work in "separate corners" of the data so that no cell is tracked twice.
+Users then somewhat regularly submit their current state of the work to a server.
+
+The server is only a repository of tracking data from multiple users. It
+collects contributions from users and offers it to anyone to download and to
+incorporate into one's own tracking. Mastodon features simple-to-use plugins for
+exactly these tasks. By design, the server does not automagically merge
+anything into one giant tracking as this process can become fragile and must be
+supervised if you want to trust the outcome of the collaborative tracking.
+
+This concept requires a bit of an organization.
+Ideally there is a project leader that
+- prepares the Mastodon project,
+- defines "separate (non-overlapping) corners" in the data,
+- distribute project data to collaborators,
+- explains and assigns work to collaborators,
+- somewhat regularly merges recent contributions from the collaborators<br/>
+  to check for issues and to detect overlaps rather soon,
+- stops the collaboration and merges to obtain the final tracking.
+
+To avoid having (potentially large) image data copied on every laptop, one may
+want to set up a [BigDataServer](https://imagej.net/BigDataServer) to [host the
+image data, and adjust Mastodon project path accordingly](BDS.md).
+Collaborators, when tracking, download online a piece of the data that is
+currently processed (displayed) in their laptops.
+
+[Here it is explained in 2.5 min long video-presentation.](https://www.fi.muni.cz/~xulman/files/Mastodon/Collab__whatIsItAbout.mkv)
+
+## The snapshots
+At the heart of these plugins is the ability to create-and-store a snapshot of
+an annotation of one's own images, as well as to load-and-merge-in a snapshot.
+The annotation consists of a lineage trees and tag sets, it does not involve
+the image data per se. The snapshot of an annotation is the exact content of it
+(all spots and their positions, labels, colors and links) available for the
+given images at the given time.
+
+A snapshot can be understood as a lightweight alternative to saving the full
+project. The snapshot itself does not hold any reference to the original
+project -- one can, for example, merge snapshot from different project into
+a current one.
+
+Snapshots can be used to store progress of an on-going annotation, can be used
+as named points of restore, and can be exchanged among annotators --
+collaborating Mastodon users.
+
+<!--
+In the latter setting, users can agree to annotate mutually different
+portions of the data and can work on their tasks simultaneously. This is
+essentially a collaborative annotation of the data, which is further fostered
+with a dedicated server implemented here to ease the snapshots exchange.
+-->
 
 
-ere [1], you can download a standalone ImageJ2 with the most recent Mastodon
-and with the progress reporting and inspecting plugins. You need to have Java
-1.8 or later installed on your computer, e.g. this one [2].
+# The server
+The server is merely a convenient point of exchange of snapshots (or any files),
+all organized into multiple projects.
 
-[1] http://helenos.fi.muni.cz:7070/racingMastodon.zip
-[2] https://www.java.com/en/download/
-[2b] https://www.java.com/en/download/manual.jsp
+To have own server running, one needs to have the following:
+- Hosting computer accessible on a network
+- Java 1.8 or newer installed
+- Fiji with Mastodon installed
+- Folder where server data will be stored
 
-To run this, unzip the .zip file and run start.sh if you're on Mac or Linux, or
-start.bat if you're on Windows. "Fiji" and Mastodon window should open.
-Then load the project as usual, and off you go...
+The hosting computer can be anything where Java runs. In particular it can be
+Windows, Mac or Linux computer. And it can run only on local network unless one
+wants to enable his collaborators to contribute from their homes or invite
+collaborators from different institutions. In the latter two cases, please refer
+to your system administrators to help you start the server on appropriately
+accessible computers (e.g., via VPN, or with public IP address).
 
-In Plugins->Racing->Save Current Lineage you can report your current state on a
+To start the server, one only needs to know how to open a command line, which could
+be named variously in your operating system such as console, terminal or shell.
+And then [look here to find the one-line command to start the server.](SERVER.md)
+
+[It could be worthwhile to serve your image data too.](BDS.md)
+
+
+# The project
+Clearly, one server has to serve multiple collaborative endeavours, which is to
+say, to serve multiple projects. It must separate and protect them from each other.
+Here, it is achieved very straightforwardly.
+
+A project is defined with a `string`, sequence of characters without blank spaces.
+Examples can be from simple nickname-likes, e.g., "thirdEmbryo", to rather descriptive
+ones such as "VladoLab_exp33_DAPIstainedNuclei_t2min_temp36C".
+
+The `string` addresses a project. Whenever collaborators interferes with the
+server, this `string` needs to be passed along for the server to understand
+which project is the current communication related to. [Technical details
+regarding projects are summarized on another page.](PROJECTS.md)
+
+The server provides no mean for collaborators to list over projects it hosts.
+Exception is the server administrator who has, of course, access to everything.
+In general, however, one cannot access content without knowing a particular
+`string`. To decrease a chance of guessing other project's `string`, we advice
+to include long randomized sequence of characters into the `string` (Fiji
+plugins from this suite can do this for you). This is popular concept used in
+many online services.
+
+
+## The project on a server
+[Refer to this page to learn how projects are managed on the server.](PROJECTS.md)
+
+
+## The project inside Mastodon
+adding own project - own page
+removing own project
+
+uploading snapshot
+
+When creating a snapshot, it is always created locally next to the main project
+file (the `.mastodon` file). Snapshot files use `.mstdn` extension. One can,
+however, also upload a snapshot to a dedicated server; and later download
+snapshots from that server. This way, more people can be annotating (tracking)
+the same data, every one only its portion,
+
+downloading snapshot
+
+# Customizing the plugins
+The plugins come with no predefined short-cuts but you can assign shortcuts
+yourself the usual Mastodon way: In the Mastodon preferences, Keymap,
+filter for "lineage".
+
+
+--------------------
+old texts:
+
+In Plugins->Collaborative->Save Current Lineage you can report your current state on a
 server. Check, please, your nickname in the dialog. The rest shall be preset, in
 particular the "remote monitor" URL should be: http://helenos.fi.muni.cz:7070
 (that is computer exclusive under my control running in a 24/7 with public IP,
@@ -29,7 +147,7 @@ Soon, the http://helenos.fi.muni.cz:7070/hello.html will have some sensible cont
 
 You can even download any report/snapshot file (.mstdn) and save it next to your .mastodon file manually...
 
-In Plugins->Racing->Load External Lineage you can also download and inspect all
+In Plugins->Collaborative->Load External Lineage you can also download and inspect all
 reports available on the server. When you open the plugin, a dialog pops up and
 lists what files are available. The files can come in three categories: "Local
 only", "Synced" and "Remote only". "Synced" are those that exist both on your
@@ -52,8 +170,6 @@ Any authentication, encryption or other means of security will come later...
 after extending the server part with charts-creator module (don't wait for it,
 submit already, regularly :-) and project-autosaving plugin.
 
-The both plugins come with no predefined short-cuts, you can assign the shortcut
-yourself: In the Mastodon preferences, Keymap, filter for "lineage"...
 
 I'm around to support you.
 Vladimir Ulman
