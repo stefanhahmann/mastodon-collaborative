@@ -88,6 +88,9 @@ public class DatasetServer
 		  .setHandler(requestsRooter)
 		  .build();
 
+		//setUpdateGnuplotPngStats(true);
+		//setUpdateHtmlTableStats(true);
+
 		System.out.println("Starting server "+hostname+":"+port+" over "+datasetsRootFolder);
 		System.out.println("  will be updating gnuplot PNG: "+updateGnuplotPngStats
 		                  +", HTML table: "+updateHtmlTableStats);
