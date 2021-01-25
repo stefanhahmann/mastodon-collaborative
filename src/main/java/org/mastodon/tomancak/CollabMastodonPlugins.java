@@ -153,7 +153,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 	{
 		this.getContext().getService(CommandService.class).run(
 			CreateProject.class, true,
-			"logService",  this.getContext().getService(LogService.class)
+			"logService",  this.getContext().getService(LogService.class),
+			"prefService", this.getContext().getService(PrefService.class)
 		);
 	}
 
@@ -162,7 +163,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 	{
 		this.getContext().getService(CommandService.class).run(
 			DeleteProject.class, true,
-			"logService",  this.getContext().getService(LogService.class)
+			"logService",  this.getContext().getService(LogService.class),
+			"prefService", this.getContext().getService(PrefService.class)
 		);
 	}
 

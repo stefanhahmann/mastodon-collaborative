@@ -97,6 +97,7 @@ extends DynamicCommand
 
 	@Parameter(label = "Project name on the remote monitor:",
 		description = "This entry is ignored if the above is not checked.",
+		persistKey = "projectName",
 		callback = "remoteAuxDataFlagSetter")
 	private String projectName = "setHereProjectName";
 
@@ -115,6 +116,9 @@ extends DynamicCommand
 
 		this.cancel("");
 		this.saveInputs();
+		//LoadEarlierProgress reads 'remoteMonitorURL' itsway... so we have to save thatway too
+		prefService.put(LoadEarlierProgress.class,"remoteMonitorURL",remoteMonitorURL);
+		prefService.put(LoadEarlierProgress.class,"projectName",projectName);
 		logService.warn("Deprecating this dialog and opening new with fresh list of detected files.");
 		this.getContext().getService(CommandService.class).run(
 				LoadEarlierProgress.class, true,
