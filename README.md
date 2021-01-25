@@ -50,6 +50,9 @@ Snapshots can be used to store progress of an on-going annotation, can be used
 as named points of restore, and can be exchanged among annotators --
 collaborating Mastodon users.
 
+The snapshot files use `.mstdn` extension whereas the full Mastodon project
+files are using the `.mastodon` extension.
+
 <!--
 In the latter setting, users can agree to annotate mutually different
 portions of the data and can work on their tasks simultaneously. This is
@@ -100,9 +103,9 @@ The server provides no mean for collaborators to list over projects it hosts.
 Exception is the server administrator who has, of course, access to everything.
 In general, however, one cannot access content without knowing a particular
 `string`. To decrease a chance of guessing other project's `string`, we advice
-to include long randomized sequence of characters into the `string` (Fiji
-plugins from this suite can do this for you). This is popular concept used in
-many online services.
+to include long randomized sequence of characters (name obfuscation) into the
+`string` (Fiji plugins from this suite can do this for you). This is popular
+concept used in many online services.
 
 
 ## The project on a server
@@ -110,84 +113,79 @@ many online services.
 
 
 ## The project inside Mastodon
-adding own project - own page
-removing own project
+![The four Fiji plugins](imgs/menuEntry.png)<br/>
+There are four Fiji plugins to utilize the life cycle of a collaborative project.
 
-uploading snapshot
+### Creating a new collaborative project
+![Create project plugin](imgs/createProject.png)<br/>
+In this example, a project `string = testProject` is requested to be created on
+the server that is expected to be reachable on IP address 192.168.3.128 and
+port 7070. If the bottom toggle is checked, the *secret project* (its actual
+`string` will include random character sequence) is created on the server. The
+new project name should now be pre-filled in all plugins from this suite.
 
-When creating a snapshot, it is always created locally next to the main project
-file (the `.mastodon` file). Snapshot files use `.mstdn` extension. One can,
-however, also upload a snapshot to a dedicated server; and later download
-snapshots from that server. This way, more people can be annotating (tracking)
-the same data, every one only its portion,
 
-downloading snapshot
+### Contributing current snapshot
+When creating a snapshot, it is always created locally in the same folder next
+to the main project file (the `.mastodon` file). Snapshot files use `.mstdn`
+extension. One is expected, however, to also upload a snapshot to the dedicated
+server. Make sure the toggle is checked to upload/report to the server as well.
+
+To tell the content of snapshots apart, snapshot filenames are extended with any
+user text such as collaborator's name or name of the "isolated corner" of the
+tracked data. Please, avoid using "non-standard" characters and blank spaces.
+Moreover, the names of snapshots always include time stamps.
+
+![Report snapshot plugin](imgs/reportProgress.png)</br>
+Here, a snapshot is created and consequently stored locally under the reported
+path. Since the "remote monitor" button is toggled, the snapshot file is also
+uploaded on the server into "testProject" folder.
+
+
+### Inspecting existing snapshots
+When time is right, users might want to return to their previous work or inspect
+the current work of others within the same project. A plugin, whose control
+dialog is shown below, is available specifically for this task. This dialog
+collects a list of available snapshots first and user is expected to choose one
+and also choose what to do with it -- currently either to replace or merge with
+the current content in user's local Mastodon. **Attention, plugin does not save
+anything before its operation, user has to do it herself** (if she feels like...).
+
+The snapshots are prefixed with one of three possible labels based on where they
+do exists:
+- `Local only:`  - stored previously but never contributed work of mine,
+- `Synced:`      - either already contributed work of mine, or previously downloaded work and now cached,
+- `Remote only:` - not yet downloaded work of others.
+
+![Download snapshot plugin](imgs/readProgress.png)</br>
+User is choosing, in this example, to open certain `synced` snapshot (that will
+not be downloaded because it already exists locally) and to merge it with what
+is currently in his Mastodon session.
+
+The content of the "Choose from the detected files" field is a result of
+inspection of the local folder and, since the checkbox is toggled, of the remote
+server (at the given address, port and from the given project).
+
+The list shall be updated in response to updates of the input fields of the dialog.
+However, due to certain technical limits (of scijava automatic parameters
+harvesting), if the toggle button is changed, the dialog needs to be opened
+again (while its list is re-populated) to show the updated list. The previously
+opened dialog windows will be deprecated, that means, they will just close
+without doing anything when one clicks their "OK" or "Cancel" buttons.
+
+
+### Deleting old collaborative project
+Finally, when all is done, contributed work is merged, overlaps are resolved,
+and **`.mastodon` project is saved**, one may want to remove the content on the
+server.
+
+![Delete project plugin](imgs/deleteProject.png)<br/>
+The dialog asks to delete a project folder "finishedCollaborativeProject" on the
+server. To prevent from unwanted effect of an accidental trigger of this menu,
+no deletion takes place until the "are you sure" toggle is checked.
+
 
 # Customizing the plugins
 The plugins come with no predefined short-cuts but you can assign shortcuts
 yourself the usual Mastodon way: In the Mastodon preferences, Keymap,
 filter for "lineage".
-
-
---------------------
-old texts:
-
-In Plugins->Collaborative->Save Current Lineage you can report your current state on a
-server. Check, please, your nickname in the dialog. The rest shall be preset, in
-particular the "remote monitor" URL should be: http://helenos.fi.muni.cz:7070
-(that is computer exclusive under my control running in a 24/7 with public IP,
-once all is debugged and settled, I would love to run this on the bds.mpi-cbg.de)
-
-Whenever you submit a report, a copy of what has been submitted is stored next
-to your .mastodon project file (one .mstdn file per every report).
-
-You can see what reports are available by opening the http://helenos.fi.muni.cz:7070 in your web browser.
-For instance, http://helenos.fi.muni.cz:7070/log.txt, will tell you what has been uploaded and when.
-Soon, the http://helenos.fi.muni.cz:7070/hello.html will have some sensible content...
-
-You can even download any report/snapshot file (.mstdn) and save it next to your .mastodon file manually...
-
-In Plugins->Collaborative->Load External Lineage you can also download and inspect all
-reports available on the server. When you open the plugin, a dialog pops up and
-lists what files are available. The files can come in three categories: "Local
-only", "Synced" and "Remote only". "Synced" are those that exist both on your
-local drive and on the server too. Only "Remote only" are new to your
-installation -- and they turn "Synced" if you choose them because any chosen
-file is first downloaded (and kept forever) and only then opened. Since the files
-are supposed to be _snapshots_, they should not be changed anymore after they
-are created (but you know, it is only a file on a hard drive, you can do it any
-harm you want...). Finally, you decide how you want to present the chosen file:
-Replace the current content (not resetting the view and windows layout) or Merge
-to the current content. In any case, your current lineage will be changed, and
-nothing is saved. The plugin does not touch your proper .mastodon file (not
-even for reading). The merging is done via the standard Merging plugin.
-
-The server and the snapshots are stupid -- they have no information to what
-project they belong to. Please don't update snapshots from different projects to
-the server/monitor now.
-
-Any authentication, encryption or other means of security will come later...
-after extending the server part with charts-creator module (don't wait for it,
-submit already, regularly :-) and project-autosaving plugin.
-
-
-I'm around to support you.
-Vladimir Ulman
-
-
---------------------
-Here's some more details/motivation:
-
-The original intention was to monitor progress of everyone.
-The plan was that people are sending somewhat regularly their lineages to the server --
-seeing how much they added w.r.t. others should be a motivating factor.
-
-In normal operation, people need not to merge anything, inspect etc.
-However, it does not hurt to do so to check if you are not crossing tracking with somebody else.
-
-The *main person* can check how people are doing, if they are on the right tracks, etc,
-and to be able to check again somewhat regularly. That person can see, just like everybody, everything that is submitted so far.
-
-But the reporting does not happen automatically.
-When update is sent, your complete lineage is transferred, no updates/increments, always the full thing;
-and it sends it only when you ask it to do so.

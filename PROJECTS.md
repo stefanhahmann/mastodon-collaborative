@@ -67,6 +67,10 @@ folder and that file will become immediately downloadable from the server, the
 server needs not be restarted/notified or alike, just reload the relevant web page
 in your web browser to test it.
 
+Note, however, that if server administrator creates an empty project folder in
+the DATA folder, the server will not see this new project until [its next
+restart](SERVER.md).
+
 
 ## Status files
 The server can be set up to to actually produce some files. When [Visual
