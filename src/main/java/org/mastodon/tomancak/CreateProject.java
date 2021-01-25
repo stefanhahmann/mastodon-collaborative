@@ -3,6 +3,7 @@ package org.mastodon.tomancak;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.Parameter;
 import org.scijava.command.Command;
+import org.scijava.command.DynamicCommand;
 import org.scijava.log.LogService;
 import org.scijava.prefs.PrefService;
 
@@ -18,7 +19,7 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 
 @Plugin( type = Command.class, name = "Mastodon CreateRemoteProject space plugin" )
-public class CreateProject implements Command
+public class CreateProject extends DynamicCommand
 {
 	// ----------------- necessary internal references -----------------
 	@Parameter
@@ -62,6 +63,10 @@ public class CreateProject implements Command
 				projectName = result;
 				logService.info("The project was registered with this name: "+projectName);
 				logService.info("Created a project space here: " + remoteMonitorURL + "/" + projectName);
+				//
+				//the projectName could have been changed, we resave to be on the safe side
+				this.saveInputs();
+				prefService.put(LoadEarlierProgress.class,"projectName",projectName);
 			}
 			else
 			{
