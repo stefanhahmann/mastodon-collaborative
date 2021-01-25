@@ -114,10 +114,12 @@ concept used in many online services.
 
 ## The project inside Mastodon
 ![The four Fiji plugins](imgs/menuEntry.png)<br/>
+
 There are four Fiji plugins to utilize the life cycle of a collaborative project.
 
 ### Creating a new collaborative project
 ![Create project plugin](imgs/createProject.png)<br/>
+
 In this example, a project `string = testProject` is requested to be created on
 the server that is expected to be reachable on IP address 192.168.3.128 and
 port 7070. If the bottom toggle is checked, the *secret project* (its actual
@@ -137,6 +139,7 @@ tracked data. Please, avoid using "non-standard" characters and blank spaces.
 Moreover, the names of snapshots always include time stamps.
 
 ![Report snapshot plugin](imgs/reportProgress.png)</br>
+
 Here, a snapshot is created and consequently stored locally under the reported
 path. Since the "remote monitor" button is toggled, the snapshot file is also
 uploaded on the server into "testProject" folder.
@@ -158,6 +161,7 @@ do exists:
 - `Remote only:` - not yet downloaded work of others.
 
 ![Download snapshot plugin](imgs/readProgress.png)</br>
+
 User is choosing, in this example, to open certain `synced` snapshot (that will
 not be downloaded because it already exists locally) and to merge it with what
 is currently in his Mastodon session.
@@ -180,12 +184,21 @@ and **`.mastodon` project is saved**, one may want to remove the content on the
 server.
 
 ![Delete project plugin](imgs/deleteProject.png)<br/>
+
 The dialog asks to delete a project folder "finishedCollaborativeProject" on the
 server. To prevent from unwanted effect of an accidental trigger of this menu,
 no deletion takes place until the "are you sure" toggle is checked.
 
 
 # Customizing the plugins
-The plugins come with no predefined short-cuts but you can assign shortcuts
-yourself the usual Mastodon way: In the Mastodon preferences, Keymap,
-filter for "lineage".
+The plugins come with no predefined short-cuts but you can assign them shortcuts
+yourself the usual Mastodon way.
+
+![Keymaps editor](imgs/keymaps.png)
+
+One can add own keyboard shortcuts from Mastodon main window, choose
+File -> Preferences..., choose the Keymap tab, then filter for "collab".
+To define a favourite shortcut, click on the action (e.g., "save current
+lineage"), click bottom to the field "Binding:" and type `ctrl`, hit space bar,
+`T`, hit space bar. To test it, which is to have the dialog pop up after
+pressing `Ctrl+T`, don't forget to click "Apply" in the dialog.
