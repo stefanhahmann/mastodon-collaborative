@@ -51,7 +51,7 @@ On Unix-like systems (Linux, Mac), one can run the server in a `screen` session:
 ```
 screen -dmS MastodonCollabServer JAVA -cp "FIJI/jars/*" org.mastodon.tomancak.net.DatasetServer DATA H P
 ```
-This detaches you server from the current terminal, and so you can close
+This detaches your server from the current terminal, and so you can close
 terminal's window.
 
 The server occasionally reports about its work on the standard output, that is
@@ -95,6 +95,4 @@ TODO: add example screenshot and explain
 Note: The plotting is rendered using [gnuplot](http://www.gnuplot.info/) -- a free,
 command-line driven graphing utility for Linux and other platforms. This tool
 needs to be installed on the hosting computer in order to have the plotting
-functional (after one enables it in the server).
-
-
+functional (plus it must be enabled in the server source code).

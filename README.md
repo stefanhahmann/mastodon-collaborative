@@ -58,7 +58,7 @@ with a dedicated server implemented here to ease the snapshots exchange.
 -->
 
 
-# The server
+## The server
 The server is merely a convenient point of exchange of snapshots (or any files),
 all organized into multiple projects.
 
@@ -91,7 +91,7 @@ A project is defined with a `string`, sequence of characters without blank space
 Examples can be from simple nickname-likes, e.g., "thirdEmbryo", to rather descriptive
 ones such as "VladoLab_exp33_DAPIstainedNuclei_t2min_temp36C".
 
-The `string` addresses a project. Whenever collaborators interferes with the
+The `string` addresses a project. Whenever collaborators interfere with the
 server, this `string` needs to be passed along for the server to understand
 which project is the current communication related to. [Technical details
 regarding projects are summarized on another page.](PROJECTS.md)
