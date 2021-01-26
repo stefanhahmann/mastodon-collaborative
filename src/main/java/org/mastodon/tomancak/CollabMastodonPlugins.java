@@ -28,10 +28,10 @@ import static org.mastodon.app.ui.ViewMenuBuilder.menu;
 @Plugin( type = MamutPlugin.class )
 public class CollabMastodonPlugins extends AbstractContextual implements MamutPlugin
 {
-	private static final String SAVE_MODEL_SNAPSHOT = "[tomancak] save current lineage";
-	private static final String LOAD_MODEL_SNAPSHOT = "[tomancak] load external lineage";
-	private static final String CREATE_SNAPSHOT_SPACE = "[tomancak] create project space";
-	private static final String DELETE_SNAPSHOT_SPACE = "[tomancak] delete project space";
+	private static final String SAVE_MODEL_SNAPSHOT = "[collab] save current lineage";
+	private static final String LOAD_MODEL_SNAPSHOT = "[collab] load external lineage";
+	private static final String CREATE_SNAPSHOT_SPACE = "[collab] create project space";
+	private static final String DELETE_SNAPSHOT_SPACE = "[collab] delete project space";
 
 	private static final String[] SAVE_MODEL_SNAPSHOT_KEYS = { "not mapped" };
 	private static final String[] LOAD_MODEL_SNAPSHOT_KEYS = { "not mapped" };
@@ -153,7 +153,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 	{
 		this.getContext().getService(CommandService.class).run(
 			CreateProject.class, true,
-			"logService",  this.getContext().getService(LogService.class)
+			"logService",  this.getContext().getService(LogService.class),
+			"prefService", this.getContext().getService(PrefService.class)
 		);
 	}
 
@@ -162,7 +163,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 	{
 		this.getContext().getService(CommandService.class).run(
 			DeleteProject.class, true,
-			"logService",  this.getContext().getService(LogService.class)
+			"logService",  this.getContext().getService(LogService.class),
+			"prefService", this.getContext().getService(PrefService.class)
 		);
 	}
 

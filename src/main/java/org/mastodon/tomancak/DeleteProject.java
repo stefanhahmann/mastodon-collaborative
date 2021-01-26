@@ -4,6 +4,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.plugin.Parameter;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
+import org.scijava.prefs.PrefService;
 
 import org.mastodon.tomancak.net.FileTransfer;
 import org.mastodon.tomancak.net.DatasetServer;
@@ -23,12 +24,17 @@ public class DeleteProject implements Command
 	@Parameter
 	private LogService logService;
 
+	@Parameter
+	private PrefService prefService;
+
 
 	// ----------------- network options -----------------
-	@Parameter(label = "URL address of the remote monitor:")
+	@Parameter(label = "URL address of the remote monitor:",
+		persistKey = "remoteMonitorURL")
 	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
 
-	@Parameter(label = "Delete this project on the remote monitor:")
+	@Parameter(label = "Delete this project on the remote monitor:",
+		persistKey = "projectName")
 	private String projectName = "setHereProjectName";
 
 
@@ -46,6 +52,10 @@ public class DeleteProject implements Command
 			logService.info("User is not sure... bailing out.");
 			return;
 		}
+
+		//LoadEarlierProgress reads 'remoteMonitorURL' itsway... so we have to save thatway too
+		prefService.put(LoadEarlierProgress.class,"remoteMonitorURL",remoteMonitorURL);
+		prefService.put(LoadEarlierProgress.class,"projectName",projectName);
 
 		try {
 			remoteMonitorURL = FileTransfer.fixupURL(remoteMonitorURL);

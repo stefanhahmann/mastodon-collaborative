@@ -86,16 +86,45 @@ extends DynamicCommand
 	// ----------------- network options -----------------
 	@Parameter(label = "Read also from a remote monitor:",
 		description = "Request that the progress files shall be retrieved also from a remote host.",
-		callback = "discoverInputFiles")
+		callback = "rebuildDialog")
 	private boolean readAlsoFromRemoteMonitor = false;
 
 	@Parameter(label = "URL address of the remote monitor:",
-		description = "This entry is ignored if the above is not checked.")
+		description = "This entry is ignored if the above is not checked.",
+		persistKey = "remoteMonitorURL",
+		callback = "remoteAuxDataFlagSetter")
 	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
 
 	@Parameter(label = "Project name on the remote monitor:",
-			description = "This entry is ignored if the above is not checked.")
+		description = "This entry is ignored if the above is not checked.",
+		persistKey = "projectName",
+		callback = "remoteAuxDataFlagSetter")
 	private String projectName = "setHereProjectName";
+
+	// notifies if user has made any change in the two above fields
+	private boolean remoteAuxDataChangedFlag = false;
+	private void remoteAuxDataFlagSetter() { remoteAuxDataChangedFlag = true; }
+
+	private
+	void rebuildDialog()
+	{
+		// if user has updated aux network data and readAlsoFromRemoteMonitor was true,
+		// we assume he/she noticed a mistake in the aux network data and we will therefore
+		// open new dialog again with the readAlsoFromRemoteMonitor set to true
+		if (remoteAuxDataChangedFlag && !readAlsoFromRemoteMonitor) readAlsoFromRemoteMonitor = true;
+		remoteAuxDataChangedFlag = false;
+
+		this.cancel("");
+		this.saveInputs();
+		//LoadEarlierProgress reads 'remoteMonitorURL' itsway... so we have to save thatway too
+		prefService.put(LoadEarlierProgress.class,"remoteMonitorURL",remoteMonitorURL);
+		prefService.put(LoadEarlierProgress.class,"projectName",projectName);
+		logService.warn("Deprecating this dialog and opening new with fresh list of detected files.");
+		this.getContext().getService(CommandService.class).run(
+				LoadEarlierProgress.class, true,
+				"logService",  logService, "prefService", prefService,
+				"appModel", appModel );
+	}
 
 
 	// ----------------- available file names -----------------
@@ -180,6 +209,11 @@ extends DynamicCommand
 	{
 		//bail out if we are started incorrectly, or on wrong input file...
 		if (appModel == null) return;
+		if (this.isCanceled())
+		{
+			logService.info("This dialog was deprecated, doing nothing.");
+			return;
+		}
 
 		final boolean doRemoteRead = lineageFilenameStr.startsWith("Remote");
 

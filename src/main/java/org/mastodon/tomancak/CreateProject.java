@@ -3,7 +3,9 @@ package org.mastodon.tomancak;
 import org.scijava.plugin.Plugin;
 import org.scijava.plugin.Parameter;
 import org.scijava.command.Command;
+import org.scijava.command.DynamicCommand;
 import org.scijava.log.LogService;
+import org.scijava.prefs.PrefService;
 
 import org.mastodon.tomancak.net.FileTransfer;
 import org.mastodon.tomancak.net.DatasetServer;
@@ -17,18 +19,23 @@ import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 
 @Plugin( type = Command.class, name = "Mastodon CreateRemoteProject space plugin" )
-public class CreateProject implements Command
+public class CreateProject extends DynamicCommand
 {
 	// ----------------- necessary internal references -----------------
 	@Parameter
 	private LogService logService;
 
+	@Parameter
+	private PrefService prefService;
+
 
 	// ----------------- network options -----------------
-	@Parameter(label = "URL address of the remote monitor:")
+	@Parameter(label = "URL address of the remote monitor:",
+		persistKey = "remoteMonitorURL")
 	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
 
-	@Parameter(label = "New project name on the remote monitor:")
+	@Parameter(label = "New project name on the remote monitor:",
+		persistKey = "projectName")
 	private String projectName = "setHereProjectName";
 
 	@Parameter(label = "Obfuscate the new project name:")
@@ -39,6 +46,10 @@ public class CreateProject implements Command
 	@Override
 	public void run()
 	{
+		//LoadEarlierProgress reads 'remoteMonitorURL' itsway... so we have to save thatway too
+		prefService.put(LoadEarlierProgress.class,"remoteMonitorURL",remoteMonitorURL);
+		prefService.put(LoadEarlierProgress.class,"projectName",projectName);
+
 		try {
 			remoteMonitorURL = FileTransfer.fixupURL(remoteMonitorURL);
 			final URL url = new URL(remoteMonitorURL
@@ -52,6 +63,10 @@ public class CreateProject implements Command
 				projectName = result;
 				logService.info("The project was registered with this name: "+projectName);
 				logService.info("Created a project space here: " + remoteMonitorURL + "/" + projectName);
+				//
+				//the projectName could have been changed, we resave to be on the safe side
+				this.saveInputs();
+				prefService.put(LoadEarlierProgress.class,"projectName",projectName);
 			}
 			else
 			{

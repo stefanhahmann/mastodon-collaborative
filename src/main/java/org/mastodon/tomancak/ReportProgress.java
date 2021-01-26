@@ -79,11 +79,13 @@ extends DynamicCommand
 	private boolean sendAlsoToRemoteMonitor = false;
 
 	@Parameter(label = "URL address of the remote monitor:",
-		description = "This entry is ignored if the above is not checked.")
+		description = "This entry is ignored if the above is not checked.",
+		persistKey = "remoteMonitorURL")
 	private String remoteMonitorURL = "setHereServerAddress:"+ DatasetServer.defaultPort;
 
 	@Parameter(label = "Project name on the remote monitor:",
-			description = "This entry is ignored if the above is not checked.")
+		description = "This entry is ignored if the above is not checked.",
+		persistKey = "projectName")
 	private String projectName = "setHereProjectName";
 
 
@@ -93,6 +95,11 @@ extends DynamicCommand
 	{
 		//bail out if we are started incorrectly...
 		if (appModel == null) return;
+
+		//LoadEarlierProgress reads 'remoteMonitorURL' itsway... so we have to save thatway too
+		prefService.put(LoadEarlierProgress.class,"readAlsoFromRemoteMonitor",sendAlsoToRemoteMonitor);
+		prefService.put(LoadEarlierProgress.class,"remoteMonitorURL",remoteMonitorURL);
+		prefService.put(LoadEarlierProgress.class,"projectName",projectName);
 
 		//test if the file can be created at all -- main worry is about
 		//the content of the 'userName' part
