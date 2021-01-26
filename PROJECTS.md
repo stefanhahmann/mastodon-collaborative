@@ -26,17 +26,18 @@ http://H:P/add/testProject
 The opened page will report status of this operation. OK-status repeats the
 project name under which the server will recognize it.
 
-Alternatively, one can create *secret project* -- just use `addSecret` command
-instead of plain `add`. The OK-status gives then slightly enhanced project name
-that *needs to be used from this moment on*. For example:
+Alternatively, one can create *secret project* (with random subsequence) --
+just use `addSecret` command instead of plain `add`. The OK-status gives then
+slightly enhanced project name that *needs to be used from this moment on*. For
+example:
 ```
 http://192.168.3.128:7070/addSecret/testProject
 ```
 returned `ef79147b-197f-439c-9529-b5261752e300-testProject`.
 
-Of course, this suite includes Fiji plugin offering convenient GUI to create a
-new project (which underneath does exactly what has just been described). The
-"URL-way" is meant for troubleshooting or for scripts.
+Of course, this suite includes Fiji plugin offering convenient GUI to create (or
+delete, etc.) a new project (which underneath does exactly what has just been
+described). The "URL-way" is meant for troubleshooting or for scripts.
 
 Similarly, an up-to-date list of commands relevant for a project can be obtained:
 ```
@@ -83,5 +84,5 @@ http://H:P/S/files/status.html
 ```
 For example:
 ```
-http://helenos.fi.muni.cz:7070/Mette_2ndEmbryo/files/status.html
+http://helenos.fi.muni.cz:7070/demo/files/status.html
 ```

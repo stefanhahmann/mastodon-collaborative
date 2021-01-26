@@ -113,12 +113,12 @@ concept used in many online services.
 
 
 ## The project inside Mastodon
-![The four Fiji plugins](imgs/menuEntry.png)<br/>
+![The four Fiji plugins](imgs/menuEntry.png)
 
 There are four Fiji plugins to utilize the life cycle of a collaborative project.
 
 ### Creating a new collaborative project
-![Create project plugin](imgs/createProject.png)<br/>
+![Create project plugin](imgs/createProject.png)
 
 In this example, a project `string = testProject` is requested to be created on
 the server that is expected to be reachable on IP address 192.168.3.128 and
@@ -138,7 +138,7 @@ user text such as collaborator's name or name of the "isolated corner" of the
 tracked data. Please, avoid using "non-standard" characters and blank spaces.
 Moreover, the names of snapshots always include time stamps.
 
-![Report snapshot plugin](imgs/reportProgress.png)</br>
+![Report snapshot plugin](imgs/reportProgress.png)
 
 Here, a snapshot is created and consequently stored locally under the reported
 path. Since the "remote monitor" button is toggled, the snapshot file is also
@@ -160,7 +160,7 @@ do exists:
 - `Synced:`      - either already contributed work of mine, or previously downloaded work and now cached,
 - `Remote only:` - not yet downloaded work of others.
 
-![Download snapshot plugin](imgs/readProgress.png)</br>
+![Download snapshot plugin](imgs/readProgress.png)
 
 User is choosing, in this example, to open certain `synced` snapshot (that will
 not be downloaded because it already exists locally) and to merge it with what
@@ -183,7 +183,7 @@ Finally, when all is done, contributed work is merged, overlaps are resolved,
 and **`.mastodon` project is saved**, one may want to remove the content on the
 server.
 
-![Delete project plugin](imgs/deleteProject.png)<br/>
+![Delete project plugin](imgs/deleteProject.png)
 
 The dialog asks to delete a project folder "finishedCollaborativeProject" on the
 server. To prevent from unwanted effect of an accidental trigger of this menu,
@@ -192,7 +192,7 @@ no deletion takes place until the "are you sure" toggle is checked.
 
 # Customizing the plugins
 The plugins come with no predefined short-cuts but you can assign them shortcuts
-yourself the usual Mastodon way.
+yourself the [usual Mastodon way](https://github.com/mastodon-sc/mastodon#actions-and-keyboard-shortcuts).
 
 ![Keymaps editor](imgs/keymaps.png)
 
