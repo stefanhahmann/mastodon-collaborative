@@ -16,7 +16,8 @@ Considering the pair H:P from the collaborative server, H can be the same as
 H_BDS, or P_BDS can be the same as P, but not both at the same time.
 Furthermore, let BDSJAR be path to a `.jar` file with BDS.
 
-TODO: prepare BDS fatjar for download from somewhere (check license)
+One can download BDSJAR [from this URL](http://fly.mpi-cbg.de/~pietzsch/bigdataserver.jar),
+in which case BSDJAR would be `bigdataserver.jar`.
 
 To test if you BDS is functional, try:
 ```
