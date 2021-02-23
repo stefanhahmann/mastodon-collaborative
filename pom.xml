@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>mastodon-tomancak</artifactId>
-			<version>0.1.2-SNAPSHOT-b</version>
+			<version>0.1.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>io.undertow</groupId>
