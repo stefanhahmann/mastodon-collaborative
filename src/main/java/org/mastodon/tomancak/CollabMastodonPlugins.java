@@ -7,7 +7,6 @@ import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.mamut.MamutAppModel;
-import org.mastodon.mamut.Mastodon;
 
 import net.imagej.ImageJ;
 import org.mastodon.ui.keymap.CommandDescriptionProvider;
@@ -174,16 +173,11 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 	 */
 	public static void main( final String[] args ) throws Exception
 	{
-		Locale.setDefault( Locale.US );
-		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
-
-		SceneryBase.xinitThreads();
-
 		//start up our own Fiji/Imagej2
 		final ImageJ ij = new ImageJ();
 		ij.ui().showUI();
 
-		final Mastodon mastodon = (Mastodon)ij.command().run(Mastodon.class, true).get().getCommand();
-		mastodon.setExitOnClose();
+		//final Mastodon mastodon = (Mastodon)ij.command().run(Mastodon.class, true).get().getCommand();
+		//mastodon.setExitOnClose();
 	}
 }
