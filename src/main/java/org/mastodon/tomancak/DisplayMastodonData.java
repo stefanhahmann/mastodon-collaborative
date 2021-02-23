@@ -3,8 +3,8 @@ package org.mastodon.tomancak;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.*;
 
-import graphics.scenery.Node;
 import graphics.scenery.Material;
+import graphics.scenery.Node;
 import graphics.scenery.Sphere;
 import graphics.scenery.Cylinder;
 import graphics.scenery.volumes.TransferFunction;
@@ -13,13 +13,13 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.revised.mamut.MamutViewBdv;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.ui.coloring.GraphColorGenerator;
+import org.mastodon.mamut.MamutViewBdv;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.spatial.SpatialIndex;
 import org.mastodon.tomancak.dialogs.SpotsDisplayParamsDialog;
+import org.mastodon.ui.coloring.GraphColorGenerator;
 
 import net.imglib2.RandomAccessibleInterval;
 import org.scijava.Context;
@@ -27,7 +27,7 @@ import org.scijava.command.CommandService;
 import org.scijava.event.EventService;
 import sc.iview.SciView;
 import sc.iview.event.NodeChangedEvent;
-import sc.iview.commands.edit.AddOrientationCompass;
+import sc.iview.commands.edit.add.AddOrientationCompass;
 import sc.iview.commands.view.SetTransferFunction;
 
 import java.util.Iterator;
@@ -36,7 +36,7 @@ import java.util.LinkedList;
 
 public class DisplayMastodonData {
 	//Mastodon connection
-	final MastodonPluginAppModel pluginAppModel;
+	final MamutPluginAppModel pluginAppModel;
 	final FocusedBdvWindow controllingBdvWindow = new FocusedBdvWindow();
 
 	//the overall coordinate scale factor from Mastodon to SciView coords
@@ -52,13 +52,13 @@ public class DisplayMastodonData {
 	final CachedColorTables volumeColormaps = new CachedColorTables();
 
 	public
-	DisplayMastodonData(final MastodonPluginAppModel pluginAppModel)
+	DisplayMastodonData(final MamutPluginAppModel pluginAppModel)
 	{
 		this(pluginAppModel,false);
 	}
 
 	public
-	DisplayMastodonData(final MastodonPluginAppModel pluginAppModel, final boolean startSciView)
+	DisplayMastodonData(final MamutPluginAppModel pluginAppModel, final boolean startSciView)
 	{
 		this.pluginAppModel = pluginAppModel;
 		if (startSciView) startSciView();
@@ -75,7 +75,7 @@ public class DisplayMastodonData {
 		void setPossiblyTo(MamutViewBdv adept)
 		{ if (adept.getFrame().isFocused()) focusedBdvWindow = adept; }
 
-		void setupFrom(final MastodonPluginAppModel mastodon)
+		void setupFrom(final MamutPluginAppModel mastodon)
 		{
 			focusedBdvWindow = null;
 			mastodon.getWindowManager().forEachBdvView( bdvView -> setPossiblyTo(bdvView) );
@@ -133,7 +133,7 @@ public class DisplayMastodonData {
 	}
 
 	public static
-	Volume showOneTimePoint(final int timepoint, final MastodonPluginAppModel mastodonPlugin, final SciView sv)
+	Volume showOneTimePoint(final int timepoint, final MamutPluginAppModel mastodonPlugin, final SciView sv)
 	{
 		final SourceAndConverter<?> sac = mastodonPlugin.getAppModel().getSharedBdvData().getSources().get(0);
 		final Volume v = (Volume)sv.addVolume((RandomAccessibleInterval)sac.getSpimSource().getSource(timepoint,0), volumeName);
@@ -179,7 +179,7 @@ public class DisplayMastodonData {
 	}
 
 	public static
-	Volume showTimeSeries(final MastodonPluginAppModel mastodonPlugin, final SciView sv)
+	Volume showTimeSeries(final MamutPluginAppModel mastodonPlugin, final SciView sv)
 	{
 		final SourceAndConverter<?> sac = mastodonPlugin.getAppModel().getSharedBdvData().getSources().get(0);
 		final Volume v = (Volume)sv.addVolume((SourceAndConverter)sac,

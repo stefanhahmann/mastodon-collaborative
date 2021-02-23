@@ -5,19 +5,19 @@ import graphics.scenery.Node;
 import graphics.scenery.volumes.Volume;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
-import org.mastodon.plugin.MastodonPlugin;
-import org.mastodon.plugin.MastodonPluginAppModel;
-import org.mastodon.model.HighlightModel;
+import org.mastodon.app.plugin.MastodonPlugin;
+import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.MamutViewTrackScheme;
+import org.mastodon.mamut.model.Link;
+import org.mastodon.mamut.model.Spot;
+import org.mastodon.mamut.plugin.MamutPlugin;
+import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.model.FocusModel;
-import org.mastodon.revised.mamut.KeyConfigContexts;
-import org.mastodon.revised.mamut.MamutAppModel;
-import org.mastodon.revised.mamut.MamutViewTrackScheme;
-import org.mastodon.revised.model.mamut.Link;
-import org.mastodon.revised.model.mamut.Spot;
-import org.mastodon.revised.ui.coloring.GraphColorGenerator;
-import org.mastodon.revised.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.revised.ui.keymap.CommandDescriptions;
-
+import org.mastodon.model.HighlightModel;
+import org.mastodon.ui.coloring.GraphColorGenerator;
+import org.mastodon.ui.keymap.CommandDescriptionProvider;
+import org.mastodon.ui.keymap.CommandDescriptions;
+import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.AbstractContextual;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
@@ -38,7 +38,7 @@ import static org.mastodon.app.ui.ViewMenuBuilder.item;
 import static org.mastodon.app.ui.ViewMenuBuilder.menu;
 
 @Plugin( type = MastodonPlugin.class )
-public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
+public class SciViewPlugin extends AbstractContextual implements MamutPlugin
 {
 	private static final String SCIVIEW_CONNECTOR = "[tomancak] start SciView";
 	private static final String[] SCIVIEW_CONNECTOR_KEYS = { "not mapped" };
@@ -88,10 +88,10 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 		updateEnabledActions();
 	}
 
-	private MastodonPluginAppModel pluginAppModel;
+	private MamutPluginAppModel pluginAppModel;
 
 	@Override
-	public void setAppModel( final MastodonPluginAppModel model )
+	public void setAppPluginModel( final MamutPluginAppModel model )
 	{
 		this.pluginAppModel = model;
 		updateEnabledActions();
@@ -142,7 +142,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				//show full volume
 				Volume v = dmd.showTimeSeries();
 				dmd.makeSciViewReadBdvSetting(v);
-				DisplayMastodonData.showTransferFunctionDialog(getContext(),v);
+				//DisplayMastodonData.showTransferFunctionDialog(getContext(),v);
 
 				//show spots...
 				final Node spotsNode = new Node("Mastodon spots");
@@ -164,7 +164,7 @@ public class SciViewPlugin extends AbstractContextual implements MastodonPlugin
 				dmd.events.subscribe(notifierOfMastodonWhenSpotIsSelectedInSciView);
 
 				//show compass
-				dmd.showCompassAxes(dmd, spotsNode.getPosition());
+				//dmd.showCompassAxes(dmd, spotsNode.getPosition());
 
 				if (dmd.controllingBdvWindow.isThereSome())
 				{
