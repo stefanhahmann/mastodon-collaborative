@@ -37,8 +37,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon-tracking</artifactId>
+			<version>1.0.0-beta-7-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scijava</groupId>
 			<artifactId>mastodon-tomancak</artifactId>
-			<version>0.1.2-SNAPSHOT</version>
+			<version>0.1.2-SNAPSHOT-b</version>
 		</dependency>
 		<dependency>
 			<groupId>io.undertow</groupId>
@@ -53,6 +58,15 @@
 			<groupId>de.mpicbg.ulman</groupId>
 			<artifactId>logs-processor</artifactId>
 			<version>1.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>sc.iview</groupId>
+			<artifactId>sciview</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>de.mpicbg.ulman</groupId>
+			<artifactId>SimViewer</artifactId>
+			<version>1.2-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
@@ -95,6 +109,15 @@
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 
 		<enforcer.skip>true</enforcer.skip>
+
+		<scenery.version>9747a22</scenery.version>
+		<sciview.version>0.2.0-beta-9-SNAPSHOT</sciview.version>
+
+		<!-- the same as in Mastodon -->
+		<bigdataviewer-core.version>9.0.5</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-20</bigdataviewer-vistools.version>
+		<spim_data.version>2.2.4</spim_data.version>
+		<scijava-listeners.version>1.0.0-beta-2</scijava-listeners.version>
 	</properties>
 
 	<developers>
