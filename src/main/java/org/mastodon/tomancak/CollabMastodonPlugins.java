@@ -1,15 +1,12 @@
 package org.mastodon.tomancak;
 
 import java.util.*;
-import javax.swing.UIManager;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.mamut.MamutAppModel;
-import org.mastodon.mamut.Mastodon;
 
-import net.imagej.ImageJ;
 import org.mastodon.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.ui.keymap.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
@@ -166,22 +163,5 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 			"logService",  this.getContext().getService(LogService.class),
 			"prefService", this.getContext().getService(PrefService.class)
 		);
-	}
-
-
-	/*
-	 * Start Mastodon ...
-	 */
-	public static void main( final String[] args ) throws Exception
-	{
-		Locale.setDefault( Locale.US );
-		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
-
-		//start up our own Fiji/Imagej2
-		final ImageJ ij = new ImageJ();
-		ij.ui().showUI();
-
-		final Mastodon mastodon = (Mastodon)ij.command().run(Mastodon.class, true).get().getCommand();
-		mastodon.setExitOnClose();
 	}
 }
