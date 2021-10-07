@@ -164,7 +164,7 @@
 		<dependency>
 			<groupId>org.mastodon</groupId>
 			<artifactId>mastodon-tomancak</artifactId>
-			<version>0.1.2-SNAPSHOT-merger</version>
+			<version>0.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>io.undertow</groupId>
