@@ -40,7 +40,8 @@ public class LineageFiles
 	static public
 	Path getProjectRootFoldername(final MamutProject mp)
 	{
-		final File pRoot = mp.getProjectRoot();
+		File pRoot = mp.getProjectRoot();
+		if (pRoot == null) pRoot = mp.getDatasetXmlFile(); //NB: sometimes this happens too
 		return pRoot.isDirectory()? pRoot.toPath() : pRoot.getParentFile().toPath();
 	}
 
