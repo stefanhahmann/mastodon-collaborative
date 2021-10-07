@@ -12,16 +12,16 @@
 	<artifactId>mastodon-collaborative</artifactId>
 	<version>0.8.0-SNAPSHOT</version>
 
-	<name>Tomancak Lab Mastodon Plugin for Collaborative Manual Tracking</name>
-	<description>Mastodon plugins to foster collaborative annotations</description>
-	<!-- TODO: Needs to be updated -->
-	<url>https://github.com/xulman/mastodon-collaborative</url>
-	<inceptionYear>2020</inceptionYear>
 	<organization>
 		<name>Mastodon Science</name>
 		<url>http://github.com/mastodon-sc</url>
 	</organization>
-	<!-- TODO: Needs to be updated -->
+
+	<name>Tomancak Lab Mastodon Plugin for Collaborative Manual Tracking</name>
+	<description>Mastodon plugins to foster collaborative annotations</description>
+	<url>https://github.com/mastodon-sc/mastodon-collaborative</url>
+	<inceptionYear>2020</inceptionYear>
+
 	<licenses>
 		<license>
 			<name>Simplified BSD License</name>
@@ -29,87 +29,7 @@
 		</license>
 	</licenses>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.mastodon</groupId>
-			<artifactId>mastodon</artifactId>
-			<version>1.0.0-beta-17-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mastodon</groupId>
-			<artifactId>mastodon-tomancak</artifactId>
-			<version>0.1.2-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>io.undertow</groupId>
-			<artifactId>undertow-core</artifactId>
-			<version>2.0.29.Final</version>
-		</dependency>
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>imagej</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>de.mpicbg.ulman</groupId>
-			<artifactId>logs-processor</artifactId>
-			<version>1.1</version>
-		</dependency>
-	</dependencies>
-
-	<mailingLists>
-		<mailingList>
-			<name>ImageJ Forum</name>
-			<archive>http://forum.imagej.net/</archive>
-		</mailingList>
-	</mailingLists>
-
-	<!-- TODO: Needs to be updated -->
-	<scm>
-		<connection>scm:git:git:github.com/xulman/mastodon-collaborative</connection>
-		<developerConnection>scm:git:git@github.com:xulman/mastodon-collaborative</developerConnection>
-		<tag>HEAD</tag>
-		<url>https://github.com/xulman/mastodon-collaborative</url>
-	</scm>
-	<!-- TODO: Needs to be updated -->
-	<issueManagement>
-		<system>GitHub</system>
-		<url>https://github.com/xulman/mastodon-collaborative/issues</url>
-	</issueManagement>
-	<!-- TODO: Needs to be updated -->
-	<ciManagement>
-		<system>None</system>
-	</ciManagement>
-
-	<properties>
-		<package-name>org.mastodon</package-name>
-
-		<!-- TODO: Needs to be updated -->
-		<license.licenseName>not licensed yet</license.licenseName>
-		<license.projectName>mastodon-collaborative</license.projectName>
-		<license.organizationName>Mastodon authors</license.organizationName>
-		<license.copyrightOwners>Tobias Pietzsch</license.copyrightOwners>
-		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
-
-		<!-- NB: Deploy releases to the SciJava Maven repository. -->
-		<!-- TODO: Needs to be updated -->
-		<releaseProfiles>deploy-to-scijava</releaseProfiles>
-
-		<enforcer.skip>true</enforcer.skip>
-	</properties>
-
 	<developers>
-		<developer>
-			<id>tpietzsch</id>
-			<name>Tobias Pietzsch</name>
-			<email>pietzsch@mpi-cbg.de</email>
-			<url>http://imagej.net/User:Pietzsch</url>
-			<organization>MPI-CBG</organization>
-			<organizationUrl>http://www.mpi-cbg.de/</organizationUrl>
-			<roles>
-				<role>lead</role>
-				<role>developer</role>
-			</roles>
-		</developer>
 		<developer>
 			<id>xulman</id>
 			<name>Vladimir Ulman</name>
@@ -118,12 +38,111 @@
 			<organization>IT4Innovation TUO-VSB</organization>
 			<organizationUrl>http://www.it4i.cz/</organizationUrl>
 			<roles>
+				<role>lead</role>
 				<role>developer</role>
 			</roles>
 		</developer>
 	</developers>
 
-	<contributors><contributor><name>none</name></contributor></contributors>
+	<contributors>
+		<contributor>
+			<name>none</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>https://forum.image.sc/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<!-- ====================================== -->
+
+	<scm>
+		<url>https://github.com/mastodon-sc/mastodon-collaborative</url>
+		<tag>HEAD</tag>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/mastodon-sc/mastodon-collaborative/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>None</system>
+	</ciManagement>
+
+	<distributionManagement>
+		<repository>
+			<id>it4i</id>
+			<url>https://artifactory.cs.vsb.cz/it4i/</url>
+		</repository>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.2.4</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+					<generateGitPropertiesFile>true</generateGitPropertiesFile>
+					<generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+					<includeOnlyProperties>
+						<includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
+						<includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+					</includeOnlyProperties>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<executable>sh</executable>
+					<arguments>
+						<argument>-c</argument>
+						<argument>rm -v ${project.build.outputDirectory}/COMMITrev_*; touch ${project.build.outputDirectory}/COMMITrev_${git.commit.id.abbrev};</argument>
+					</arguments>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<packaging>jar</packaging>
+
+	<!-- ====================================== -->
+
+	<properties>
+		<package-name>org.mastodon</package-name>
+
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.projectName>mastodon-collaborative</license.projectName>
+		<license.organizationName>Mastodon authors</license.organizationName>
+		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
+
+		<mastodon.version>1.0.0-beta-21</mastodon.version>
+
+		<mastodon-collection.version>1.0.0-beta-22</mastodon-collection.version>
+		<mastodon-graph.version>1.0.0-beta-20</mastodon-graph.version>
+		<bigdataviewer-core.version>10.2.0</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-28</bigdataviewer-vistools.version>
+	</properties>
 
 	<repositories>
 		<repository>
@@ -135,4 +154,27 @@
 			<url>https://artifactory.cs.vsb.cz/it4i/</url>
 		</repository>
 	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon</artifactId>
+			<version>${mastodon.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon-tomancak</artifactId>
+			<version>0.1.2-SNAPSHOT-merger</version>
+		</dependency>
+		<dependency>
+			<groupId>io.undertow</groupId>
+			<artifactId>undertow-core</artifactId>
+			<version>2.0.29.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>de.mpicbg.ulman</groupId>
+			<artifactId>logs-processor</artifactId>
+			<version>1.1</version>
+		</dependency>
+	</dependencies>
 </project>
