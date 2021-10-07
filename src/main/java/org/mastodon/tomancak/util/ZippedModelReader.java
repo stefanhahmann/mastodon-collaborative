@@ -61,4 +61,9 @@ public class ZippedModelReader implements MamutProject.ProjectReader
 	public Collection<String> getFeatureKeys() {
 		return null;
 	}
+
+	@Override
+	public InputStream getGuiInputStream() throws IOException {
+		return null;
+	}
 }
