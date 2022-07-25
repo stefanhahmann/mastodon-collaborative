@@ -46,8 +46,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 		menuTexts.put( LOAD_MODEL_SNAPSHOT, "Load External Lineage" );
 		menuTexts.put( CREATE_SNAPSHOT_SPACE, "Create Project Space" );
 		menuTexts.put( DELETE_SNAPSHOT_SPACE, "Delete Project Space" );
-		menuTexts.put( SHOW_PROJECT_SITE, "Show Project Space Content" );
-		menuTexts.put( SHOW_DOCS_SITE, "Show Official Documentation" );
+		menuTexts.put( SHOW_PROJECT_SITE, "Show Remote Project Space" );
+		menuTexts.put( SHOW_DOCS_SITE, "Show Documentation For..." );
 	}
 
 	/** Command descriptions for all provided commands */
