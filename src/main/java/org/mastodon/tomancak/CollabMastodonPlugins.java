@@ -29,11 +29,15 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 	private static final String LOAD_MODEL_SNAPSHOT = "[collab] load external lineage";
 	private static final String CREATE_SNAPSHOT_SPACE = "[collab] create project space";
 	private static final String DELETE_SNAPSHOT_SPACE = "[collab] delete project space";
+	private static final String SHOW_PROJECT_SITE = "[collab] show content of project space";
+	private static final String SHOW_DOCS_SITE = "[collab] show official documentation";
 
 	private static final String[] SAVE_MODEL_SNAPSHOT_KEYS = { "not mapped" };
 	private static final String[] LOAD_MODEL_SNAPSHOT_KEYS = { "not mapped" };
 	private static final String[] CREATE_SNAPSHOT_SPACE_KEYS = { "not mapped" };
 	private static final String[] DELETE_SNAPSHOT_SPACE_KEYS = { "not mapped" };
+	private static final String[] SHOW_PROJECT_SITE_KEYS = { "not mapped" };
+	private static final String[] SHOW_DOCS_SITE_KEYS = { "not mapped" };
 
 	private static final Map< String, String > menuTexts = new HashMap<>();
 	static
@@ -42,6 +46,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 		menuTexts.put( LOAD_MODEL_SNAPSHOT, "Load External Lineage" );
 		menuTexts.put( CREATE_SNAPSHOT_SPACE, "Create Project Space" );
 		menuTexts.put( DELETE_SNAPSHOT_SPACE, "Delete Project Space" );
+		menuTexts.put( SHOW_PROJECT_SITE, "Show Project Space Content" );
+		menuTexts.put( SHOW_DOCS_SITE, "Show Official Documentation" );
 	}
 
 	/** Command descriptions for all provided commands */
@@ -60,6 +66,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 			descriptions.add( LOAD_MODEL_SNAPSHOT, LOAD_MODEL_SNAPSHOT_KEYS, "Replaces the current complete lineage with that from a chosen file, or possibly from a remote server." );
 			descriptions.add( CREATE_SNAPSHOT_SPACE, CREATE_SNAPSHOT_SPACE_KEYS, "Opens a new project space on a remote server for storing lineage files." );
 			descriptions.add( DELETE_SNAPSHOT_SPACE, DELETE_SNAPSHOT_SPACE_KEYS, "Closes and deletes project space on a remote server." );
+			descriptions.add( SHOW_PROJECT_SITE, SHOW_PROJECT_SITE_KEYS, "Opens a web browser with the content of a project space on a remote server." );
+			descriptions.add( SHOW_DOCS_SITE, SHOW_DOCS_SITE_KEYS, "Opens a web browser with the official documentation." );
 		}
 	}
 
@@ -68,6 +76,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 	private final AbstractNamedAction loadModelSnapshotAction;
 	private final AbstractNamedAction createSnapshotSpaceAction;
 	private final AbstractNamedAction deleteSnapshotSpaceAction;
+	private final AbstractNamedAction openProjectSpaceAction;
+	private final AbstractNamedAction openDocumentationAction;
 
 	public CollabMastodonPlugins()
 	{
@@ -75,6 +85,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 		loadModelSnapshotAction = new RunnableAction( LOAD_MODEL_SNAPSHOT, this::loadModelSnapshot );
 		createSnapshotSpaceAction = new RunnableAction( CREATE_SNAPSHOT_SPACE, this::createSnapshotSpace );
 		deleteSnapshotSpaceAction = new RunnableAction( DELETE_SNAPSHOT_SPACE, this::deleteSnapshotSpace );
+		openProjectSpaceAction = new RunnableAction( SHOW_PROJECT_SITE, this::showProjectSite );
+		openDocumentationAction = new RunnableAction( SHOW_DOCS_SITE, this::showDocsSite );
 		updateEnabledActions();
 	}
 
@@ -96,7 +108,9 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 								item(SAVE_MODEL_SNAPSHOT),
 								item(LOAD_MODEL_SNAPSHOT),
 								item(CREATE_SNAPSHOT_SPACE),
-								item(DELETE_SNAPSHOT_SPACE))));
+								item(DELETE_SNAPSHOT_SPACE),
+								item(SHOW_PROJECT_SITE),
+								item(SHOW_DOCS_SITE))));
 	}
 
 	@Override
@@ -112,6 +126,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 		actions.namedAction( loadModelSnapshotAction, LOAD_MODEL_SNAPSHOT_KEYS );
 		actions.namedAction( createSnapshotSpaceAction, CREATE_SNAPSHOT_SPACE_KEYS );
 		actions.namedAction( deleteSnapshotSpaceAction, DELETE_SNAPSHOT_SPACE_KEYS );
+		actions.namedAction( openProjectSpaceAction, SHOW_PROJECT_SITE_KEYS );
+		actions.namedAction( openDocumentationAction, SHOW_DOCS_SITE_KEYS );
 	}
 
 	private void updateEnabledActions()
@@ -121,6 +137,8 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 		loadModelSnapshotAction.setEnabled( appModel != null );
 		createSnapshotSpaceAction.setEnabled( appModel != null );
 		deleteSnapshotSpaceAction.setEnabled( appModel != null );
+		openProjectSpaceAction.setEnabled( appModel != null );
+		openDocumentationAction.setEnabled( appModel != null );
 	}
 
 
@@ -162,6 +180,22 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 			DeleteProject.class, true,
 			"logService",  this.getContext().getService(LogService.class),
 			"prefService", this.getContext().getService(PrefService.class)
+		);
+	}
+
+	private void showDocsSite()
+	{
+		this.getContext().getService(CommandService.class).run(
+				OpenDocsSite.class, true,
+				"logService",  this.getContext().getService(LogService.class)
+		);
+	}
+
+	private void showProjectSite()
+	{
+		this.getContext().getService(CommandService.class).run(
+				OpenServerSite.class, true,
+				"logService",  this.getContext().getService(LogService.class)
 		);
 	}
 }
