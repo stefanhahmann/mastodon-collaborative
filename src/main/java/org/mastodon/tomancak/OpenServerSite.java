@@ -7,7 +7,7 @@ import org.scijava.log.LogService;
 import org.mastodon.tomancak.net.DatasetServer;
 import org.mastodon.tomancak.util.OpenOsWebBrowser;
 
-@Plugin( type = Command.class, name = "Mastodon ReportProgress plugin" )
+@Plugin( type = Command.class, name = "Mastodon ShowServer plugin" )
 public class OpenServerSite implements Command
 {
 	@Parameter
