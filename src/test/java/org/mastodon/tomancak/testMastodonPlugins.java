@@ -27,14 +27,12 @@
  */
 package org.mastodon.tomancak;
 
-import net.imagej.ImageJ;
+import org.mastodon.mamut.launcher.MastodonLauncherCommand;
 
 public class testMastodonPlugins
 {
 	public static void main( final String[] args ) throws Exception
 	{
-		//start up our own Fiji/Imagej2
-		final ImageJ ij = new net.imagej.ImageJ();
-		ij.ui().showUI();
+		new MastodonLauncherCommand().run();
 	}
 }
