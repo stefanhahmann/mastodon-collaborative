@@ -60,4 +60,9 @@ public class ZippedModelWriter implements MamutProject.ProjectWriter
 	public OutputStream getGuiOutputStream() throws IOException {
 		return null;
 	}
+
+	@Override
+	public OutputStream getBackupDatasetXmlOutputStream() throws IOException {
+		return null;
+	}
 }

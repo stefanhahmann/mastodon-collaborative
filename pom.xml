@@ -136,7 +136,7 @@
 		<license.organizationName>Mastodon authors</license.organizationName>
 		<license.copyrightOwners>Vladimir Ulman</license.copyrightOwners>
 
-		<mastodon.version>1.0.0-beta-21</mastodon.version>
+		<mastodon.version>1.0.0-beta-27-SNAPSHOT</mastodon.version>
 	</properties>
 
 	<repositories>

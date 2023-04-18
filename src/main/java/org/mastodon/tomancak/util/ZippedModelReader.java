@@ -66,4 +66,9 @@ public class ZippedModelReader implements MamutProject.ProjectReader
 	public InputStream getGuiInputStream() throws IOException {
 		return null;
 	}
+
+	@Override
+	public InputStream getBackupDatasetXmlInputStream() throws IOException {
+		return null;
+	}
 }
