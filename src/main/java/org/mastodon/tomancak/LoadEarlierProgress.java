@@ -11,7 +11,7 @@ import org.scijava.command.CommandService;
 
 import java.nio.file.Path;
 
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.tomancak.merging.MergeDatasets;
 import org.mastodon.mamut.tomancak.merging.MergeModels;
@@ -41,7 +41,7 @@ extends DynamicCommand
 	private PrefService prefService;
 
 	@Parameter(persist = false)
-	private MamutPluginAppModel appModel;
+	private ProjectModel appModel;
 
 	// ----------------- local folder -----------------
 	@Parameter(label = "Searching in this folder:",
@@ -222,7 +222,7 @@ extends DynamicCommand
 		if (!LineageFiles.lineageFilePattern.test(lineageFilenameStr)) return;
 
 		//reference on an existing/old and a new model that shall be filled from the file
-		final Model refModel = appModel.getAppModel().getModel();
+		final Model refModel = appModel.getModel();
 		final Model newModel
 			= actionWithNewFile.startsWith("Replace") ? refModel  //fill directly into the actual lineage
 			: LineageFiles.createEmptyModelWithUnitsOf(refModel); //create an extra lineage

@@ -8,7 +8,7 @@ import org.scijava.command.DynamicCommand;
 import org.scijava.log.LogService;
 import org.scijava.prefs.PrefService;
 
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.tomancak.util.LineageFiles;
 import org.mastodon.tomancak.net.FileTransfer;
@@ -32,7 +32,7 @@ extends DynamicCommand
 	private PrefService prefService;
 
 	@Parameter(persist = false)
-	private MamutPluginAppModel appModel;
+	private ProjectModel appModel;
 
 	// ----------------- user name and file name -----------------
 	@Parameter(label = "Identify yourself as:",
@@ -112,7 +112,7 @@ extends DynamicCommand
 		}
 
 		//ok, create-able, let's export data then
-		final Model model = appModel.getAppModel().getModel();
+		final Model model = appModel.getModel();
 		try {
 			LineageFiles.saveModelIntoLineageFile(model, lineageFullFilename);
 			logService.info("Saved: "+lineageFullFilename);

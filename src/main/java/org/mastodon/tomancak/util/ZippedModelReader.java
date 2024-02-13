@@ -1,7 +1,7 @@
 package org.mastodon.tomancak.util;
 
-import org.mastodon.mamut.project.MamutProject;
-import org.mastodon.mamut.project.ReadZip;
+import org.mastodon.mamut.io.project.MamutProject;
+import org.mastodon.mamut.io.project.ReadZip;
 
 import java.io.InputStream;
 import java.io.IOException;

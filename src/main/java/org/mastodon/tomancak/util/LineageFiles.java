@@ -1,10 +1,10 @@
 package org.mastodon.tomancak.util;
 
 
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.mamut.ProjectModel;
+import org.mastodon.mamut.io.importer.ModelImporter;
+import org.mastodon.mamut.io.project.MamutProject;
 import org.mastodon.mamut.model.Model;
-import org.mastodon.mamut.project.MamutProject;
-import org.mastodon.mamut.importer.ModelImporter;
 
 import java.io.IOException;
 import java.io.File;
@@ -32,9 +32,9 @@ public class LineageFiles
 
 
 	static public
-	Path getProjectRootFoldername(final MamutPluginAppModel pluginAppModel)
+	Path getProjectRootFoldername(final ProjectModel pluginAppModel)
 	{
-		return getProjectRootFoldername(pluginAppModel.getWindowManager().getProjectManager().getProject());
+		return getProjectRootFoldername(pluginAppModel.getProject());
 	}
 
 	static public

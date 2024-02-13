@@ -3,12 +3,12 @@ package org.mastodon.tomancak;
 import java.util.*;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
+import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.plugin.MamutPlugin;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.ProjectModel;
 
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.AbstractContextual;
 import org.scijava.command.CommandService;
@@ -56,7 +56,7 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 	{
 		public Descriptions()
 		{
-			super( KeyConfigContexts.TRACKSCHEME, KeyConfigContexts.BIGDATAVIEWER );
+			super( KeyConfigScopes.MAMUT, KeyConfigContexts.TRACKSCHEME, KeyConfigContexts.BIGDATAVIEWER );
 		}
 
 		@Override
@@ -90,10 +90,10 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 		updateEnabledActions();
 	}
 
-	private MamutPluginAppModel pluginAppModel;
+	private ProjectModel pluginAppModel;
 
 	@Override
-	public void setAppPluginModel( final MamutPluginAppModel model )
+	public void setAppPluginModel( final ProjectModel model )
 	{
 		this.pluginAppModel = model;
 		updateEnabledActions();
@@ -132,13 +132,12 @@ public class CollabMastodonPlugins extends AbstractContextual implements MamutPl
 
 	private void updateEnabledActions()
 	{
-		final MamutAppModel appModel = ( pluginAppModel == null ) ? null : pluginAppModel.getAppModel();
-		saveModelSnapshotAction.setEnabled( appModel != null );
-		loadModelSnapshotAction.setEnabled( appModel != null );
-		createSnapshotSpaceAction.setEnabled( appModel != null );
-		deleteSnapshotSpaceAction.setEnabled( appModel != null );
-		openProjectSpaceAction.setEnabled( appModel != null );
-		openDocumentationAction.setEnabled( appModel != null );
+		saveModelSnapshotAction.setEnabled( pluginAppModel != null );
+		loadModelSnapshotAction.setEnabled( pluginAppModel != null );
+		createSnapshotSpaceAction.setEnabled( pluginAppModel != null );
+		deleteSnapshotSpaceAction.setEnabled( pluginAppModel != null );
+		openProjectSpaceAction.setEnabled( pluginAppModel != null );
+		openDocumentationAction.setEnabled( pluginAppModel != null );
 	}
 
 
